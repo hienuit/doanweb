@@ -191,8 +191,8 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     skipBtn.onclick = function() {
        videoOverlay.style.display = "none"; // Ẩn video khi bấm bỏ qua
     };
-
-    fetch("http://127.0.0.1:5000/create-itinerary", {
+    const apiURL = `${window.location.origin}/create-itinerary`;
+    fetch(apiURL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
