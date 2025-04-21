@@ -17,3 +17,5 @@ google-auth==2.38.0
 google-auth-httplib2==0.2.0
 oauthlib==2.1.0
 gunicorn
+psycopg2-binary
+pytest==7.4.0
