@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xe chạy + Hoạt động từng điểm + Điều chỉnh tốc độ</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+
+  <style>
+    #map { height: 100vh; }
+
+    #controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-family: sans-serif;
+      width: 200px;
+      box-shadow: 0 0 5px #aaa;
+    }
+
+    label {
+      font-size: 14px;
+    }
+
+    /* Modal styles */
+    #myModal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background-image: url('https://img5.thuthuatphanmem.vn/uploads/2021/10/20/background-du-lich-bau-troi_110850711.jpg');
+      background-size: cover;
+      background-position: center;
+      color: black;
+      padding: 30px;
+      border-radius: 15px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: 80%;
+      max-width: 350px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      font-family: 'Arial', sans-serif;
+      border: 5px solid orange;
+    }
+
+    .modal-content p {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 0;
+      animation: slideIn 1s ease-out forwards;
+    }
+
+    @keyframes slideIn {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(0);
+      }
+    }
+
+    #speedSlider {
+      width: 100%;
+    }
+
+    /* GIF nhỏ 70x70 */
+    #gifSmall {
+      display: none; /* Ẩn GIF mặc định */
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px;
+      height: 500px;
+      z-index: 2000;
+    }
+
+    #gifSmall img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Đảm bảo video rõ nét */
+    }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  <label>Tốc độ: <span id="speedLabel">100</span> ms/bước</label><br>
+  <input type="range" id="speedSlider" min="10" max="1000" value="100">
+</div>
+<div id="map"></div>
+
+<!-- Modal -->
+<div id="myModal">
+  <div class="modal-content">
+    <p id="modalMessage">Đã đến điểm</p>
+  </div>
+</div>
+
+<!-- GIF nhỏ 70x70 -->
+<div id="gifSmall">
+  <img id="smallGif" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThtbnZ4a2owZHhwc2ozdDJwbWI1azcyNHZtb3hnMmxtNWx5ZWowbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/k7rvJoAgijk9qxyCKy/giphy.gif" alt="GIF" />
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+  const locations = JSON.parse(localStorage.getItem('locations')) || ['21.0285,105.8542', '21.0290,105.8550'];
+  const activityNames = JSON.parse(localStorage.getItem('activityNames')) || ['Start', 'End'];
+  const coordinates = locations.map(loc => {
+    const [lat, lng] = loc.split(',').map(Number);
+    return [lat, lng];
+  });
+
+  const map = L.map('map').setView(coordinates[0], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  let carMarker = null;
+  let routeCoords = [];
+  let currentIndex = 0;
+
+  let speed = parseInt(document.getElementById('speedSlider').value);
+  document.getElementById('speedSlider').addEventListener('input', function () {
+    speed = parseInt(this.value);
+    document.getElementById('speedLabel').innerText = speed;
+  });
+
+  const control = L.Routing.control({
+    waypoints: coordinates.map(c => L.latLng(c[0], c[1])),
+    createMarker: () => null,
+    addWaypoints: false,
+    draggableWaypoints: false,
+    routeWhileDragging: false,
+    show: false
+  }).addTo(map);
+
+  control.on('routesfound', function (e) {
+    routeCoords = e.routes[0].coordinates;
+
+    if (!carMarker) {
+      carMarker = L.marker(routeCoords[0], {
+        icon: L.icon({
+          iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+          iconSize: [32, 32],
+          iconAnchor: [16, 32]
+        })
+      }).addTo(map);
+    }
+
+    let i = 0;
+    let t = 0;
+    const threshold = 0.009;
+
+    const moveStep = () => {
+      if (i >= routeCoords.length) {
+        alert("Đã đến đích!");
+        return;
+      }
+
+      const pos = routeCoords[i];
+      const currentCoord = coordinates[t];
+
+      const distance = Math.sqrt(
+        Math.pow(pos.lat - currentCoord[0], 2) + Math.pow(pos.lng - currentCoord[1], 2)
+      );
+
+      if (distance < threshold) {
+        showModal(`Đã đến điểm ${t + 1} (${activityNames[t]})`);
+
+        // Kiểm tra nếu t là số chẵn và không phải là 0
+        if ((t-1) % 2 === 0 && t !== 0) {
+          setTimeout(showGifSmall, 1000); // Đợi 1 giây rồi hiển thị GIF
+        }
+
+        t++;
+      }
+
+      carMarker.setLatLng(pos);
+      map.panTo(pos);
+
+      i++;
+
+      setTimeout(moveStep, speed);
+    };
+
+    moveStep();
+  });
+
+  function showModal(message) {
+    const modal = document.getElementById("myModal");
+    const modalMessage = document.getElementById("modalMessage");
+    modalMessage.textContent = message;
+    
+    modal.style.display = "block";
+    
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 2000);
+  }
+
+  // Hàm để hiển thị GIF nhỏ 70x70
+  function showGifSmall() {
+    const gif = document.getElementById("gifSmall");
+    gif.style.display = "block"; // Hiển thị GIF
+    setTimeout(() => {
+      gif.style.display = "none"; // Ẩn GIF sau 5 giây
+    }, 3000);
+  }
+</script>
+
+</body>
+</html>

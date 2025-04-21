@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomad Journey - Khám Phá Điểm Đến Mới</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/style2.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style2.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-route logo-icon"></i>
+                Nomad Journey
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Trang Chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Điểm Đến</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Trải Nghiệm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Ưu Đãi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Về Chúng Tôi</a>
+                    </li>
+                </ul>
+                <div class="nav-icons">
+                    <i class="fas fa-search nav-icon"></i>
+                    <i class="fas fa-heart nav-icon"></i>
+                    <i class="fas fa-user nav-icon"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Khám Phá Những Điểm Đến Tuyệt Vời</h1>
+                <p class="hero-subtitle">Lên kế hoạch cho những chuyến phiêu lưu của bạn và tạo những kỷ niệm khó quên</p>
+                <a href="#planner" class="btn btn-light btn-lg">Bắt Đầu Khám Phá</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trip Planner Section -->
+    <section id="planner" class="container planner-section">
+        <h2 class="section-title">Lên Kế Hoạch Cho Chuyến Đi</h2>
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <div class="planning-form">
+                    <div id="Tab1">
+                        <div class="mb-4">
+                            <label for="moodSelect" class="form-label">Bạn muốn đi đâu hôm nay?</label>
+                            <select id="moodSelect" class="form-select">
+                                <option value="" selected>Chọn trải nghiệm của bạn</option>
+                                <option value="chill">Chill ngắm cảnh</option>
+                                <option value="active">Phiêu lưu & thể thao</option>
+                                <option value="tourist">Khám phá văn hóa & du lịch</option>
+                                <option value="heal">Nghỉ dưỡng & thư giãn</option>
+                            </select>
+                        </div>
+
+                        <div id="destinationContainer" class="mb-4 hidden">
+                            <label for="destinationSelect" class="form-label">Bạn thích không gian như thế nào?</label>
+                            <select id="locationSelect" class="form-select">
+                                <option value="" selected>Chọn vùng miền</option>
+                                <option value="north">Miền Bắc</option>
+                                <option value="central">Miền Trung</option>
+                                <option value="south">Miền Nam</option>
+                            </select>
+                        </div>
+
+                        <button type="button" id="nextButtonElement" class="btn btn-primary hidden">
+                            Tiếp tục <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+
+                    <div id="Tab2" class="hidden">
+                        <h3 class="mb-4">Bạn thích khám phá nơi nào?</h3>
+                        
+                        <div class="location-options">
+                            <div class="location-option" id="beachButton">
+                                <i class="fas fa-umbrella-beach location-icon"></i>
+                                <h4 class="location-title">Biển</h4>
+                            </div>
+                            <div class="location-option" id="mountainButton">
+                                <i class="fas fa-mountain location-icon"></i>
+                                <h4 class="location-title">Núi</h4>
+                            </div>
+                            <div class="location-option" id="cityButton">
+                                <i class="fas fa-city location-icon"></i>
+                                <h4 class="location-title">Thành phố</h4>
+                            </div>
+                        </div>
+
+                        <div id="Places" class="hidden">
+                            <h3 class="mt-4 mb-3">Gợi ý dựa trên lựa chọn của bạn:</h3>
+                            <ul id="placesList" class="place-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Destinations -->
+    <section class="container destinations-section">
+        <h2 class="section-title">Điểm Đến Phổ Biến</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="destination-card">
+                    <img src="https://onevivu.vn/wp-content/uploads/2020/10/Du-lich-Tam-Coc-Ninh-Binh-3.jpg" alt="Tam Cốc" class="destination-img">
+                    <div class="destination-info">
+                        <h3 class="destination-title">Tam Cốc - Bích Động</h3>
+                        <div class="destination-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Ninh Bình, Việt Nam</span>
+                        </div>
+                        <p>Khám phá vẻ đẹp hùng vĩ của dãy núi đá vôi, trải nghiệm chèo thuyền qua các hang động tự nhiên.</p>
+                        <div class="destination-meta">
+                            <div class="destination-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.8/5</span>
+                            </div>
+                            <div class="destination-price">1.200.000đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="destination-card">
+                    <img src="https://onevivu.vn/wp-content/uploads/2020/10/Du-lich-Trang-An-Ninh-Binh-5.jpg" alt="Tràng An" class="destination-img">
+                    <div class="destination-info">
+                        <h3 class="destination-title">Khu Du Lịch Tràng An</h3>
+                        <div class="destination-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Ninh Bình, Việt Nam</span>
+                        </div>
+                        <p>Di sản thiên nhiên thế giới với hệ thống hang động, núi đá và hồ nước trong xanh tuyệt đẹp.</p>
+                        <div class="destination-meta">
+                            <div class="destination-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.9/5</span>
+                            </div>
+                            <div class="destination-price">1.500.000đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="destination-card">
+                    <img src="https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8aGElMjBsb25nJTIwYmF5fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60" alt="Hạ Long" class="destination-img">
+                    <div class="destination-info">
+                        <h3 class="destination-title">Vịnh Hạ Long</h3>
+                        <div class="destination-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Quảng Ninh, Việt Nam</span>
+                        </div>
+                        <p>Di sản thiên nhiên thế giới với hàng nghìn hòn đảo đá vôi và những hang động kỳ thú.</p>
+                        <div class="destination-meta">
+                            <div class="destination-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.7/5</span>
+                            </div>
+                            <div class="destination-price">2.500.000đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="#" class="btn btn-outline-primary">Xem Thêm Điểm Đến</a>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials-section">
+        <div class="container">
+            <h2 class="section-title">Chia Sẻ Từ Khách Hàng</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <i class="fas fa-quote-right testimonial-quote"></i>
+                        <p class="testimonial-text">Chuyến đi Tam Cốc qua Nomad Journey thật tuyệt vời. Mọi thứ được sắp xếp chuyên nghiệp từ đầu đến cuối. Tôi sẽ quay lại vào lần sau!</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Author" class="author-img">
+                            <div>
+                                <div class="author-name">Nguyễn Thị Mai</div>
+                                <div class="author-title">Du khách từ Hà Nội</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <i class="fas fa-quote-right testimonial-quote"></i>
+                        <p class="testimonial-text">Ứng dụng rất dễ sử dụng và đề xuất những địa điểm phù hợp với sở thích của tôi. Tôi đã khám phá nhiều nơi tuyệt vời nhờ Nomad Journey.</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Author" class="author-img">
+                            <div>
+                                <div class="author-name">Trần Văn Dũng</div>
+                                <div class="author-title">Du khách từ TP. HCM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <i class="fas fa-quote-right testimonial-quote"></i>
+                        <p class="testimonial-text">Dịch vụ khách hàng tuyệt vời! Khi chúng tôi gặp vấn đề với lịch trình, đội ngũ hỗ trợ đã giải quyết nhanh chóng và hiệu quả.</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/42.jpg" alt="Author" class="author-img">
+                            <div>
+                                <div class="author-name">Lê Thị Hồng</div>
+                                <div class="author-title">Du khách từ Đà Nẵng</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter-section">
+        <div class="container">
+            <h2 class="newsletter-title">Nhận Thông Tin Ưu Đãi</h2>
+            <p class="text-center mb-4">Đăng ký để nhận thông tin về các ưu đãi và điểm đến mới nhất từ chúng tôi</p>
+            <form class="newsletter-form">
+                <input type="email" class="newsletter-input" placeholder="Email của bạn">
+                <button type="submit" class="newsletter-btn">Đăng Ký</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <h3 class="footer-heading">Nomad Journey</h3>
+                    <p>Khám phá những điểm đến tuyệt vời và tạo ra những kỷ niệm khó quên với dịch vụ du lịch chất lượng cao của chúng tôi.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <h3 class="footer-heading">Liên Kết Nhanh</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Trang Chủ</a></li>
+                        <li><a href="#">Điểm Đến</a></li>
+                        <li><a href="#">Trải Nghiệm</a></li>
+                        <li><a href="#">Ưu Đãi</a></li>
+                        <li><a href="#">Về Chúng Tôi</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <h3 class="footer-heading">Trợ Giúp</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Chính Sách Hoàn Hủy</a></li>
+                        <li><a href="#">Điều Khoản Sử Dụng</a></li>
+                        <li><a href="#">Chính Sách Bảo Mật</a></li>
+                        <li><a href="#">Liên Hệ Hỗ Trợ</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <h3 class="footer-heading">Liên Hệ</h3>
+                    <div class="footer-contact">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>123 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</div>
+                    </div>
+                    <div class="footer-contact">
+                        <i class="fas fa-phone-alt"></i>
+                        <div>+84 28 1234 5678</div>
+                    </div>
+                    <div class="footer-contact">
+                        <i class="fas fa-envelope"></i>
+                        <div>info@nomadjourney.vn</div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Nomad Journey. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <a href="#" class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Bootstrap and JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Function to handle form interactions
+        // Function to handle form interactions
+        document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const moodSelect = document.getElementById('moodSelect');
+    const destinationContainer = document.getElementById('destinationContainer');
+    const destinationSelect = document.getElementById('locationSelect');
+    const nextButtonElement = document.getElementById('nextButtonElement');
+    const tab1 = document.getElementById('Tab1');
+    const tab2 = document.getElementById('Tab2');
+    const placesList = document.getElementById('placesList');
+    const placesDiv = document.getElementById('Places');
+    
+    // Location options
+    const beachButton = document.getElementById('beachButton');
+    const mountainButton = document.getElementById('mountainButton');
+    const cityButton = document.getElementById('cityButton');
+    
+    // Add back button to tab2
+    const backButton = document.createElement('button');
+    backButton.type = 'button';
+    backButton.className = 'btn btn-outline-secondary mt-4';
+    backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i> Quay lại';
+    
+    // Insert back button before the location options
+    const locationOptions = document.querySelector('.location-options');
+    tab2.insertBefore(backButton, locationOptions);
+    
+    // Initially hide tab2
+    tab2.style.display = 'none';
+    
+    // Show destination select when mood is selected
+    moodSelect.addEventListener('change', function() {
+        if (this.value) {
+            destinationContainer.classList.remove('hidden');
+            destinationContainer.style.display = 'block';
+        } else {
+            destinationContainer.classList.add('hidden');
+            destinationContainer.style.display = 'none';
+            nextButtonElement.classList.add('hidden');
+            nextButtonElement.style.display = 'none';
+        }
+    });
+    
+    // Show next button when destination is selected
+    destinationSelect.addEventListener('change', function() {
+        if (this.value) {
+            nextButtonElement.classList.remove('hidden');
+            nextButtonElement.style.display = 'inline-block';
+        } else {
+            nextButtonElement.classList.add('hidden');
+            nextButtonElement.style.display = 'none';
+        }
+    });
+    
+    // Move to next tab and show location options
+    nextButtonElement.addEventListener('click', function() {
+        tab1.style.display = 'none';
+        tab2.style.display = 'block';
+        tab2.classList.remove('hidden');
+        
+        // Show the location options
+        document.querySelector('.location-options').style.display = 'flex';
+        
+        // Hide the places section until a location is selected
+        placesDiv.style.display = 'none';
+    });
+    
+    // Handle back button click
+    backButton.addEventListener('click', function() {
+        tab2.style.display = 'none';
+        tab1.style.display = 'block';
+        
+        // Reset the active state of location buttons
+        [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+        
+        // Hide the places section
+        placesDiv.style.display = 'none';
+    });
+    
+    // Handle location button clicks
+    beachButton.addEventListener('click', function() {
+        [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        showSuggestedPlaces('beach');
+    });
+    
+    mountainButton.addEventListener('click', function() {
+        [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        showSuggestedPlaces('mountain');
+    });
+    
+    cityButton.addEventListener('click', function() {
+        [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        showSuggestedPlaces('river');
+    });
+    
+    // Function to fetch suggested places based on location type
+    let selectedDestination = null; // Store the selected destination
+    
+    function showSuggestedPlaces(locationType) {
+        const mood = moodSelect.value;
+        const location = destinationSelect.value;
+        
+        // Show loading indicator
+        placesList.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>';
+        placesDiv.style.display = 'block';
+        placesDiv.classList.remove('hidden');
+        
+        // Fetch data from backend
+        fetch(`/search?mood=${mood}&place=${locationType}&location=${location}`)
+            .then(response => response.json())
+            .then(data => {
+                placesList.innerHTML = "";
+                
+                if (data.length === 0) {
+                    placesList.innerHTML = '<p class="text-center">Không tìm thấy địa điểm phù hợp.</p>';
+                    return;
+                }
+                
+                // Create list items for each destination
+                data.forEach(destination => {
+                    const li = document.createElement('li');
+                    li.className = 'place-item';
+                    li.innerHTML = `
+                        <div>
+                            <div class="place-name">${destination.name}</div>
+                            <div class="place-details">Phù hợp với lựa chọn của bạn</div>
+                        </div>
+                        <i class="fas fa-arrow-right place-arrow"></i>
+                    `;
+                    
+                    // Add click event to each item
+                    li.addEventListener('click', function() {
+                        selectedDestination = {
+                            id: destination.id,
+                            name: destination.name
+                        };
+                        
+                        console.log("Đã chọn:", selectedDestination);
+                        
+                        // Store selected destination in localStorage
+                        localStorage.setItem('selectedDestination', JSON.stringify(selectedDestination));
+                        
+                        // Redirect to destination details page
+                        window.location.href = `/page3?province=${encodeURIComponent(destination.name)}`;
+                    });
+                    
+                    placesList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error("Lỗi khi tải dữ liệu:", error);
+                placesList.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.
+                    </div>
+                `;
+            });
+    }
+    
+    // Back to top button functionality
+    const backToTopButton = document.getElementById('backToTop');
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopButton.classList.add('visible');
+        } else {
+            backToTopButton.classList.remove('visible');
+        }
+    });
+    
+    backToTopButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+});
+    </script>
+</body>
+</html>

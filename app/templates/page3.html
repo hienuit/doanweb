@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destination Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/style3.css">
+    <link rel="stylesheet" href="../static/css/navbar.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">   
+    
+</head>
+<body>
+    <div id="navbar-container">
+        {% include 'navbar.html' %}
+    </div>
+    <div class = "container_vien">
+        <div class="container_img">
+            <div class="container">
+                <h1>Đôi nét về tỉnh</h1>
+    
+        <!-- Display the selected destination name here -->
+                <div id="destinationDetails" class="destination-info">
+                    Loading destination details...
+                    <button id="toggle-btn" style="display: none;" onclick="toggleDescription()">Xem thêm</button>
+                </div>
+    
+        <!-- Display features or description here -->
+                <div id="Feature" class="feature-info"></div>
+    
+                <div class="input-group">
+                    <select id="budget">
+                        <option value="" disabled selected>Chọn tài chính của bạn</option>
+                        <option value="under2m">Dưới 2 triệu</option>
+                        <option value="under5m">Dưới 5 triệu</option>
+                        <option value="under10m">Dưới 10 triệu</option>
+                        <option value="above10m">Trên 10 triệu</option>
+                    </select>
+                    <input type="number" id="days" placeholder="Enter number of days" min="1"/>
+                    <button id="submitDetails">Submit</button>
+                </div>
+
+        
+        <!-- Back button -->
+                <a href="/" class="back-button">Back to Home</a>
+            </div>
+        
+        <div class="anh">
+            <div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval ="3000" >
+                <div class="carousel-inner">
+                    {% for img in images %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="{{ img }}" class="d-block w-100" alt="ảnh {{ loop.index }}">
+                        </div>
+                    {% endfor %}
+                </div>
+            
+                <!-- Nút điều hướng -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+
+<section id="about" class="container-fluid my-5 " style="border-radius: 15px; background-color: orange; border: 2px solid black;">
+    <div class="row">
+        <div class="col-md-6">
+            <p>Hãy tham gia cùng chúng tôi để tìm được cho mình những chuyến du lịch phù hợp nhé.</p>
+        </div>
+    </div>
+    <div class="row">
+        <label class="fw-bold fs-4">Liên hệ</label>
+        <div >
+            <p class="py-2">Địa chỉ: Khu phố 6, phường linh trung, thành phố Thủ Đức</p>
+            <p class="py-2">Hiển:(+84) 0856800705</p>
+            <p class="py-2">Dương:(+84) 0716589788</p>
+            <p class="py-2">Email: 23520458@gm.uit.edu.vn</p>
+        </div>
+    </div>
+</section>
+
+ <!-- <div id="loadingOverlay">
+    <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div> -->
+<div id="videoOverlay">
+    <video id="adVideo" autoplay muted>
+        <source src="../static/video/dulich.mp4" type="video/mp4">
+        Trình duyệt của bạn không hỗ trợ video.
+    </video>
+    <div class="skipbutton">
+        <span id="skipcountdown">Bỏ qua sau 5s</span>
+        <button id="skipBtn">Bỏ qua</button>
+    </div>
+</div>
+ 
+<footer>
+    <p>&copy; Bản quyền thuộc về Dương và Hiển</p>
+    <p>Khi muốn sử dụng thông tin tại trang web này xin hãy liên hệ tới <a href="23520458@gm.uit.edu.vn">23520458@gm.uit.edu.vn</a></p>
+</footer>
+    <script src="../static/js/app3.js"></script>
+    <script src="{{ url_for('static', filename='js/app3.js') }}"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> 
+<body>
+</html>

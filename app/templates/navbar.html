@@ -1,0 +1,213 @@
+
+<header>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="https://png.pngtree.com/png-clipart/20200709/original/pngtree-abstract-logo-minimalistic-logo-design-creative-logo-beautifu-png-image_3984112.jpg" alt="LOGO">
+            <a href="/">Travel Assistant</a>
+        </div>
+        <div class="nav-links">
+            <a href="/" id="homebutton">Trang chủ</a>
+            {% if "user_name" in session or "full_name" in session %}
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2">
+                        {{ session['full_name'] if session.get('full_name') else session['user_name'] }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end " aria-labelledby="userDropdown" style="width: 200px;height: 130px; padding: 6px 0; font-size: 15px;">
+                        <li>
+                            <a class="dropdown-item" href="/dashboard">
+                                <span class="menu-action-text">Hồ sơ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <span class="menu-action-text">Lịch sử truy vấn</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item " href="/logout">
+                                <span class="menu-action-text ">Đăng xuất</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% else %}
+                <a href="/login" class="btn" id="loginButton">Đăng nhập</a>
+                <a href="/register" id="registerButton">Đăng ký</a>
+            {% endif %}
+        </div>
+
+
+    <div class ="container_list">
+        <div class="dropdown">
+            <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="d-flex align-items-center">
+                    <span class="text-black fs-6">Các địa điểm phổ biến</span>
+                    <img class="ms-2" src="https://res.klook.com/image/upload/v1639126248/brand%20refresh%20category%20icon/desktop/category_36_gift_card.png" alt="gift" style="width: 30px; height: 30px;">
+                </div>
+            </button>
+            <div class="dropdown-menu p-3">
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/rxqumcihtzatvhcnbedi.webp" alt="Đà Nẵng">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Đà Nẵng</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/gagpmpohflexp1kfy9vr.webp" alt="Hồ Chí Minh">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hồ Chí Minh</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/ysnkhkzabobjbg72x3sz.webp" alt="Hà Nội">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hà Nội</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://scontent.iocvnpt.com/resources/portal/Images/DTP/dtblieu/nam_2022/thang_03/29121616_ban_do_hai_phong_531420895.jpeg" alt="Hải Phòng" style="display: block;">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hải Phòng</strong>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/fdopxuk1tinxvtylpax8.webp" alt="Phú Quốc">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Phú Quốc</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/cycozeddqrt6cd2agt0n.webp" alt="nha trang">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Nha Trang</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/ktxokazpkmecanujqnzg.webp" alt="Đà Lạt">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Đà Lạt</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_532,h_354,c_fill,q_85/activities/sytsmedhoitvwcasveut.webp" alt="Quảng Ninh" >
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Quảng Ninh</strong>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_532,h_354,c_fill,q_85/activities/zrx0bcfskdaryfq9sqcf.webp" alt="Sa Pa">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Sa Pa</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/c_fill,w_550,h_308/fl_lossy.progressive,q_85/q_85/activities/kjkvol8setvzkkqj1miz.webp" alt="Hà Giang">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hà Giang</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_532,h_354,c_fill,q_85/activities/nwcb27rtparm1mxemtik.webp" alt="Cao Bằng">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Cao Bằng</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEPAzCb4u_DvVsfFSyg1MCn9rTCnuH2XPh_A&s" alt="Bắc Ninh">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Bắc Ninh</strong>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSktV8-l-hwXu6WyH-6QKSVXVrZU2LHaPLthA&s" alt="Cà Mau">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Cà Mau</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/gagpmpohflexp1kfy9vr.webp" alt="Hồ Chí Minh">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hồ Chí Minh</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://res.klook.com/image/upload/fl_lossy.progressive,w_96,h_96,c_fill,q_85/cities/ysnkhkzabobjbg72x3sz.webp" alt="Hà Nội">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hà Nội</strong>
+                        </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a class="dropdown-item" href="#">
+                            <img src="https://scontent.iocvnpt.com/resources/portal/Images/DTP/dtblieu/nam_2022/thang_03/29121616_ban_do_hai_phong_531420895.jpeg" alt="Hải Phòng" style="display: block;">
+                        <div>
+                            <div class="category">Vui chơi và trải nghiệm</div>
+                            <strong>Hải Phòng</strong>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="input_destination">
+            <input id="destinationInput" style="width: 350px; height: 45px; border: none; background: lightgray; font-weight: bold; border-radius: 15px; padding: 10px" type="text" placeholder=" 🔍  Let choose your favourite destination"/>
+        </div>
+    </div>
+</nav>
+</header>

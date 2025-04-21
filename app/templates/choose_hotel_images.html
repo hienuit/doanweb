@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chọn ảnh cho khách sạn</title>
+    <style>
+        img {
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        label {
+            display: inline-block;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>Chọn ảnh cho khách sạn</h2>
+    <form method="POST" action="/add-hotel-images">
+        <label for="hotel">Chọn khách sạn:</label>
+        <select name="hotel_id" required>
+            {% for hotel in hotels %}
+                <option value="{{ hotel.id }}">{{ hotel.hotel_name }}</option>
+            {% endfor %}
+        </select>
+
+        <h3>Chọn ảnh:</h3>
+        {% for filename in image_files %}
+            <div style="display: inline-block; margin: 10px;">
+                <label>
+                    <img src="{{ url_for('static', filename='images/' + filename) }}" width="150">
+                    <br>
+                    <input type="checkbox" name="selected_images" value="{{ filename }}"> {{ 'images/' + filename }}
+                </label>
+            </div>
+        {% endfor %}
+
+        <br><br>
+        <button type="submit">Thêm ảnh</button>
+    </form>
+</body>
+</html>

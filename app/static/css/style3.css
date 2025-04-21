@@ -1,0 +1,327 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.destination-info {
+    font-size: 1.5em;
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(to right,red,transparent, #ff758c);
+    color:white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation: gradient-animation 3s ease infinite;
+}
+
+.feature-info {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.input-group {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.input-group select,
+.input-group input {
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 200px;
+}
+
+.input-group button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.input-group button:hover {
+    background-color: #0056b3;
+}
+
+.back-button {
+    position: relative;
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top:30px;
+    text-decoration: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 10px;
+    left:60px;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+}
+#submitDetails{
+    border-radius:10px;
+    background-color: #D2042D;
+}
+#submitDetails:hover{
+    background-color: #9B111E;
+}
+
+/* CSS cho phần lịch trình */
+.day-schedule {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.day-schedule h3 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.activities-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.activities-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.activities-list li:last-child {
+    border-bottom: none;
+}
+
+strong {
+    color: #007BFF;
+}
+
+.estimated-cost {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}
+
+.total-estimated-cost {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #007BFF;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.container_vien{
+    gap:10px;
+    display:flex;
+    flex-direction: row;
+    justify-content: center ;
+    border: black solid 1px;
+    width: 100%;
+    height: 580px;
+    margin: 130px auto;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+/* CSS cho div ảnh và div chữ */
+.container_img{
+    display:flex;
+    align-items: stretch;
+    border-radius: 20px;
+    overflow: hidden;
+    background:white;
+    max-width: 1350px;
+    width: 100%;
+    margin:auto;
+    height: 500px;
+}
+.anh{
+    width:50%;
+    border-radius: 10px;
+    height: 500px;
+}
+.container {
+
+    text-align: left;
+    flex: 1;
+    height: 500px;
+    width: 50%;
+    padding: 15px;
+    background:url(../video/songbien.gif);
+    background-size: 100%;
+}
+
+/* slide chuyển ảnh */
+.carousel {
+    position: relative;
+}
+.carousel-inner {
+    width: 100%;
+    max-height: 500px;
+}
+
+.carousel-item img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+}
+
+/*
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); 
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+} 
+    */
+/*
+ .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+    animation: spin 1s linear infinite;
+} 
+    */
+/*
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+    */
+
+#videoOverlay {
+    display: none;/* Ẩn ban đầu */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+#videoOverlay video {
+    width: 80%;
+    max-width: 800px;
+}
+
+#skipBtn {
+    display: none; /* Ẩn ban đầu, hiện sau 5s */
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background: red;
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.skipbutton{
+    position:absolute;
+    top: 10px; 
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white ;
+    padding: 10px;
+    border-radius: 5px;
+    display:flex;
+}
+
+.skipcountdown{
+    font-size: 14px;
+}
+
+/*giao diện cho phần popup*/
+/* Ẩn popup mặc định */
+.popup-hidden {
+    display: none;
+}
+
+/* Hiển thị popup */
+#popup-container {
+    position: fixed;
+    top: 50%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 700px;
+    background: rgba(0, 0, 0, 0.7); /* Màu đen trong suốt */
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1000;
+    color: white;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+/* Nút đóng popup */
+#close-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+}
+
+/* Khi di chuột vào nút đóng */
+#close-popup:hover {
+    color: red;
+}
+
+/* Cuộn khi nội dung dài */
+#popup-container p {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+footer{
+    background-color: #1C2930;
+    color:white;
+    width: 100%;
+    padding:10px;
+    text-align: center;
+}

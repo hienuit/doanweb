@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhận diện Giọng nói và Gợi ý Du lịch</title>
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --secondary-color: #34A853;
+            --accent-color: #FBBC05;
+            --danger-color: #EA4335;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212121;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background-color: var(--light-bg);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #FF9AA2, #FFB7B2, #FFDAC1, #E2F0CB, #B5EAD7, #C7CEEA);
+            background-size: 600% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 15s linear infinite;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        .mic-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        #start-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #start-btn::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.5s ease;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.6);
+        }
+
+        #start-btn:hover::before {
+            transform: scale(1.5);
+            opacity: 0;
+        }
+
+        #result {
+            margin: 30px auto;
+            font-size: 18px;
+            color: #333;
+            text-align: left;
+            max-width: 800px;
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .loading {
+            font-size: 18px;
+            color: var(--primary-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 3px solid var(--primary-color);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            font-size: 18px;
+            color: var(--danger-color);
+            background-color: rgba(234, 67, 53, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .province-box {
+            border: 1px solid var(--secondary-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .province-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .province-box h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            border-bottom: 2px solid rgba(52, 168, 83, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .place {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(52, 168, 83, 0.05);
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .place:hover {
+            background-color: rgba(52, 168, 83, 0.1);
+        }
+
+        .place strong {
+            color: var(--secondary-color);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        button.province-btn {
+            padding: 15px;
+            font-size: 16px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            margin: 15px 0 5px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 168, 83, 0.3);
+        }
+
+        button.province-btn:hover {
+            background-color: #2E9E4A;
+            box-shadow: 0 6px 15px rgba(52, 168, 83, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            backdrop-filter: blur(5px);
+        }  
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .container_mic {
+            background-color: rgba(33, 33, 33, 0.95);
+            color: white;
+            width: 650px;
+            height: 450px;
+            margin: auto;
+            box-sizing: border-box;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .text {
+            font-size: 28px;
+            margin: 20px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #output-text {
+            max-width: 100%;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .mic {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--danger-color);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            font-size: 30px;
+            margin: 30px auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(234, 67, 53, 0.5);
+        }
+
+        .mic img {
+            width: 50px;
+            height: 50px;
+            filter: brightness(1.5);
+            transition: transform 0.3s ease;
+        }
+
+        .mic:hover img {
+            transform: scale(1.1);
+        }
+
+        .mic.active {
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { 
+                transform: scale(1);
+                background-color: var(--danger-color); 
+            }
+            50% { 
+                transform: scale(1.05);
+                background-color: #f55a4b; 
+            }
+            100% { 
+                transform: scale(1);
+                background-color: var(--danger-color); 
+            }
+        }
+
+        .listening-waves {
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 2px solid rgba(234, 67, 53, 0.5);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
+
+        .mic.active .listening-waves {
+            animation: wave 2s infinite;
+        }
+
+        @keyframes wave {
+            0% {
+                width: 130px;
+                height: 130px;
+                opacity: 0.8;
+            }
+            100% {
+                width: 250px;
+                height: 250px;
+                opacity: 0;
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .listening-instruction {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container_mic {
+                width: 90%;
+                height: auto;
+                padding: 20px;
+            }
+            
+            .text {
+                font-size: 22px;
+                min-height: 60px;
+            }
+            
+            .mic {
+                width: 80px;
+                height: 80px;
+                margin: 20px auto;
+            }
+            
+            .mic img {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Hãy nói cho chúng tôi biết bạn muốn đi đâu!</h1>
+        <p class="subtitle">Dùng giọng nói để khám phá các địa điểm du lịch tuyệt vời</p>
+    </div>
+
+    <div class="mic-container">
+        <button id="start-btn">
+            <img src="../static/images/logo/mic.png" alt="mic" style="width: 40px; height: 40px;">
+        </button>
+    </div>
+    
+    <div id="result">
+        <div style="text-align: center; padding: 20px;">
+            <p>Hãy nhấn vào biểu tượng micro ở trên để bắt đầu nói.</p>
+            <p style="font-style: italic; color: #666;">Ví dụ: "Tôi muốn đi du lịch đến Đà Nẵng" hoặc "Gợi ý các địa điểm ở Hà Nội"</p>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <button class="close-btn" id="close-overlay">&times;</button>
+        <div class="container_mic">
+            <div class="text">
+                <p id="output-text">Đang nghe...</p>
+            </div>
+            <div class="listening-instruction">Hãy nói rõ tên địa điểm bạn muốn đến</div>
+            <div class="mic" id="mic">
+                <div class="listening-waves"></div>
+                <img src="../static/images/logo/mic.png" alt="mic">
+            </div>
+        </div>
+    </div>
+    
+
+    <script>
+        const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognitionInstance = null;
+
+        if (recognition) {
+            recognitionInstance = new recognition();
+            recognitionInstance.lang = 'vi-VN';
+            recognitionInstance.continuous = false;
+            recognitionInstance.interimResults = false;
+
+            recognitionInstance.onstart = function () {
+                document.getElementById("output-text").textContent = "Đang nghe...";
+                console.log("Đang nhận diện giọng nói...");
+                document.getElementById("result").innerHTML = `
+                    <div class='loading'>Đang nhận diện giọng nói</div>`;
+            };
+
+            recognitionInstance.onerror = function (event) {
+                console.log("Lỗi nhận diện giọng nói: ", event.error);
+                document.getElementById("result").innerHTML = `
+                    <div class='error'>
+                        <strong>Lỗi!</strong> Không thể nhận diện giọng nói. Vui lòng thử lại.
+                    </div>`;
+                stopRecording();
+            };
+
+            recognitionInstance.onresult = function (event) {
+                let transcript = "";
+                for (let i = 0; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript + " ";
+                } 
+                document.getElementById("output-text").textContent = transcript.trim();
+                console.log("Bạn đã nói: ", transcript);
+                document.getElementById("result").innerHTML = `
+                    <div class='loading'>Đang tìm kiếm địa điểm phù hợp</div>`;
+                
+                fetch('/du-lich', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: transcript })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let resultHTML = '';
+                        data.itinerary.provinces.forEach(province => {
+                            resultHTML += `
+                                <div class="province-box">
+                                    <h3>${province.province}</h3>
+                                    <div>
+                                        ${province.places.map(place => `
+                                            <div class="place">
+                                                <strong>${place.name}</strong>
+                                                <p>${place.description}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <button class="province-btn" onclick="selectProvince('${province.province}')">
+                                        Xem chi tiết về ${province.province}
+                                    </button>
+                                </div>
+                            `;
+                        });
+
+                        document.getElementById("result").innerHTML = resultHTML;
+                        stopRecording();
+                    } else {
+                        document.getElementById("result").innerHTML = `
+                            <div class='error'>
+                                <strong>Rất tiếc!</strong> ${data.error || "Không tìm thấy thông tin phù hợp. Vui lòng thử lại với địa điểm khác."}
+                            </div>`;
+                        stopRecording();
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi gửi câu hỏi lên server:', error);
+                    document.getElementById("result").innerHTML = `
+                        <div class='error'>
+                            <strong>Đã có lỗi xảy ra!</strong> Không thể kết nối với máy chủ. Vui lòng thử lại sau.
+                        </div>`;
+                    stopRecording();
+                });
+            };
+
+            recognitionInstance.onend = function() {
+                console.log("Đã dừng nhận diện giọng nói.");
+            };
+        } else {
+            document.getElementById("result").innerHTML = `
+                <div class='error'>
+                    <strong>Không hỗ trợ!</strong> Trình duyệt của bạn không hỗ trợ tính năng Nhận diện Giọng nói. Vui lòng sử dụng Chrome, Edge hoặc Safari mới nhất.
+                </div>`;
+        }
+
+        document.getElementById('start-btn').addEventListener('click', toggleRecording);
+        document.getElementById('mic').addEventListener('click', stopRecording);
+        document.getElementById('close-overlay').addEventListener('click', stopRecording);
+
+        let isRecording = false; 
+
+        function toggleRecording() {
+            const overlay = document.getElementById('overlay');
+            const mic = document.getElementById('mic');
+
+            if (!isRecording) {
+                // Bắt đầu ghi âm
+                recognitionInstance.start();
+                overlay.classList.add('active');
+                mic.classList.add('active');
+                isRecording = true;
+                
+                // Add a slight delay for animation purposes
+                setTimeout(() => {
+                    document.getElementById("output-text").textContent = "Đang nghe...";
+                }, 300);
+            } 
+            else {
+                stopRecording();
+            }
+        }
+
+        function stopRecording() {
+            const overlay = document.getElementById('overlay');
+            const mic = document.getElementById('mic');
+
+            recognitionInstance.stop();
+            overlay.classList.remove('active');
+            mic.classList.remove('active');
+            isRecording = false;
+        }
+
+        function selectProvince(provinceName) {
+            const cleanedProvince = provinceName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const encodedProvince = encodeURIComponent(cleanedProvince);
+            window.location.href = `/page3?province=${encodedProvince}`;
+        }
+    </script>
+</body>
+</html>

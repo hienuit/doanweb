@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">
+    <style>
+        .day-schedule {
+            opacity: 0; /* Ẩn ban đầu */
+            transform: translateY(20px); /* Di chuyển xuống */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .day-schedule.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #map{
+            position: relative;
+            width: 100px;
+            height: 40px;
+            bottom: 20px;
+            left:20px;
+            background-color: red;
+            color:white;
+            border-radius: 10px;
+        }
+
+        #map:hover{
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="itineraryDetails" class="itinerary-info" style="text-align: center;" >
+        <!-- Lịch trình sẽ được hiển thị tại đây -->
+    </div>
+
+    <div id ="hotel_list">
+        <h2>Danh sách khách sạn</h2>
+    </div>
+    
+
+    <button id="map">Tìm điểm đến</button>
+
+    {% if "user_name" in session %}
+    <a href="#" class="nav-btn logout-btn">Lưu Vào Lịch Sử</a>
+    {% endif %}
+    <script>
+
+    window.onload = function() {
+        const province = "{{ province }}";
+
+fetch(`/describe_hotel?province=${encodeURIComponent(province)}`)
+    .then(response => response.json())
+    .then(data => {
+        const hotelList = document.getElementById("hotel_list");
+
+        if (hotelList) {
+            hotelList.innerHTML = "<h2>Danh sách khách sạn</h2>";
+
+            if (data.length === 0) {
+                hotelList.innerHTML += `<p>No hotels found for ${province}.</p>`;
+                return;
+            }
+
+            data.forEach(hotel => {
+                hotelList.innerHTML += `
+                    <div>
+                        <input type="checkbox" id="hotel-${hotel.id}" name="hotel-${hotel.id}" value="${hotel.id}">
+                        <label for="hotel-${hotel.id}">
+                            <strong>${hotel.hotel_name}</strong><br>
+                            ${hotel.description}<br>
+                            Rating: ${hotel.rating} (${hotel.user_ratings_total} reviews)<br>
+                            
+                        </label>
+                    </div>
+                    <br>
+                `;
+            });
+        } else {
+            console.error("Element with id 'hotel_list' not found");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const hotelList = document.getElementById("hotel_list");
+        if (hotelList) {
+            hotelList.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
+        }
+    });
+
+
+
+        const itinerary = JSON.parse(localStorage.getItem('itinerary'));
+        console.log(itinerary); // Kiểm tra dữ liệu trong console
+        // Kiểm tra nếu có dữ liệu hành trình
+        if (itinerary) {
+            displayItinerary(itinerary);  // Gọi hàm để hiển thị dữ liệu
+        } else {
+            alert("Không có dữ liệu hành trình.");
+        }
+
+        document.getElementById("map").addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href='/map'; // Chuyển hướng đến trang map.html 
+             // Trang này chứa thông tin chi tiết của điểm đến
+     
+        // console.log(selectedDestination);
+          
+
+
+            
+        });
+
+
+    }
+
+    function displayItinerary(itinerary) {
+        const activityNames = [];
+        const locations = [];
+
+
+        const itineraryDetails = document.getElementById("itineraryDetails");
+        itineraryDetails.innerHTML = ""; // Đảm bảo nội dung trước đó được xóa
+
+        let itineraryHTML = "<h1>Lịch trình gợi ý cho bạn</h1>";
+
+        itinerary.days.forEach(day => {
+            itineraryHTML += `<div class="day-schedule"><h3>Day ${day.day}</h3>`;
+            itineraryHTML += `<ul class="activities-list">`;
+
+            day.activities.forEach(activity => {
+                activityNames.push(activity.name);
+                locations.push(activity.location);
+                const formatactivityCost = Number(activity.cost).toLocaleString('vi-VN');
+                itineraryHTML += `<li>
+                                    <strong>${activity.name}</strong>: ${activity.description}
+                                    <br><strong>Chi phí:</strong> ${formatactivityCost}VND
+                                  </li>`;
+            });
+
+            itineraryHTML += `</ul>`;
+            const formatcost = Number(day.estimated_cost).toLocaleString('vi-VN');
+            itineraryHTML += `<p><strong>Chi phí dự kiến cho ngày ${day.day}:</strong> ${formatcost}VND</p></div>`;
+        });
+
+        let totalCost = 0;
+        itinerary.days.forEach(day => {
+            totalCost += Number(day.estimated_cost) || 0;
+        });
+
+        itineraryHTML += `<h3>Tổng chi phí dự kiến: ${totalCost.toLocaleString('vi-VN')} VND</h3>`;
+        itineraryDetails.innerHTML = itineraryHTML;
+        document.querySelectorAll('.day-schedule').forEach((el, i) => {
+        setTimeout(() => {
+            el.classList.add('show');
+        }, i * 500); // Delay 500ms giữa mỗi phần tử
+    });
+
+        localStorage.setItem('activityNames', JSON.stringify(activityNames));
+        localStorage.setItem('locations', JSON.stringify(locations));
+    }
+
+
+
+
+    </script>
+</body>
+</html>

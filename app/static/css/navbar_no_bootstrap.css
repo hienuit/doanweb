@@ -1,0 +1,135 @@
+/* Thanh navbar chính */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 10px 20px;
+}
+
+/* Logo và tên thương hiệu */
+.navbar .logo {
+    display: flex;
+    align-items: center;
+}
+.navbar .logo img {
+    max-height: 60px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.navbar .logo a {
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: 26px;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+}
+
+/* Liên kết điều hướng */
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.navbar .nav-links a {
+    text-decoration: none;
+    font-weight: bold;
+    color: black;
+}
+.navbar .nav-links .btn {
+    padding: 8px 15px;
+    border: 2px solid black;
+    border-radius: 10px;
+    background-color: orange;
+    font-weight: bold;
+    cursor: pointer;
+}
+.navbar .nav-links .btn:hover {
+    background-color: orange;
+    color: white;
+}
+
+/* Toggle menu button */
+.navbar .toggle-btn {
+    display: none;
+    font-size: 26px;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+/* Danh sách và tìm kiếm */
+.container_list {
+    display: flex;
+    gap: 50px;
+    width: 100%;
+    padding: 10px 60px;
+    flex-wrap: wrap;
+    margin-top: 70px;
+}
+.dropdown-menu {
+    border-radius: 15px;
+    width: 100%;
+    max-width: 1100px;
+}
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+}
+.dropdown-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.input_destination input {
+    width: 350px;
+    height: 45px;
+    border: none;
+    background: lightgray;
+    font-weight: bold;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+/* Responsive thu gọn */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navbar .toggle-btn {
+        display: block;
+    }
+
+    .navbar .nav-links {
+        flex-direction: column;
+        width: 100%;
+        display: none;
+    }
+
+    .navbar .nav-links.active {
+        display: flex;
+    }
+
+    .container_list {
+        flex-direction: column;
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .input_destination input {
+        width: 100%;
+    }
+}

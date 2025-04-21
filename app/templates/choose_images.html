@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Gán ảnh vào tỉnh thành</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .image-item {
+            text-align: center;
+            width: 150px;
+        }
+
+        .image-item img {
+            width: 100px;
+            height: auto;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+        }
+
+        .image-item small {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #555;
+            word-break: break-all;
+        }
+
+        select, button {
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Gán ảnh có sẵn vào tỉnh thành</h2>
+
+<form method="POST" action="/add-images-from-static">
+    <label>Chọn tỉnh thành:</label>
+    <select name="destination_id" required>
+        {% for d in destinations %}
+            <option value="{{ d.id }}">{{ d.name }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label>Chọn ảnh:</label>
+    <div class="gallery">
+        {% for filename in image_files %}
+            <div class="image-item">
+                <input type="checkbox" name="selected_images" value="{{ filename }}">
+                <img src="{{ url_for('static', filename='images/' + filename) }}" alt="ảnh">
+                <small>{{ 'images/' + filename }}</small>
+            </div>
+        {% endfor %}
+    </div>
+
+    <br><br>
+    <button type="submit">Thêm ảnh vào tỉnh thành</button>
+</form>
+
+</body>
+</html>

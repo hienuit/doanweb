@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.3/cdn.min.js" defer></script>
+    <style>
+        .bg-primary {
+            background-color: #FF9800;
+        }
+        .text-primary {
+            color: #FF9800;
+        }
+        .border-primary {
+            border-color: #FF9800;
+        }
+        .hover-bg-primary:hover {
+            background-color: #F57C00;
+        }
+        .bg-secondary {
+            background-color: #FFF3E0;
+        }
+        
+        /* Your custom footer CSS */
+        footer {
+            background-color: #1C2930;
+            color: white;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        footer a {
+            color: #FF9800;
+            text-decoration: underline;
+        }
+        
+        footer a:hover {
+            color: #F57C00;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .logout-btn {
+            background-color: #FF9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .logout-btn:hover {
+            background-color: #F57C00;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div x-data="{
+        activeTab: 'profile',
+        isEditMode: false,
+        showPasswordModal: false,
+        user: {
+            name: 'Nguyễn Văn A',
+            email: '23520458@gm.uit.edu.vn',
+            phone: '0856800705',
+            address: 'Khu phố 6, phường linh trung, thành phố Thủ Đức',
+            position: 'Quản lý dự án'
+        },
+        history: [
+            { date: '15/04/2025', activity: 'Đăng nhập', details: 'Đăng nhập từ thiết bị mới', time: '09:45' },
+            { date: '14/04/2025', activity: 'Cập nhật thông tin', details: 'Thay đổi số điện thoại', time: '14:23' },
+            { date: '12/04/2025', activity: 'Thay đổi mật khẩu', details: 'Mật khẩu đã được cập nhật', time: '18:30' },
+            { date: '10/04/2025', activity: 'Đăng nhập', details: 'Đăng nhập thành công', time: '08:15' },
+            { date: '08/04/2025', activity: 'Xem sản phẩm', details: 'Xem chi tiết sản phẩm XYZ', time: '16:45' },
+        ],
+        toggleEdit() {
+            this.isEditMode = !this.isEditMode;
+        },
+        saveChanges() {
+            this.isEditMode = false;
+            // Hiển thị thông báo thành công
+            this.showNotification('Đã lưu thông tin thành công!');
+        },
+        showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('opacity-0');
+            notification.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                notification.classList.remove('opacity-100');
+                notification.classList.add('opacity-0');
+            }, 3000);
+        },
+        changePassword() {
+            this.showPasswordModal = true;
+        },
+        savePassword() {
+            this.showPasswordModal = false;
+            this.showNotification('Đã thay đổi mật khẩu thành công!');
+        }
+    }">
+        <!-- Thanh điều hướng -->
+        <nav class="bg-primary text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <span class="text-xl font-bold">MyDashboard</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="relative" x-data="{ isOpen: false }">
+                            <button @click="isOpen = !isOpen" class="flex items-center space-x-2 focus:outline-none">
+                                <img class="h-8 w-8 rounded-full object-cover" src="/api/placeholder/150/150" alt="Avatar">
+                                <span x-text="user.name"></span>
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div x-show="isOpen" @click.away="isOpen = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cài đặt</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Trợ giúp</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Đăng xuất</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <!-- Tabs -->
+                <div class="bg-gray-50 border-b">
+                    <div class="flex">
+                        <button @click="activeTab = 'profile'" :class="{'bg-white text-primary border-primary': activeTab === 'profile', 'text-gray-600 hover:text-gray-800': activeTab !== 'profile'}" class="px-6 py-4 font-medium border-b-2 border-transparent focus:outline-none transition">
+                            <i class="fas fa-user mr-2"></i>Thông tin cá nhân
+                        </button>
+                        <button @click="activeTab = 'history'" :class="{'bg-white text-primary border-primary': activeTab === 'history', 'text-gray-600 hover:text-gray-800': activeTab !== 'history'}" class="px-6 py-4 font-medium border-b-2 border-transparent focus:outline-none transition">
+                            <i class="fas fa-history mr-2"></i>Lịch sử hoạt động
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Thông tin cá nhân -->
+                <div x-show="activeTab === 'profile'" class="p-6">
+                    <div class="flex flex-col md:flex-row">
+                        <div class="md:w-1/3 flex flex-col items-center p-4">
+                            <div class="relative mb-4">
+                                <img class="h-40 w-40 rounded-full object-cover border-4 border-secondary" src="/api/placeholder/300/300" alt="Avatar">
+                                <button class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-lg hover:bg-amber-600 transition">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-800" x-text="user.name"></h2>
+                            <p class="text-gray-600" x-text="user.position"></p>
+                            <div class="mt-6 w-full">
+                                <button @click="changePassword()" class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition">
+                                    <i class="fas fa-key mr-2"></i>Đổi mật khẩu
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:w-2/3 p-4">
+                            <div class="flex justify-between mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">Thông tin chi tiết</h3>
+                                <button @click="toggleEdit()" class="bg-secondary text-primary py-1 px-4 rounded-lg hover:bg-amber-100 transition">
+                                    <i class="fas" :class="isEditMode ? 'fa-times' : 'fa-edit'"></i>
+                                    <span x-text="isEditMode ? 'Hủy' : 'Chỉnh sửa'"></span>
+                                </button>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="flex flex-col md:flex-row">
+                                    <div class="md:w-1/2 mb-4 md:mb-0 md:pr-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                                        <input type="text" x-model="user.name" :disabled="!isEditMode" class="w-full p-2 border rounded-lg" :class="isEditMode ? 'bg-white' : 'bg-gray-50'">
+                                    </div>
+                                    <div class="md:w-1/2 md:pl-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input type="email" x-model="user.email" :disabled="!isEditMode" class="w-full p-2 border rounded-lg" :class="isEditMode ? 'bg-white' : 'bg-gray-50'">
+                                    </div>
+                                </div>
+                                <div class="flex flex-col md:flex-row">
+                                    <div class="md:w-1/2 mb-4 md:mb-0 md:pr-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                                        <input type="tel" x-model="user.phone" :disabled="!isEditMode" class="w-full p-2 border rounded-lg" :class="isEditMode ? 'bg-white' : 'bg-gray-50'">
+                                    </div>
+                                    <div class="md:w-1/2 md:pl-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chức vụ</label>
+                                        <input type="text" x-model="user.position" :disabled="!isEditMode" class="w-full p-2 border rounded-lg" :class="isEditMode ? 'bg-white' : 'bg-gray-50'">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                                    <input type="text" x-model="user.address" :disabled="!isEditMode" class="w-full p-2 border rounded-lg" :class="isEditMode ? 'bg-white' : 'bg-gray-50'">
+                                </div>
+                                
+                                <div x-show="isEditMode" class="flex justify-end mt-4">
+                                    <button @click="saveChanges()" class="bg-primary text-white py-2 px-6 rounded-lg hover:bg-amber-600 transition">
+                                        <i class="fas fa-save mr-2"></i>Lưu thay đổi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lịch sử hoạt động -->
+                <div x-show="activeTab === 'history'" class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Lịch sử hoạt động gần đây</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-secondary">
+                                <tr>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Ngày</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Thời gian</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Hoạt động</th>
+                                    <th class="py-3 px-4 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <template x-for="item in history" :key="item.date + item.time">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-4 px-4 text-sm text-gray-900" x-text="item.date"></td>
+                                        <td class="py-4 px-4 text-sm text-gray-900" x-text="item.time"></td>
+                                        <td class="py-4 px-4 text-sm text-gray-900" x-text="item.activity"></td>
+                                        <td class="py-4 px-4 text-sm text-gray-500" x-text="item.details"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 flex justify-center">
+                        <button class="bg-white border border-primary text-primary py-2 px-4 rounded-lg hover:bg-secondary transition">
+                            Xem thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your custom footer -->
+        <footer class="mt-8">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col items-center">
+                    <template x-if="true">
+                        <div class="mb-4">
+                            <span class="user-name" x-text="user.name"></span>
+                            <a href="#" class="nav-btn logout-btn">Đăng xuất</a>
+                        </div>
+                    </template>
+                    <p class="mb-2">&copy; Bản quyền thuộc về Dương và Hiển</p>
+                    <p>Khi muốn sử dụng thông tin tại trang web này xin hãy liên hệ tới <a href="mailto:23520458@gm.uit.edu.vn">23520458@gm.uit.edu.vn</a></p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Modal đổi mật khẩu -->
+        <div x-show="showPasswordModal" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" @click.away="showPasswordModal = false">
+                <div class="border-b px-6 py-4">
+                    <h3 class="text-lg font-medium text-gray-900">Đổi mật khẩu</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu hiện tại</label>
+                        <input type="password" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                        <input type="password" class="w-full p-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu mới</label>
+                        <input type="password" class="w-full p-2 border rounded-lg">
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 flex justify-end">
+                    <button @click="showPasswordModal = false" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg mr-2 hover:bg-gray-300 transition">
+                        Hủy
+                    </button>
+                    <button @click="savePassword()" class="bg-primary text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông báo -->
+        <div id="notification" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300"></div>
+    </div>
+</body>
+</html>

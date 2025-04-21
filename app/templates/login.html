@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Classy Login Form</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('../static/images/ho-lak-dak-lak-tay-nguyen-hoang-hon-sunset.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+
+    .login-container {
+      text-align: center;
+      backdrop-filter: blur(8px);
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 30px 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .login-form {
+      width: 100%;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px 35px 10px 35px;
+      border: none;
+      border-bottom: 1px solid white;
+      background: transparent;
+      color: white;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .input-group input::placeholder {
+      color: white;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-bottom: 2px solid orange;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      color: white;
+    }
+
+    .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+      margin-top:30px;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+    }
+
+    .options label,
+    .options a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .options label {
+        display: flex;
+        align-items: center;
+        gap: 5px; /* cách giữa ô và chữ */
+    }
+
+    .login-btn {
+      background: #B61840;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .or {
+        display: flex;
+        justify-content: center; /* canh giữa ngang */
+        align-items: center; 
+        background-color: #B61840;
+        border-radius: 50%;
+        height: 40px;
+        width: 40px;
+        margin: 20px auto;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .social-login {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .social-btn {
+      flex: 1 1 48%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      color: white;
+    }
+
+    .facebook {
+      background: #3b5998;
+    }
+
+    .google {
+      background: red;
+    }
+
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear,
+    input[type="password"]::-webkit-credentials-auto-fill-button,
+    input[type="password"]::-webkit-clear-button,
+    input[type="password"]::-webkit-inner-spin-button {
+      display: none !important;
+      appearance: none;
+    }
+
+    @media screen and (max-width: 480px) {
+      h2 {
+        font-size: 1.5em;
+      }
+      .login-container {
+        padding: 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Tham gia ngay tại đây</h2>
+    <form class="login-form" action="/loginfunction" method="POST">
+      <div class="input-group">
+        <i>👤</i>
+        <input type="text" name="email" placeholder="Email" required />
+      </div>
+      <div class="input-group">
+        <i>🔒</i>
+        <input type="password" id="password" name="password" placeholder="Mật khẩu" required />
+        <span class="toggle-password" toggle="#password">👁</span>
+      </div>
+      <div class="options">
+        <label><input type="checkbox" name="remember" /> Nhớ mật khẩu</label>
+        <a href="/forgot-password">Forgot Password?</a>
+      </div>
+      <p style="color: yellow">Bạn chưa có tài khoản. <a style="color: white" href="/register">Đăng ký</a></p>
+      <button type="submit" class="login-btn">Đăng nhập</button>
+      <div class="or">or</div>
+      <div class="social-login">
+        <button type="button" class="social-btn facebook" onclick = "window.location.href = facebookLoginUrl ">Facebook</button>
+        <button type="button" class="social-btn google" onclick = "window.location.href = googleLoginUrl ">Google</button>
+      </div>
+    </form>
+  </div>
+
+
+  <script>
+    document.querySelectorAll(".toggle-password").forEach(function (eye) {
+      eye.addEventListener("click", function () {
+        const input = document.querySelector(this.getAttribute("toggle"));
+        if (input.type === "password") {
+          input.type = "text";
+          this.textContent = "🙈";
+        } else {
+          input.type = "password";
+          this.textContent = "👁";
+        }
+      });
+    });
+    const googleLoginUrl = "{{ url_for('auth.login_google') }}";
+    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}";
+  </script>
+</body>
+</html>
