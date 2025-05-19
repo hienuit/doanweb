@@ -4,246 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Classy Login Form</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: url('../static/images/ho-lak-dak-lak-tay-nguyen-hoang-hon-sunset.jpeg') no-repeat center center fixed;
-      background-size: cover;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: white;
-    }
-
-    .login-container {
-      text-align: center;
-      backdrop-filter: blur(8px);
-      background-color: rgba(0, 0, 0, 0.2);
-      margin-top:50px;
-      padding: 30px 30px 30px 10px;
-      border-radius: 15px;
-      box-sizing: border-box;
-    }
-
-    h2 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
-
-    .login-form {
-      padding: 10px;
-      width: 500px;
-      box-sizing: border-box;
-    }
-
-    .input-group {
-      display:flex;
-      align-items: center;
-      position: relative;
-      margin-bottom: 20px;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 10px 25px 10px 0;
-      border: none;
-      border-bottom: 1px solid white;
-      background: transparent;
-      color: white;
-      font-size: 16px;
-    }
-
-    .input-group input::placeholder {
-      color: white;
-    }
-
-    .input-group input:focus {
-      outline: none;
-      border-bottom: 2px solid orange;
-      transition: border-color 0.3s ease;
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 0px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 18px;
-      color: white;
-    }
-
-    .options {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-
-    .options a {
-      color: white;
-    }
-
-    .login-btn {
-      background: #B61840;
-      color: white;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-
-    .or {
-      margin: 20px 0;
-      font-size: 14px;
-    }
-
-    .social-login {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .social-btn {
-      width: 48%;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      color: white;
-    }
-
-    .or {
-        display: flex;
-        justify-content: center; /* canh giữa ngang */
-        align-items: center; 
-        background-color: #B61840;
-        border-radius: 50%;
-        height: 40px;
-        width: 40px;
-        margin: 20px auto;
-        font-size: 16px;
-        box-sizing: border-box;
-    }
-
-    .facebook {
-      background: #3b5998;
-    }
-
-    .google {
-      background: red;
-    }
-
-    .footer {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      font-size: 12px;
-    }
-
-    input[type="password"]::-ms-reveal,
-    input[type="password"]::-ms-clear,
-    input[type="password"]::-webkit-credentials-auto-fill-button,
-    input[type="password"]::-webkit-clear-button,
-    input[type="password"]::-webkit-inner-spin-button {
-    display: none !important;
-    appearance: none;
-  }
-
-  /*reponsive*/
-  @media screen and ((min-width:481px) and (max-width: 768px)) {
-  .login-container {
-    padding: 20px;
-    width:90%;
-  }
-  .login-form {
-    width: 100%;
-  }
-  h2 {
-    font-size: 2em;
-  }
-  .input-group input {
-      width: 80%;
-      padding: 10px 35px 10px 0;
-      border: none;
-      border-bottom: 1px solid white;
-      background: transparent;
-      color: white;
-      font-size: 16px;
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 30px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 18px;
-      color: white;
-    }
-}
-
-/* Responsive cho mobile */
-@media screen and (max-width: 480px) {
-  .login-container {
-    width: 90%;
-    padding: 15px;
-    border:none;
-  }
-
-  .toggle-password {
-      position: absolute;
-      right: 25px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 18px;
-      color: white;
-    }
-  .input-group input {
-      width: 80%;
-      padding: 10px 35px 10px 0;
-      border: none;
-      border-bottom: 1px solid white;
-      background: transparent;
-      color: white;
-      font-size: 16px;
-    }
-  .login-form {
-    width: 100%;
-    padding: 10px;
-  }
-
-  h2 {
-    font-size: 1.6em;
-  }
-
-  .social-login {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .social-btn {
-    width: 100%;
-  }
-
-  .options {
-    flex-direction: column;
-    gap: 10px;
-    text-align: left;
-  }
-}
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
 <body>
   <div class="login-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="
+                    padding: 10px;
+                    margin-bottom: 15px;
+                    border-radius: 5px;
+                    {% if category == 'success' %}
+                        background-color: rgba(40, 167, 69, 0.8);
+                    {% elif category == 'error' %}
+                        background-color: rgba(220, 53, 69, 0.8);
+                    {% endif %}
+                    color: white;
+                    ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <h2>Tham gia ngay tại đây</h2>
     <form class="login-form" action="/registerfunction" method="POST">
+      <input type="hidden" name="next_page" value="{{ next if next else request.referrer }}">
       <div class="input-group">
         <input type="text" name="fname" placeholder="Họ và tên" required />
       </div>
@@ -263,13 +49,13 @@
       </div>
       <div class="options">
         <label><input type="checkbox" name="remember" /> Remember me</label>
-        <p style="color: yellow">Bạn đã có tài khoản. <a href="/login" style="color: white">Đăng nhập</a></p>
+        <p style="color: yellow">Bạn đã có tài khoản. <a href="/login?next={{ next if next else request.url }}" style="color: white">Đăng nhập</a></p>
       </div>
       <button type="submit" class="login-btn">Đăng ký</button>
       <div class="or" style="font-size: large;">or</div>
       <div class="social-login">
-        <button type="button" class="social-btn facebook" onclick = "window.location.href = facebookLoginUrl ">Facebook</button>
-        <button type="button" class="social-btn google" onclick = "window.location.href = googleLoginUrl ">Google</button>
+        <button type="button" class="social-btn facebook" onclick="window.location.href = facebookLoginUrl">Facebook</button>
+        <button type="button" class="social-btn google" onclick="window.location.href = googleLoginUrl">Google</button>
       </div>
     </form>
   </div>
@@ -291,9 +77,8 @@
         }
       });
     });
-    const googleLoginUrl = "{{ url_for('auth.login_google') }}";
-    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}";
-</script>
+    const googleLoginUrl = "{{ url_for('auth.login_google') }}" + "?next={{ next if next else request.url|urlencode }}";
+    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}" + "?next={{ next if next else request.url|urlencode }}";
   </script>
 </body>
 </html>

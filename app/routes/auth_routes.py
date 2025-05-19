@@ -1,38 +1,58 @@
 # app/routes/auth_routes.py
 from flask import Blueprint,current_app, render_template, request, redirect, session, flash, url_for, jsonify,current_app
-from app.models.users import Users
+from app.models.users import Users, UserActivity
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, mail
 from flask_mail import Message
 import random, string
 from app.extension import google
+from app.models.users import add_user_activity
+
 
 auth_blueprint = Blueprint('auth', __name__)
 
 
 @auth_blueprint.route('/login')
 def login_page():
-    return render_template("login.html")
+    next_page = request.args.get('next')
+    return render_template("login.html", next=next_page)
 
 @auth_blueprint.route('/loginfunction', methods=['POST'])
 def login():
     email = request.form.get('email')
     password = request.form.get('password')
+    next_page = request.form.get('next_page')
+    
     user = Users.query.filter_by(email=email).first()
     if user:
         uname = user.uname
         fname = user.fname
     if user and check_password_hash(user.password, password):
-        session['full_name'] = fname
-        session['user_name'] = uname
-        return redirect(url_for('main.index'))
+        session['user_id'] = user.id
+        session['user_name'] = user.uname
+        session['full_name'] = user.fname
+        add_user_activity(user.id, "Đăng nhập", "Đăng nhập thành công")
+        flash(f"Xin chào {user.fname}! Đăng nhập thành công!", "success")
+        
+        # Chuyển hướng đến trang trước đó nếu có
+        if next_page and '/page2' in next_page:
+            return redirect('/page2')
+        elif next_page and '/page3' in next_page:
+            return redirect('/page3')
+        elif next_page and '/page4' in next_page:
+            return redirect('/page4')
+        elif next_page and next_page.startswith(request.host_url):
+            return redirect(next_page)
+        else:
+            return redirect(url_for('main.index'))
     else:
         flash("Tài khoản hoặc mật khẩu không đúng", "error")
         return render_template('login.html')
 
 @auth_blueprint.route('/register')
 def register_page():
-    return render_template("register.html")
+    next_page = request.args.get('next')
+    return render_template("register.html", next=next_page)
 
 @auth_blueprint.route('/registerfunction', methods=['GET','POST'])
 def register():
@@ -43,10 +63,15 @@ def register():
         email = request.form.get("email")
         password = request.form.get("pass")
         confirm_pass = request.form.get("confirm_pass")
+        next_page = request.form.get("next_page")
+        
+        if next_page:
+            session['next_page'] = next_page
 
         user = Users.query.filter_by(email=email).first()
         if user:
             session['user_name'] = user.uname
+            session['full_name'] = user.fname
             flash("Tài khoản đã tồn tại!", "error")
             return redirect(url_for("main.index"))
 
@@ -92,6 +117,8 @@ def verify_otp():
                 db.session.add(new_user)
                 db.session.commit()
                 session['user_id'] = new_user.id
+                session['user_name'] = new_user.uname
+                session['full_name'] = new_user.fname
                 session.pop('temp_user', None)  
                 session.pop('otp', None)  
 
@@ -101,7 +128,18 @@ def verify_otp():
                     print("No user_id in session")
                     
                 flash("Xác thực thành công!", "success")
-                return redirect(url_for('main.index'))
+                
+                next_page = session.pop('next_page', None)
+                if next_page and '/page2' in next_page:
+                    return redirect('/page2')
+                elif next_page and '/page3' in next_page:
+                    return redirect('/page3')
+                elif next_page and '/page4' in next_page:
+                    return redirect('/page4')
+                elif next_page:
+                    return redirect(next_page)
+                else:
+                    return redirect(url_for('main.index'))
         else:
             flash("Mã OTP không đúng!", "error")
             return redirect(url_for('auth.verify_otp'))
@@ -118,9 +156,10 @@ def verify_otp_ajax():
 
 @auth_blueprint.route("/logout")
 def logout():
-    session.pop("user_id", None)
-    session.pop("user_name", None)
-    session.pop("full_name", None)
+    # session.pop("user_id", None)
+    # session.pop("user_name", None)
+    # session.pop("full_name", None)
+    session.clear()
     flash("Bạn đã đăng xuất!", "success")
     return redirect(url_for("main.index"))
 
@@ -192,6 +231,10 @@ def set_new_password():
 @auth_blueprint.route('/login/google')
 def login_google():
     try:
+        next_page = request.args.get('next')
+        if next_page:
+            session['next_page'] = next_page
+            
         redirect_uri = url_for('auth.authorize_google', _external=True)
         return google.authorize_redirect(redirect_uri)
     except Exception as e:
@@ -213,7 +256,151 @@ def authorize_google():
         db.session.add(user)
         db.session.commit()
     
+    session['user_id'] = user.id
     session['user_name'] = username
     session['oauth_token'] = token
 
-    return redirect(url_for('main.index'))
+    next_page = session.pop('next_page', None)
+    if next_page and '/page2' in next_page:
+        return redirect('/page2')
+    elif next_page and '/page3' in next_page:
+        return redirect('/page3')
+    elif next_page and '/page4' in next_page:
+        return redirect('/page4')
+    elif next_page:
+        return redirect(next_page)
+    else:
+        return redirect(url_for('main.index'))
+
+
+    
+#changepass
+@auth_blueprint.route('/change_password', methods=['POST'])
+def change_password():
+    if 'user_name' not in session:
+        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập'}), 401
+
+    data = request.json
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+
+    if not current_password or not new_password:
+        return jsonify({'success': False, 'message': 'Thiếu thông tin mật khẩu'}), 400
+
+    uname = session.get('user_name')
+    user = Users.query.filter_by(uname=uname).first()
+
+    if not user:
+        return jsonify({'success': False, 'message': 'Không tìm thấy thông tin người dùng'}), 404
+
+    if not check_password_hash(user.password, current_password):
+        return jsonify({'success': False, 'message': 'Mật khẩu hiện tại không đúng'}), 400
+
+    user.password = generate_password_hash(new_password)
+    try:
+        db.session.commit()
+        add_user_activity(user.id, "Đổi mật khẩu", "Đã thay đổi mật khẩu")
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+    
+
+
+    #updateprofile
+@auth_blueprint.route('/update_profile', methods=['POST'])
+def update_profile():
+    if 'user_name' not in session:
+        return jsonify({'success': False, 'message': 'Người dùng chưa đăng nhập'}), 401
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'Dữ liệu không hợp lệ'}), 400
+
+    # Xác định user từ session
+    if 'oauth_token' in session:
+        email = session['user_name']  # Lúc này là email
+        user = Users.query.filter_by(email=email).first()
+    else:
+        uname = session['user_name']
+        user = Users.query.filter_by(uname=uname).first()
+
+    if not user:
+        return jsonify({'success': False, 'message': 'Không tìm thấy người dùng'}), 404
+
+    # Cập nhật các trường thông tin
+    print("Data received from client:", data)
+    user.fname = data.get('name', user.fname)
+    user.address = data.get('address', user.address)
+    user.position = data.get('position', user.position)
+    user.sdt = data.get('phone', user.sdt)
+    
+    # Xử lý các trường mới
+    user.gender = data.get('gender', user.gender)
+    user.birth_date = data.get('birth_date', user.birth_date)
+    print("Birth date before commit:", user.birth_date)
+
+    # Nếu là user Google chưa có username, tạo một cái mặc định
+    if 'oauth_token' in session and not user.uname:
+        suggested_uname = data.get('name', '').lower().replace(' ', '_') or user.email.split('@')[0]
+        existing_user = Users.query.filter_by(uname=suggested_uname).first()
+        if not existing_user:
+            user.uname = suggested_uname
+        else:
+            import random
+            user.uname = f"{suggested_uname}_{random.randint(100, 999)}"
+
+    # Cập nhật session
+    session['full_name'] = user.fname
+
+    if 'oauth_token' not in session:
+        # Với user thường, nếu uname thay đổi thì cập nhật lại session
+        if user.fname != session.get('full_name'):
+            session['full_name'] = user.fname
+    else:
+        # Giữ nguyên user_name là email cho user Google
+        session['user_name'] = user.email
+
+    try:
+        from app import db
+        db.session.commit()
+        print("Birth date after commit:", user.birth_date)
+        add_user_activity(user.id, "Cập nhật thông tin", "Đã cập nhật thông tin cá nhân")
+        return jsonify({'success': True, 'message': 'Cập nhật thông tin thành công'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Lỗi khi cập nhật: {str(e)}'}), 500
+
+    
+
+@auth_blueprint.route('/delete_account', methods=['POST'])
+def delete_account():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập'}), 401
+    
+    try:
+        user_id = session['user_id']
+        
+        # Xóa các hoạt động của người dùng
+        UserActivity.query.filter_by(user_id=user_id).delete()
+        
+        # Xóa người dùng
+        user = Users.query.get(user_id)
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            
+            # Xóa session
+            session.clear()
+            
+            return jsonify({'success': True, 'message': 'Tài khoản đã được xóa thành công'})
+        else:
+            return jsonify({'success': False, 'message': 'Không tìm thấy tài khoản'}), 404
+            
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Lỗi khi xóa tài khoản: {str(e)}'}), 500
+
+
+
+    

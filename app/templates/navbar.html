@@ -1,11 +1,17 @@
-
 <header>
     <nav class="navbar">
         <div class="logo">
             <img src="https://png.pngtree.com/png-clipart/20200709/original/pngtree-abstract-logo-minimalistic-logo-design-creative-logo-beautifu-png-image_3984112.jpg" alt="LOGO">
             <a href="/">Travel Assistant</a>
         </div>
-        <div class="nav-links">
+        
+        <button class="hamburger-btn" id="hamburgerBtn">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        <div class="nav-links" id="navLinks">
             <a href="/" id="homebutton">Trang chủ</a>
             {% if "user_name" in session or "full_name" in session %}
                 <div class="dropdown">
@@ -37,9 +43,9 @@
                 <a href="/register" id="registerButton">Đăng ký</a>
             {% endif %}
         </div>
+    </nav>
 
-
-    <div class ="container_list">
+    <div class="container_list" id="containerList">
         <div class="dropdown">
             <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <div class="d-flex align-items-center">
@@ -205,9 +211,79 @@
                 </div>
             </div>
         </div>
+
+        <!-- Thêm nút Ưu đãi -->
+        <div class="dropdown me-3">
+            <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="d-flex align-items-center">
+                    <span class="text-black fs-6">Ưu đãi hấp dẫn</span>
+                    <img class="ms-2" src="https://res.klook.com/image/upload/v1639126248/brand%20refresh%20category%20icon/desktop/category_13_deals.png" alt="deals" style="width: 30px; height: 30px;">
+                </div>
+            </button>
+            <div class="dropdown-menu promotions-dropdown p-3" style="width: 800px">
+                <h5 class="mb-3">Ưu đãi du lịch hấp dẫn</h5>
+                <div class="row" id="promotionsContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-2">Đang tải các ưu đãi...</p>
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="/promotions" class="btn btn-sm btn-outline-primary">Xem tất cả ưu đãi</a>
+                </div>
+            </div>
+        </div>
+        
         <div class="input_destination">
             <input id="destinationInput" style="width: 350px; height: 45px; border: none; background: lightgray; font-weight: bold; border-radius: 15px; padding: 10px" type="text" placeholder=" 🔍  Let choose your favourite destination"/>
         </div>
     </div>
-</nav>
+
+    <!-- Add JavaScript for hamburger menu functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const navLinks = document.getElementById('navLinks');
+            const containerList = document.getElementById('containerList');
+            
+            if (hamburgerBtn && navLinks && containerList) {
+                hamburgerBtn.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    navLinks.classList.toggle('show');
+                    containerList.classList.toggle('show');
+                });
+                
+                // Handle window resize
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        hamburgerBtn.classList.remove('active');
+                        navLinks.classList.remove('show');
+                        containerList.classList.remove('show');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Thêm mã JavaScript để tải và hiển thị ưu đãi -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy dữ liệu ưu đãi khi mở dropdown
+            const promotionsDropdown = document.querySelector('.promotions-dropdown');
+            if (promotionsDropdown) {
+                const promotionsButton = promotionsDropdown.previousElementSibling;
+                
+                let promotionsLoaded = false;
+                
+                promotionsButton.addEventListener('click', function() {
+                    if (!promotionsLoaded) {
+                        loadPromotions();
+                        promotionsLoaded = true;
+                    }
+                });
+            }
+        });
+    </script>
 </header>

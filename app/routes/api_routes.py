@@ -1,9 +1,14 @@
 # app/routes/api_routes.py
-from flask import Blueprint, request, jsonify
-from app.models.destinations import search_from_db, search_describe
+from flask import Blueprint, request, jsonify,session
+from app.models.destinations import search_from_db, search_describe,extend_from_db
 from app.models.hotels import Hotel
 import json, re
 import google.generativeai as genai
+from app.models.promotions import Promotion
+import requests
+from bs4 import BeautifulSoup
+import random
+from datetime import datetime, timedelta, timezone
 
 genai.configure(api_key="AIzaSyAM-euCjLTAPiFQvXnI4X-5EeNGX2G-k0Q")
 
@@ -80,31 +85,100 @@ def create_itinerary():
         return jsonify({"success": False, "error": "Request must be JSON"}), 400
 
 def make_command(destination, num_days, budget):
-    # Tạo prompt sử dụng thông tin từ yêu cầu
-    prompt = f"Tạo lịch trình du lịch cho {destination} trong {num_days} ngày, với ngân sách {budget}. Hãy đề xuất địa điểm du lịch phổ biến nhất mỗi ngày đi ba địa điểm không chú thích thêm. Định dạng trả về như sau:\n" \
-             "{\n" \
-             "  \"days\": [\n" \
-             "    {\n" \
-             "      \"day\": 1,\n" \
-             "      \"activities\": [\n" \
-             "        {\"name1\": \"Activity 1\", \"description\": \"Description\",\"location\": \"Longitude,Latitude\", \"cost\": \"Amount\"},\n" \
-             "        {\"name2\": \"Activity 2\", \"description\": \"Description\",\"location\": \"Longitude,Latitude\" , \"cost\": \"Amount\"}\n" \
-             "      ],\n" \
-             "      \"estimated_cost\": \"Amount\"\n" \
-             "    },\n" \
-             "    ...\n" \
-             "  ]\n" \
-             "}\n" \
-             "Đây là ví dụ về cấu trúc, hãy trả lời đúng theo cấu trúc JSON này." 
+    # Tạo prompt chi tiết với thời gian, bữa ăn và nghỉ ngơi
+    prompt = f"""
+    Tạo lịch trình du lịch chi tiết cho {destination} trong {num_days} ngày, với ngân sách {budget} VND. 
+    Mỗi ngày bao gồm 3 hoạt động chính (tham quan, trải nghiệm, v.v.), các bữa ăn (bữa sáng, bữa trưa, bữa tối) với gợi ý nhà hàng hoặc địa điểm ăn uống cụ thể, và thời gian nghỉ ngơi. 
+    Định dạng trả về phải là JSON hợp lệ như sau:
+
+    {{
+        "days": [
+            {{
+                "day": 1,
+                "schedule": [
+                    {{
+                        "time": "Giờ (HH:MM)",
+                        "type": "meal/activity/rest",
+                        "description": "Mô tả chi tiết (nếu là bữa ăn, gợi ý nhà hàng cụ thể; nếu là hoạt động, mô tả địa điểm và hoạt động; nếu là nghỉ ngơi, mô tả nơi nghỉ ngơi)",
+                        "location": "Kinh độ,Vĩ độ (chỉ áp dụng cho hoạt động và bữa ăn)",
+                        "cost": "Chi phí (VND, chỉ áp dụng cho hoạt động và bữa ăn)"
+                    }}
+                ],
+                "estimated_cost": "Tổng chi phí ngày (VND)"
+            }}
+        ]
+    }}
+
+    Ví dụ:
+    {{
+        "days": [
+            {{
+                "day": 1,
+                "schedule": [
+                    {{
+                        "time": "07:00",
+                        "type": "meal",
+                        "description": "Ăn sáng tại nhà hàng Phở Hùng, thưởng thức phở bò truyền thống",
+                        "location": "106.123,10.456",
+                        "cost": "50000"
+                    }},
+                    {{
+                        "time": "08:30",
+                        "type": "activity",
+                        "description": "Tham quan Chùa Vĩnh Nghiêm, tìm hiểu kiến trúc độc đáo",
+                        "location": "106.789,10.012",
+                        "cost": "0"
+                    }},
+                    {{
+                        "time": "12:00",
+                        "type": "meal",
+                        "description": "Ăn trưa tại quán Bún Bò Nam Bộ, món bún bò đặc trưng",
+                        "location": "106.234,10.567",
+                        "cost": "70000"
+                    }},
+                    {{
+                        "time": "14:00",
+                        "type": "rest",
+                        "description": "Nghỉ ngơi tại khách sạn đã chọn hoặc công viên gần đó",
+                        "location": "",
+                        "cost": "0"
+                    }},
+                    {{
+                        "time": "15:00",
+                        "type": "activity",
+                        "description": "Khám phá chợ Bến Thành, mua sắm đặc sản",
+                        "location": "106.345,10.678",
+                        "cost": "150000"
+                    }},
+                    {{
+                        "time": "19:00",
+                        "type": "meal",
+                        "description": "Ăn tối tại nhà hàng Cục Gạch Quán, thưởng thức món Việt truyền thống",
+                        "location": "106.456,10.789",
+                        "cost": "200000"
+                    }}
+                ],
+                "estimated_cost": "470000"
+            }}
+        ]
+    }}
+
+    Hãy đảm bảo lịch trình có thời gian hợp lý, các hoạt động, bữa ăn và nghỉ ngơi được phân bổ đều trong ngày từ khoảng 7:00 đến 21:00.
+    """
+    
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
     clean_text = re.sub(r"```json|```", "", response.text).strip()
 
     try:
         itinerary_json = json.loads(clean_text)
+        print("Lịch trình trả về:", itinerary_json)
+        standard_info = search_describe(destination)
+        standard_name = standard_info[0]["name"] if standard_info else destination
+        itinerary_json["destination"] = standard_name 
         return itinerary_json
     except Exception as e:
-        return f"Error processing itinerary response: {str(e)}"
+        return f"Lỗi khi xử lý phản hồi lịch trình: {str(e)}"
 
 @api_blueprint.route('/du-lich', methods=['POST'])
 def du_lich():
@@ -116,14 +190,36 @@ def du_lich():
         return jsonify({"success": False, "error": "Câu hỏi không được để trống"}), 400
 
     try:
-        # Tạo lịch trình du lịch
-        itinerary = make_command2(question)
+        # Kiểm tra xem câu hỏi có phải là một yêu cầu về địa điểm đơn giản không
+        location_pattern = r"(tôi muốn đi|muốn đi|gợi ý|đi du lịch|du lịch|đi|địa điểm ở|tham quan|hướng dẫn)?\s*(đến|tới|ở|về|tại|về)?\s*([a-zA-ZÀ-ỹ\s]+)(?:\s|$)"
+        location_match = re.search(location_pattern, question.lower(), re.IGNORECASE)
+        
+        # Nếu đây là yêu cầu về địa điểm đơn giản
+        if location_match:
+            location = location_match.group(3).strip()
+            if location:
+                # Sử dụng make_command2 để lấy thông tin về địa điểm
+                result = make_command2(f"Gợi ý địa điểm du lịch ở {location}")
+                return jsonify({"success": True, "itinerary": result})
+        
+        # Nếu không phải yêu cầu đơn giản, kiểm tra mẫu lịch trình chi tiết
+        pattern = r"Tạo lịch trình cho (.+) trong (\d+) ngày với ngân sách (\d+) VND"
+        match = re.match(pattern, question)
+        if not match:
+            return jsonify({"success": False, "error": "Câu hỏi không đúng định dạng! Vui lòng nhập theo dạng: 'Tạo lịch trình cho [địa điểm] trong [số ngày] ngày với ngân sách [ngân sách] VND'"}), 400
+        
+        destination = match.group(1)
+        days = int(match.group(2))
+        budget = match.group(3)
+
+        itinerary = make_command(destination, days, budget)
         
         # Trả về kết quả lịch trình
         return jsonify({"success": True, "itinerary": itinerary})
     
     except Exception as e:
-        return jsonify({"success": False, "error": f"Đã xảy ra lỗi khi kết nối với Gemini Flash 2000: {str(e)}"}), 500
+        print(f"Lỗi xử lý câu hỏi: {str(e)}")
+        return jsonify({"success": False, "error": f"Đã xảy ra lỗi: {str(e)}"}), 500
 
 def make_command2(question):
     # Tạo prompt sử dụng thông tin từ câu hỏi
@@ -194,3 +290,184 @@ def make_command2(question):
         return result_json
     except json.JSONDecodeError:
         raise Exception("Kết quả trả về không phải định dạng JSON hợp lệ.")
+
+
+@api_blueprint.route('/create-personalized-history', methods=['POST'])
+def create_personalized_history():
+    try:
+        data = request.get_json()
+
+        if not isinstance(data, list):
+            return jsonify({"success": False, "message": "Dữ liệu phải là một danh sách."}), 400
+
+        extended_histories = []
+
+        for item in data:
+            if not item.get('destination'):
+                continue  # Bỏ qua nếu thiếu điểm đến
+
+            db_results = extend_from_db(item['destination'])
+            db_data = db_results[0] if db_results else {"mood": "", "place": "", "location": ""}
+
+            extended_item = {
+                "id": item.get("id"),
+                "days": item.get("days"),
+                "total_cost": item.get("total_cost"),
+                "mood": db_data.get("mood", ""),
+                "place": db_data.get("place", ""),
+                "location": db_data.get("location", "")
+            }
+
+            extended_histories.append(extended_item)
+
+        print("✅ Extended histories:", extended_histories)
+
+        return jsonify({
+            "success": True,
+            "message": "Lịch sử cá nhân hóa đã được tạo thành công!",
+            "data": extended_histories
+        }), 200
+
+    except Exception as e:
+        print("❌ Error:", str(e))
+        return jsonify({"success": False, "message": "Đã xảy ra lỗi khi xử lý dữ liệu."}), 500
+
+
+
+@api_blueprint.route('/promotions', methods=['GET'])
+def get_promotions():
+    """Lấy danh sách các ưu đãi du lịch"""
+    
+    # Lấy tham số query string
+    featured_only = request.args.get('featured', 'false').lower() == 'true'
+    limit = request.args.get('limit', 10, type=int)
+    
+    # Truy vấn từ cơ sở dữ liệu
+    query = Promotion.query
+    
+    if featured_only:
+        query = query.filter_by(is_featured=True)
+    
+    # Lấy các ưu đãi đang còn hiệu lực
+    now = datetime.now(timezone.UTC)
+    query = query.filter(Promotion.end_date >= now)
+    
+    # Sắp xếp theo khuyến mãi mới nhất và theo % giảm giá
+    promotions = query.order_by(Promotion.created_at.desc(), Promotion.discount_percent.desc()).limit(limit).all()
+    
+    # Nếu không có ưu đãi nào, thử tạo mới từ các API hoặc crawl dữ liệu
+    if not promotions:
+        try:
+            # Thử tạo dữ liệu mẫu nếu không có trong CSDL
+            created = create_sample_promotions()
+            if created:
+                # Truy vấn lại sau khi tạo mẫu
+                promotions = query.order_by(Promotion.created_at.desc(), 
+                                           Promotion.discount_percent.desc()).limit(limit).all()
+        except Exception as e:
+            print(f"Lỗi khi tạo dữ liệu mẫu: {str(e)}")
+    
+    # Chuyển đổi sang định dạng dict và trả về kết quả
+    result = [p.to_dict() for p in promotions]
+    return jsonify({"success": True, "promotions": result})
+
+@api_blueprint.route('/promotions/<int:id>', methods=['GET'])
+def get_promotion_detail(id):
+    """Lấy chi tiết một ưu đãi theo ID"""
+    
+    promotion = Promotion.query.get(id)
+    
+    if not promotion:
+        return jsonify({"success": False, "error": "Không tìm thấy ưu đãi"}), 404
+    
+    return jsonify({"success": True, "promotion": promotion.to_dict()})
+
+@api_blueprint.route('/promotions/fetch', methods=['POST'])
+def fetch_promotions():
+    """Cập nhật ưu đãi từ các nguồn bên ngoài"""
+    
+    try:
+        # Gọi các hàm để cập nhật ưu đãi
+        fetch_from_external_apis()
+        return jsonify({"success": True, "message": "Đã cập nhật ưu đãi thành công"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def create_sample_promotions():
+    """Tạo dữ liệu mẫu cho ưu đãi du lịch"""
+    from app import db
+    
+    # Kiểm tra xem đã có dữ liệu chưa
+    if Promotion.query.count() > 0:
+        return False
+    
+    # Danh sách địa điểm phổ biến
+    destinations = ["Đà Nẵng", "Hà Nội", "Hồ Chí Minh", "Phú Quốc", "Nha Trang", 
+                    "Đà Lạt", "Hạ Long", "Sa Pa", "Huế", "Hội An"]
+    
+    # Danh sách nhà cung cấp
+    providers = ["VNTravel", "Mytour", "Klook", "Traveloka", "Booking.com"]
+    
+    # Ngày hiện tại
+    now = datetime.now(timezone.UTC)
+    
+    # Tạo 15 ưu đãi mẫu
+    promotions = []
+    for i in range(15):
+        destination = random.choice(destinations)
+        provider = random.choice(providers)
+        original_price = random.randint(2000000, 15000000)  # 2-15 triệu VND
+        discount_percent = random.randint(15, 50)  # Giảm 15-50%
+        discount_price = original_price * (100 - discount_percent) / 100
+        is_featured = (i < 5)  # 5 ưu đãi đầu tiên là nổi bật
+        
+        # Ngày bắt đầu và kết thúc khuyến mãi
+        start_date = now - timedelta(days=random.randint(0, 5))
+        end_date = now + timedelta(days=random.randint(15, 60))
+        
+        # Tạo mới promotion
+        promotion = Promotion(
+            title=f"Ưu đãi du lịch {destination} - Giảm {discount_percent}%",
+            description=f"Khám phá vẻ đẹp tuyệt vời của {destination} với ưu đãi đặc biệt từ {provider}. Giảm ngay {discount_percent}% cho mọi đặt tour và khách sạn tại {destination}. Áp dụng cho đặt phòng từ {start_date.strftime('%d/%m/%Y')} đến {end_date.strftime('%d/%m/%Y')}.",
+            destination=destination,
+            original_price=original_price,
+            discount_price=discount_price,
+            discount_percent=discount_percent,
+            image_url=f"https://source.unsplash.com/random/300x200?{destination.replace(' ', '+')}",
+            provider=provider,
+            booking_url=f"https://example.com/book/{destination.lower().replace(' ', '-')}",
+            start_date=start_date,
+            end_date=end_date,
+            is_featured=is_featured
+        )
+        promotions.append(promotion)
+    
+    # Thêm vào cơ sở dữ liệu
+    try:
+        db.session.add_all(promotions)
+        db.session.commit()
+        return True
+    except Exception as e:
+        db.session.rollback()
+        print(f"Lỗi khi thêm dữ liệu mẫu: {str(e)}")
+        return False
+
+def fetch_from_external_apis():
+    """Lấy dữ liệu từ các API bên ngoài"""
+    # Đây là nơi bạn sẽ thêm mã để gọi các API từ các trang web du lịch
+    # Ví dụ: gọi API của Booking.com, Traveloka, hoặc Klook
+    
+    # TODO: Implement actual API calls to external providers
+    
+    # Ví dụ về cấu trúc:
+    # try:
+    #     response = requests.get('https://api.example.com/promotions', 
+    #                            headers={'Authorization': 'Bearer your_api_key'})
+    #     if response.status_code == 200:
+    #         data = response.json()
+    #         # Xử lý dữ liệu...
+    # except Exception as e:
+    #     print(f"Error fetching from external API: {str(e)}")
+    
+    pass  # Placeholder để sau này thực hiện
+

@@ -106,6 +106,77 @@
             color: var(--primary);
         }
         
+        /* Auth Buttons Styles */
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn-auth {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            transition: var(--transition);
+            margin-left: 0.5rem;
+        }
+        
+        .btn-login {
+            color: var(--primary);
+            background-color: transparent;
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-login:hover {
+            background-color: rgba(45, 108, 223, 0.05);
+        }
+        
+        .btn-register {
+            color: white;
+            background-color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-register:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            background: transparent;
+            border: none;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .dropdown-toggle:focus {
+            box-shadow: none;
+        }
+        
+        .dropdown-menu {
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            color: var(--text);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(45, 108, 223, 0.05);
+            color: var(--primary);
+        }
+        
+        .dropdown-item i {
+            color: var(--primary);
+            width: 20px;
+        }
+        
         /* Hero Section */
         .hero-section {
             padding: 0;

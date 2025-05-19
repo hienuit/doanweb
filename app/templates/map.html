@@ -4,100 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Xe chạy + Hoạt động từng điểm + Điều chỉnh tốc độ</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-
-  <style>
-    #map { height: 100vh; }
-
-    #controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-family: sans-serif;
-      width: 200px;
-      box-shadow: 0 0 5px #aaa;
-    }
-
-    label {
-      font-size: 14px;
-    }
-
-    /* Modal styles */
-    #myModal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(5px);
-    }
-
-    .modal-content {
-      background-image: url('https://img5.thuthuatphanmem.vn/uploads/2021/10/20/background-du-lich-bau-troi_110850711.jpg');
-      background-size: cover;
-      background-position: center;
-      color: black;
-      padding: 30px;
-      border-radius: 15px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      width: 80%;
-      max-width: 350px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      font-family: 'Arial', sans-serif;
-      border: 5px solid orange;
-    }
-
-    .modal-content p {
-      font-size: 22px;
-      font-weight: bold;
-      margin: 0;
-      animation: slideIn 1s ease-out forwards;
-    }
-
-    @keyframes slideIn {
-      0% {
-        transform: translateX(-100%);
-      }
-      100% {
-        transform: translateX(0);
-      }
-    }
-
-    #speedSlider {
-      width: 100%;
-    }
-
-    /* GIF nhỏ 70x70 */
-    #gifSmall {
-      display: none; /* Ẩn GIF mặc định */
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 700px;
-      height: 500px;
-      z-index: 2000;
-    }
-
-    #gifSmall img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Đảm bảo video rõ nét */
-    }
-  </style>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAX7VUJAOydS5bl0Ms8iywvd1log047yj0&libraries=places&callback=initMap" defer></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
 </head>
 <body>
 
@@ -105,128 +13,97 @@
   <label>Tốc độ: <span id="speedLabel">100</span> ms/bước</label><br>
   <input type="range" id="speedSlider" min="10" max="1000" value="100">
 </div>
+<button id="findHotelsBtn" class="hotel-button">🏨 Tìm khách sạn gần đây</button>
+<button id="tips-button"><span class="notification-dot blink"></span> 💡 Gợi ý</button>
+<div id="trip-buttons-wrapper">
+  <button id="start-trip-btn" class="visible">🚗 Bắt đầu hành trình</button>
+  <button id="reset-trip-btn" class="hidden">🔄 Đặt lại hành trình</button>
+</div>
+
+<div id="tips-container">
+  <button id="tips-close">✕</button>
+  <h3>Gợi ý hữu ích</h3>
+  
+  <div class="tip-item">
+    <h4>🚗 Điều khiển tốc độ</h4>
+    <p>Sử dụng thanh trượt ở góc phải phía trên để điều chỉnh tốc độ di chuyển của xe (ms/bước).</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>🔢 Các điểm trên bản đồ</h4>
+    <p>Các con số trên bản đồ là các điểm dừng trong hành trình của bạn. Nhấp vào để xem thông tin chi tiết.</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>🏨 Tìm khách sạn</h4>
+    <p>Nhấn nút "Tìm khách sạn gần đây" để hiển thị các khách sạn xung quanh vị trí hiện tại của xe. Nhấp vào biểu tượng khách sạn để xem thông tin chi tiết.</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>🌍 Thay đổi kiểu bản đồ</h4>
+    <p>Sử dụng các nút ở góc trái bên dưới để chuyển giữa các chế độ: Mặc định, Vệ tinh, Địa hình và Ban đêm.</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>📊 Thông tin chuyến đi</h4>
+    <p>Bảng thông tin ở góc phải bên dưới hiển thị tổng quãng đường, thời gian ước tính, số điểm dừng và tiến độ di chuyển.</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>🔄 Tải lại trang</h4>
+    <p>Nếu bạn muốn bắt đầu lại hành trình, chỉ cần tải lại trang web. Lưu ý rằng điều này sẽ đặt lại tiến độ hiện tại.</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>⚠️ Lỗi tìm khách sạn</h4>
+    <p>Nếu không thể tìm khách sạn, hãy kiểm tra kết nối internet hoặc thử lại sau. API Google Places có giới hạn yêu cầu.</p>
+  </div>
+  
+  <div class="tip-item">
+    <h4>📱 Tương thích thiết bị</h4>
+    <p>Ứng dụng hoạt động tốt nhất trên màn hình lớn như máy tính và máy tính bảng. Trải nghiệm trên di động có thể không được tối ưu.</p>
+  </div>
+</div>
+
 <div id="map"></div>
 
-<!-- Modal -->
+<div class="map-style-control">
+  <button class="style-button active" data-style="default">Mặc định</button>
+  <button class="style-button" data-style="satellite">Vệ tinh</button>
+  <button class="style-button" data-style="terrain">Địa hình</button>
+  <button class="style-button" data-style="night">Ban đêm</button>
+</div>
+
+<div id="trip-info">
+  <h3>Thông tin chuyến đi</h3>
+  <div class="info-item">
+    <span class="info-label">Tổng quãng đường:</span>
+    <span id="total-distance">Đang tính...</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Thời gian ước tính:</span>
+    <span id="total-duration">Đang tính...</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Điểm dừng:</span>
+    <span id="total-stops">0</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Tiến độ:</span>
+    <span id="progress">0%</span>
+  </div>
+</div>
+
 <div id="myModal">
   <div class="modal-content">
     <p id="modalMessage">Đã đến điểm</p>
   </div>
 </div>
 
-<!-- GIF nhỏ 70x70 -->
 <div id="gifSmall">
   <img id="smallGif" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThtbnZ4a2owZHhwc2ozdDJwbWI1azcyNHZtb3hnMmxtNWx5ZWowbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/k7rvJoAgijk9qxyCKy/giphy.gif" alt="GIF" />
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-
-<script>
-  const locations = JSON.parse(localStorage.getItem('locations')) || ['21.0285,105.8542', '21.0290,105.8550'];
-  const activityNames = JSON.parse(localStorage.getItem('activityNames')) || ['Start', 'End'];
-  const coordinates = locations.map(loc => {
-    const [lat, lng] = loc.split(',').map(Number);
-    return [lat, lng];
-  });
-
-  const map = L.map('map').setView(coordinates[0], 14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
-  let carMarker = null;
-  let routeCoords = [];
-  let currentIndex = 0;
-
-  let speed = parseInt(document.getElementById('speedSlider').value);
-  document.getElementById('speedSlider').addEventListener('input', function () {
-    speed = parseInt(this.value);
-    document.getElementById('speedLabel').innerText = speed;
-  });
-
-  const control = L.Routing.control({
-    waypoints: coordinates.map(c => L.latLng(c[0], c[1])),
-    createMarker: () => null,
-    addWaypoints: false,
-    draggableWaypoints: false,
-    routeWhileDragging: false,
-    show: false
-  }).addTo(map);
-
-  control.on('routesfound', function (e) {
-    routeCoords = e.routes[0].coordinates;
-
-    if (!carMarker) {
-      carMarker = L.marker(routeCoords[0], {
-        icon: L.icon({
-          iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-          iconSize: [32, 32],
-          iconAnchor: [16, 32]
-        })
-      }).addTo(map);
-    }
-
-    let i = 0;
-    let t = 0;
-    const threshold = 0.009;
-
-    const moveStep = () => {
-      if (i >= routeCoords.length) {
-        alert("Đã đến đích!");
-        return;
-      }
-
-      const pos = routeCoords[i];
-      const currentCoord = coordinates[t];
-
-      const distance = Math.sqrt(
-        Math.pow(pos.lat - currentCoord[0], 2) + Math.pow(pos.lng - currentCoord[1], 2)
-      );
-
-      if (distance < threshold) {
-        showModal(`Đã đến điểm ${t + 1} (${activityNames[t]})`);
-
-        // Kiểm tra nếu t là số chẵn và không phải là 0
-        if ((t-1) % 2 === 0 && t !== 0) {
-          setTimeout(showGifSmall, 1000); // Đợi 1 giây rồi hiển thị GIF
-        }
-
-        t++;
-      }
-
-      carMarker.setLatLng(pos);
-      map.panTo(pos);
-
-      i++;
-
-      setTimeout(moveStep, speed);
-    };
-
-    moveStep();
-  });
-
-  function showModal(message) {
-    const modal = document.getElementById("myModal");
-    const modalMessage = document.getElementById("modalMessage");
-    modalMessage.textContent = message;
-    
-    modal.style.display = "block";
-    
-    setTimeout(() => {
-      modal.style.display = "none";
-    }, 2000);
-  }
-
-  // Hàm để hiển thị GIF nhỏ 70x70
-  function showGifSmall() {
-    const gif = document.getElementById("gifSmall");
-    gif.style.display = "block"; // Hiển thị GIF
-    setTimeout(() => {
-      gif.style.display = "none"; // Ẩn GIF sau 5 giây
-    }, 3000);
-  }
-</script>
-
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>  
 </body>
 </html>

@@ -1,134 +1,178 @@
-// Show destination options when mood is selected
-document.getElementById("moodSelect").addEventListener("change", function () {
-    document.getElementById("destinationContainer").classList.remove("hidden");
-});
-
-// Show 'Next' button when destination is selected
-document.getElementById("destinationSelect").addEventListener("change", function () {
-    document.getElementById("nextButtonElement").classList.remove("hidden");
-});
-
-// Show the next tab when 'Next' is clicked
-
-
-function nextTab(currentTab){
-    // Hide the current tab
-    document.getElementById(currentTab).classList.add("hidden");
-
-    // Show the next tab
-    var nextTab = "Tab" + (parseInt(currentTab.replace('Tab', '')) + 1); // Get next tab id
-    var nextTabElement = document.getElementById(nextTab);
-    
-    if (nextTabElement) {
-        nextTabElement.classList.remove("hidden");
-    }
-}
-
-// Handle button clicks for location types
-document.getElementById("beachButton").addEventListener("click", function () {
-    showSuggestedPlaces("beach");
-});
-
-document.getElementById("mountainButton").addEventListener("click", function () {
-    showSuggestedPlaces("mountain");
-});
-
-document.getElementById("cityButton").addEventListener("click", function () {
-    showSuggestedPlaces("city");
-});
-
-
-// Function to fetch suggested places based on location type
-let selectedDestination = null; // Store the selected destination
-
-function showSuggestedPlaces(locationType) {
-    const mood = document.getElementById("moodSelect").value;
-    const place = document.getElementById("destinationSelect").value;
-
-    fetch(`http://127.0.0.1:5000/search?mood=${mood}&place=${place}&location=${locationType}`)
-        .then(response => response.json())
-        .then(data => {
-            const placesList = document.getElementById("placesList");
-            placesList.innerHTML = "";
-
-            if (data.length === 0) {
-                placesList.innerHTML = "<p>No places found.</p>";
-                return;
+    document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+        const moodSelect = document.getElementById('moodSelect');
+        const destinationContainer = document.getElementById('destinationContainer');
+        const destinationSelect = document.getElementById('locationSelect');
+        const nextButtonElement = document.getElementById('nextButtonElement');
+        const tab1 = document.getElementById('Tab1');
+        const tab2 = document.getElementById('Tab2');
+        const placesList = document.getElementById('placesList');
+        const placesDiv = document.getElementById('Places');
+        
+        // Location options
+        const beachButton = document.getElementById('beachButton');
+        const mountainButton = document.getElementById('mountainButton');
+        const cityButton = document.getElementById('cityButton');
+        
+        // Add back button to tab2
+        const backButton = document.createElement('button');
+        backButton.type = 'button';
+        backButton.className = 'btn btn-outline-secondary mt-4';
+        backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i> Quay lại';
+        
+        // Insert back button before the location options
+        const locationOptions = document.querySelector('.location-options');
+        tab2.insertBefore(backButton, locationOptions);
+        
+        // Initially hide tab2
+        tab2.style.display = 'none';
+        
+        // Show destination select when mood is selected
+        moodSelect.addEventListener('change', function() {
+            if (this.value) {
+                destinationContainer.classList.remove('hidden');
+                destinationContainer.style.display = 'block';
+            } else {
+                destinationContainer.classList.add('hidden');
+                destinationContainer.style.display = 'none';
+                nextButtonElement.classList.add('hidden');
+                nextButtonElement.style.display = 'none';
             }
-
-            data.forEach(destination => {
-                let listItem = document.createElement("li");
-                listItem.textContent = destination.name;
-
-                // When a place is clicked, store the selected destination in localStorage
-                listItem.addEventListener("click", function () {
-                    selectedDestination = {
-                        id: destination.id,
-                        name: destination.name
-                    };
-
-                    console.log("You selected:", selectedDestination); // Debug log
-
-                    // Store selected destination in localStorage
-                    localStorage.setItem('selectedDestination', JSON.stringify(selectedDestination));
-
-                    // Redirect to the destination details page
-                    window.location.href='/page3';
+        });
+        
+        // Show next button when destination is selected
+        destinationSelect.addEventListener('change', function() {
+            if (this.value) {
+                nextButtonElement.classList.remove('hidden');
+                nextButtonElement.style.display = 'inline-block';
+            } else {
+                nextButtonElement.classList.add('hidden');
+                nextButtonElement.style.display = 'none';
+            }
+        });
+        
+        // Move to next tab and show location options
+        nextButtonElement.addEventListener('click', function() {
+            tab1.style.display = 'none';
+            tab2.style.display = 'block';
+            tab2.classList.remove('hidden');
+            
+            // Show the location options
+            document.querySelector('.location-options').style.display = 'flex';
+            
+            // Hide the places section until a location is selected
+            placesDiv.style.display = 'none';
+        });
+        
+        // Handle back button click
+        backButton.addEventListener('click', function() {
+            tab2.style.display = 'none';
+            tab1.style.display = 'block';
+            
+            // Reset the active state of location buttons
+            [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+            
+            // Hide the places section
+            placesDiv.style.display = 'none';
+        });
+        
+        // Handle location button clicks
+        beachButton.addEventListener('click', function() {
+            [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            showSuggestedPlaces('beach');
+        });
+        
+        mountainButton.addEventListener('click', function() {
+            [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            showSuggestedPlaces('mountain');
+        });
+        
+        cityButton.addEventListener('click', function() {
+            [beachButton, mountainButton, cityButton].forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            showSuggestedPlaces('river');
+        });
+        
+        // Function to fetch suggested places based on location type
+        let selectedDestination = null; // Store the selected destination
+        
+        function showSuggestedPlaces(locationType) {
+            const mood = moodSelect.value;
+            const location = destinationSelect.value;
+            
+            // Show loading indicator
+            placesList.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>';
+            placesDiv.style.display = 'block';
+            placesDiv.classList.remove('hidden');
+            
+            // Fetch data from backend
+            fetch(`/search?mood=${mood}&place=${locationType}&location=${location}`)
+                .then(response => response.json())
+                .then(data => {
+                    placesList.innerHTML = "";
+                    
+                    if (data.length === 0) {
+                        placesList.innerHTML = '<p class="text-center">Không tìm thấy địa điểm phù hợp.</p>';
+                        return;
+                    }
+                    
+                    // Create list items for each destination
+                    data.forEach(destination => {
+                        const li = document.createElement('li');
+                        li.className = 'place-item';
+                        li.innerHTML = `
+                            <div>
+                                <div class="place-name">${destination.name}</div>
+                                <div class="place-details">Phù hợp với lựa chọn của bạn</div>
+                            </div>
+                            <i class="fas fa-arrow-right place-arrow"></i>
+                        `;
+                        
+                        // Add click event to each item
+                        li.addEventListener('click', function() {
+                            selectedDestination = {
+                                id: destination.id,
+                                name: destination.name
+                            };
+                            
+                            console.log("Đã chọn:", selectedDestination);
+                            
+                            // Store selected destination in localStorage
+                            localStorage.setItem('selectedDestination', JSON.stringify(selectedDestination));
+                            
+                            // Redirect to destination details page
+                            window.location.href = `/page3?province=${encodeURIComponent(destination.name)}`;
+                        });
+                        
+                        placesList.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error("Lỗi khi tải dữ liệu:", error);
+                    placesList.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> 
+                            Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.
+                        </div>
+                    `;
                 });
-
-                placesList.appendChild(listItem);
-            });
-
-            document.getElementById("Places").classList.remove("hidden");
-        })
-        .catch(error => console.error("Error fetching data:", error));
-}
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    let scrollTopBtn = document.getElementById("scrollbutton");
-
-    // Hiển thị nút khi cuộn xuống 100px
-    window.onscroll = function () {
-        if (document.body.scrollTop > 500 || document.documentElement.scrollTop > 500) {
-            scrollTopBtn.style.display = "block";
-        } else {
-            scrollTopBtn.style.display = "none";
         }
-    };
-
-    // Cuộn lên đầu khi bấm nút
-    scrollTopBtn.addEventListener("click", function () {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        
+        // Back to top button functionality
+        const backToTopButton = document.getElementById('backToTop');
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     });
-});
 
-
-
-// if (!province || !num_days) {
-//     alert("Vui lòng nhập đầy đủ thông tin.");
-//     return;
-// }
-
-// // Gửi AJAX request tới Flask server
-// fetch('/create-itinerary', {
-//     method: 'POST',
-//     headers: {
-//         'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify({ province: province, num_days: num_days })
-// })
-// .then(response => response.json())
-// .then(data => {
-//     // Hiển thị kết quả từ server
-//     if (data.success) {
-//         document.getElementById('result-container').style.display = 'block';
-//         document.getElementById('itinerary-content').innerText = data.itinerary;
-//     } else {
-//         alert('Đã có lỗi xảy ra. Vui lòng thử lại.');
-//     }
-// })
-// .catch(error => {
-//     alert('Lỗi kết nối đến server.');
-//     console.error('Error:', error);
-// });

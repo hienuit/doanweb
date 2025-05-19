@@ -1,0 +1,58 @@
+.bg-primary {
+    background-color: #FF9800;
+}
+.text-primary {
+    color: #FF9800;
+}
+.border-primary {
+    border-color: #FF9800;
+}
+.hover-bg-primary:hover {
+    background-color: #F57C00;
+}
+.bg-secondary {
+    background-color: #FFF3E0;
+}
+
+/* Your custom footer CSS */
+footer {
+    background-color: #1C2930;
+    color: white;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+}
+
+footer a {
+    color: #FF9800;
+    text-decoration: underline;
+}
+
+footer a:hover {
+    color: #F57C00;
+}
+
+.user-name {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.logout-btn {
+    background-color: #FF9800;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.logout-btn:hover {
+    background-color: #F57C00;
+    color: white;
+    text-decoration: none;
+}
+
+[x-cloak] {
+    display: none !important;
+}

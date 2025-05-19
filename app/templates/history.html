@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Lịch sử chuyến đi</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      margin: 0;
+      padding: 40px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 40px;
+    }
+
+    #history-list {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .history-item {
+      background: #ffffff;
+      border-left: 6px solid #4caf50;
+      padding: 20px 25px;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+
+    .history-item:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-item h3 {
+      color: #388e3c;
+      margin-top: 0;
+    }
+
+    .history-item p {
+      margin: 6px 0;
+      line-height: 1.6;
+    }
+
+    .history-item ul {
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+
+    .history-item ul li {
+      margin-bottom: 4px;
+      list-style: circle;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lịch sử chuyến đi của bạn</h1>
+
+  <div style="text-align:center; margin-bottom: 20px;">
+    <button id="clear-history" style="background-color: #e53935; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      🗑️ Xóa toàn bộ lịch sử
+    </button>
+
+    <button id="create-personalized-history" style="background-color: #156e89; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      👻 Tạo lịch sử cá nhân hóa
+    </button>
+  </div>
+  
+  <div id="history-list" class="loading">Đang tải dữ liệu...</div>
+
+  <script>
+    function formatBudget(val) {
+      if (!val) return "Không rõ";
+      if (!isNaN(val)) return Number(val).toLocaleString() + " VND";
+
+      switch (val) {
+        case 'under2m': return 'Dưới 2 triệu';
+        case '2to5m': return 'Từ 2–5 triệu';
+        case 'over5m': return 'Trên 5 triệu';
+        default: return val;
+      }
+    }
+
+    fetch('/get-history')
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => {
+            console.error("Lỗi từ server:", text);
+            throw new Error("Không thể lấy dữ liệu");
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        const container = document.getElementById('history-list');
+        container.classList.remove('loading');
+        container.innerHTML = '';
+
+        if (!data.histories || data.histories.length === 0) {
+          container.innerHTML = '<p style="text-align:center;">Chưa có lịch sử chuyến đi nào.</p>';
+          return;
+        }
+
+        historyJsonArray = []
+        data.histories.forEach((item, index) => {
+
+
+            const historyJson = {
+            id: index + 1, // Use item.id if your server provides a unique ID
+            destination: item.destination,
+            days: item.days,
+            total_cost: item.total_cost
+          };
+
+          // Add to the array
+          historyJsonArray.push(historyJson);
+
+          const activityList = Array.isArray(item.activity_names)
+            ? item.activity_names.map(name => `<li>${name}</li>`).join('')
+            : '<li>Không có địa điểm</li>';
+
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          div.innerHTML = `
+            <h3>Chuyến đi #${index + 1}</h3>
+            <p><strong>🗺️ Điểm đến:</strong> ${item.destination}</p>
+            <p><strong>📅 Số ngày:</strong> ${item.days} ngày</p>
+            <p><strong>💰 Ngân sách:</strong> ${formatBudget(item.total_cost)}</p>
+            <p><strong>📌 Địa điểm đã chọn:</strong></p>
+            <ul>${activityList}</ul>
+            <p><strong>🕒 Ngày lưu:</strong> ${item.created_at}</p>
+          `;
+        
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+        console.error("Lỗi khi lấy lịch sử:", err);
+        const container = document.getElementById('history-list');
+        container.classList.remove('loading');
+        container.innerHTML = '<p class="error">Lỗi khi tải lịch sử!</p>';
+      });
+
+
+      document.getElementById("clear-history").addEventListener("click", function () {
+        if (!confirm("Bạn có chắc muốn xóa toàn bộ lịch sử chuyến đi?")) return;
+
+        fetch('/delete-history', {
+          method: 'DELETE'
+        })
+          .then(response => response.json())
+          .then(data => {
+            alert(data.message);
+            window.location.reload();
+          })
+          .catch(error => {
+            console.error("Lỗi khi xóa lịch sử:", error);
+            alert("Đã xảy ra lỗi khi xóa lịch sử!");
+          });
+      });
+
+
+      document.getElementById("create-personalized-history").addEventListener("click", function () {
+        if (historyJsonArray.length === 0) {
+          alert("Không có lịch sử nào để gửi!");
+          return;
+        }
+
+        fetch('/create-personalized-history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(historyJsonArray)
+        })
+          .then(response => {
+            if (!response.ok) {
+              return response.json().then(data => {
+                console.error("Lỗi từ server:", data.error || response.statusText);
+                throw new Error(data.error || "Không thể gửi dữ liệu");
+              });
+            }
+            return response.json(); // Trả về JSON response nếu thành công
+          })
+          .then(data => {
+            // Kiểm tra nếu phản hồi có dữ liệu
+            if (data.success && data.data) {
+              // Lưu chỉ phần lịch sử đã được xử lý vào localStorage
+              localStorage.setItem('personalizedHistory', JSON.stringify(data.data));
+              // Chuyển hướng tới trang personalized-history
+              window.location.href = '/personalized-history';
+            } else {
+              
+              throw new Error("Phản hồi không hợp lệ từ server.");
+            }
+          })
+          .catch(error => {
+            console.error("Lỗi khi gửi lịch sử cá nhân hóa:", error);
+            alert("Đã xảy ra lỗi khi gửi lịch sử cá nhân hóa: " + error.message);
+          });
+      });
+
+
+  </script>
+</body>
+</html>

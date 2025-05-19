@@ -491,10 +491,17 @@ def search_from_db(mood, place, location):
     results = Destinations.query.filter_by(mood=mood, place=place, location=location).all()
     return [{"name": destination.name} for destination in results]
 
+def extend_from_db(destination):
+    # Query Destinations table for entries matching the destination name
+    results = Destinations.query.filter_by(name=destination).all()
+    # Return a list of dictionaries with mood, place, and location
+    return [{"mood": dest.mood, "place": dest.place, "location": dest.location} for dest in results]
+
 def normalize(text):
     text = text.lower()
     text = unicodedata.normalize('NFD', text)
     text = ''.join(c for c in text if unicodedata.category(c) != 'Mn') # Loại bỏ dấu
+    text = text.replace('đ', 'd')
     return text
 
 def standardize_province_name(name):
@@ -513,9 +520,13 @@ def standardize_province_name(name):
 
 def search_describe(province):
     try:
+        print(f"Input province: {province}")
         standardized = standardize_province_name(province)
+        print(f"Standardized: {standardized}")
         normalized_input = normalize(standardized)
+        print(f"Normalized input: {normalized_input}")
         all_destinations = Destinations.query.all()
+        print(f"Total destinations in DB: {len(all_destinations)}")
 
         # Danh sách 5 TP trực thuộc TƯ
         city_list = ["Hà Nội", "Hồ Chí Minh", "Cần Thơ", "Hải Phòng", "Đà Nẵng"]
@@ -528,10 +539,18 @@ def search_describe(province):
                 # Nếu là 1 trong 5 TP thì thêm tiền tố "TP."
                 display_name = f"TP. {dest.name}" if normalize(dest.name) in city_normalized else dest.name
 
+                places = [
+                    {
+                        "name": dest.name,
+                        "location": dest.location
+                    }
+                ]
                 return [{
                     "name": display_name,
                     "describe": dest.description,
-                    "images": image_urls
+                    "images": image_urls,
+                    "places": places
+
                 }]
         return []
 

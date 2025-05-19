@@ -1,148 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule</title>
+    <title>Lịch trình</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">
     <style>
         .day-schedule {
-            opacity: 0; /* Ẩn ban đầu */
-            transform: translateY(20px); /* Di chuyển xuống */
+            opacity: 0;
+            transform: translateY(20px);
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
         .day-schedule.show {
             opacity: 1;
             transform: translateY(0);
         }
-        #map{
+        .schedule-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            background-color: #fff;
+            border-radius: 3px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .schedule-item.meal {
+            border-left-color: #ff9800;
+        }
+        .schedule-item.rest {
+            border-left-color: #2196f3;
+        }
+        .time-label {
+            font-weight: bold;
+            color: #333;
+            min-width: 60px;
+            margin-right: 10px;
+        }
+        .description {
+            flex: 1;
+        }
+        #map {
             position: relative;
             width: 100px;
             height: 40px;
-            bottom: 20px;
-            left:20px;
+
             background-color: red;
-            color:white;
+            color: white;
             border-radius: 10px;
         }
+        #map:hover {
+            background-color: green;
+        }
+        #save-history-btn {
 
-        #map:hover{
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #save-history-btn:hover {
+            background-color: #45a049;
+        }
+        /* New styles for button container */
+        .button-container {
+            display: flex;
+            justify-content: center; /* Center the buttons */
+            gap: 10px; /* Space between buttons */
+            margin-top: 20px; /* Space above the buttons */
+        }
+        #map {
+
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #map:hover {
             background-color: green;
         }
     </style>
 </head>
 <body>
-    <div id="itineraryDetails" class="itinerary-info" style="text-align: center;" >
+    <div id="itineraryDetails" class="itinerary-info" style="text-align: center;">
         <!-- Lịch trình sẽ được hiển thị tại đây -->
     </div>
 
-    <div id ="hotel_list">
-        <h2>Danh sách khách sạn</h2>
+    <!-- Button container -->
+    <div class="button-container">
+        <button id="map">Tìm điểm đến</button>
+
+        {% if "user_name" in session %}
+        <button id="save-history-btn">Lưu vào lịch sử</button>
+        {% endif %}
     </div>
-    
 
-    <button id="map">Tìm điểm đến</button>
-
-    {% if "user_name" in session %}
-    <a href="#" class="nav-btn logout-btn">Lưu Vào Lịch Sử</a>
-    {% endif %}
     <script>
+        
+        window.onload = function() {
+            const itinerary = JSON.parse(localStorage.getItem('itinerary'));
+            let province = itinerary.destination || "Không rõ";
+            console.log(itinerary);
+            
 
-    window.onload = function() {
-        const province = "{{ province }}";
-
-fetch(`/describe_hotel?province=${encodeURIComponent(province)}`)
-    .then(response => response.json())
-    .then(data => {
-        const hotelList = document.getElementById("hotel_list");
-
-        if (hotelList) {
-            hotelList.innerHTML = "<h2>Danh sách khách sạn</h2>";
-
-            if (data.length === 0) {
-                hotelList.innerHTML += `<p>No hotels found for ${province}.</p>`;
-                return;
+            // Hiển thị lịch trình
+            if (itinerary && itinerary.days) {
+                displayItinerary(itinerary);
+            } else {
+                alert("Không có dữ liệu hành trình hoặc dữ liệu không hợp lệ.");
+                console.error("Dữ liệu lịch trình không hợp lệ:", itinerary);
             }
 
-            data.forEach(hotel => {
-                hotelList.innerHTML += `
-                    <div>
-                        <input type="checkbox" id="hotel-${hotel.id}" name="hotel-${hotel.id}" value="${hotel.id}">
-                        <label for="hotel-${hotel.id}">
-                            <strong>${hotel.hotel_name}</strong><br>
-                            ${hotel.description}<br>
-                            Rating: ${hotel.rating} (${hotel.user_ratings_total} reviews)<br>
-                            
-                        </label>
-                    </div>
-                    <br>
-                `;
+            // Chuyển hướng đến trang bản đồ
+            document.getElementById("map").addEventListener("click", function(event) {
+                event.preventDefault();
+                window.location.href = '/map';
             });
-        } else {
-            console.error("Element with id 'hotel_list' not found");
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        const hotelList = document.getElementById("hotel_list");
-        if (hotelList) {
-            hotelList.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
-        }
-    });
 
+            // Lưu lịch sử khi nhấn nút
+            const saveHistoryBtn = document.getElementById("save-history-btn");
+            if (saveHistoryBtn) {
+                saveHistoryBtn.addEventListener("click", function() {
+                    const activityNames = JSON.parse(localStorage.getItem('activityNames')) || [];
 
+                    // Tính tổng chi phí
+                    let totalCost = 0;
+                    itinerary.days.forEach(day => {
+                        totalCost += Number(day.estimated_cost) || 0;
+                    });
 
-        const itinerary = JSON.parse(localStorage.getItem('itinerary'));
-        console.log(itinerary); // Kiểm tra dữ liệu trong console
-        // Kiểm tra nếu có dữ liệu hành trình
-        if (itinerary) {
-            displayItinerary(itinerary);  // Gọi hàm để hiển thị dữ liệu
-        } else {
-            alert("Không có dữ liệu hành trình.");
-        }
+                    // Dữ liệu gửi lên server
+                    const data = {
+                        activityNames: activityNames,
+                        days: itinerary.days.length,
+                        budget: totalCost.toString(),
+                        destination: province
+                    };
 
-        document.getElementById("map").addEventListener("click", function(event) {
-        event.preventDefault();
-        window.location.href='/map'; // Chuyển hướng đến trang map.html 
-             // Trang này chứa thông tin chi tiết của điểm đến
-     
-        // console.log(selectedDestination);
-          
-
-
-            
-        });
-
-
-    }
+                    fetch('/save-history', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.message); });
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        alert(result.message);
+                        window.location.href = '/history';
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        alert('Lỗi khi lưu lịch sử: ' + error.message);
+                    });
+                });
+            }
+        };
 
     function displayItinerary(itinerary) {
         const activityNames = [];
         const locations = [];
 
-
         const itineraryDetails = document.getElementById("itineraryDetails");
-        itineraryDetails.innerHTML = ""; // Đảm bảo nội dung trước đó được xóa
+        itineraryDetails.innerHTML = "";
 
         let itineraryHTML = "<h1>Lịch trình gợi ý cho bạn</h1>";
-
         itinerary.days.forEach(day => {
-            itineraryHTML += `<div class="day-schedule"><h3>Day ${day.day}</h3>`;
+            itineraryHTML += `<div class="day-schedule"><h3>Ngày ${day.day}</h3>`;
             itineraryHTML += `<ul class="activities-list">`;
 
-            day.activities.forEach(activity => {
-                activityNames.push(activity.name);
-                locations.push(activity.location);
-                const formatactivityCost = Number(activity.cost).toLocaleString('vi-VN');
-                itineraryHTML += `<li>
-                                    <strong>${activity.name}</strong>: ${activity.description}
-                                    <br><strong>Chi phí:</strong> ${formatactivityCost}VND
-                                  </li>`;
-            });
+            // Kiểm tra xem ngày có schedule hay activities
+            const scheduleItems = day.schedule || day.activities || [];
+            if (!scheduleItems.length) {
+                itineraryHTML += `<li>Không có lịch trình chi tiết cho ngày này.</li>`;
+            } else {
+                scheduleItems.forEach(item => {
+                    // Xử lý cấu trúc mới (schedule)
+                    if (item.time && item.type) {
+                        if (item.type === "activity") {
+                            activityNames.push(item.description.split(":")[0]);
+                            locations.push(item.location);
+                        }
+                        const formatItemCost = Number(item.cost).toLocaleString('vi-VN');
+                        itineraryHTML += `
+                            <li class="schedule-item ${item.type}">
+                                <span class="time-label">${item.time}</span>
+                                <div class="description">
+                                    ${item.description}
+                                    ${item.cost ? `<br><strong>Chi phí:</strong> ${formatItemCost} VND` : ""}
+                                </div>
+                            </li>`;
+                    } else {
+                        // Xử lý cấu trúc cũ (activities)
+                        activityNames.push(item.name);
+                        locations.push(item.location);
+                        const formatactivityCost = Number(item.cost).toLocaleString('vi-VN');
+                        itineraryHTML += `<li class="schedule-item">
+                                            <span class="time-label">N/A</span>
+                                            <div class="description">
+                                                <strong>${item.name}</strong>: ${item.description}
+                                                <br><strong>Chi phí:</strong> ${formatactivityCost} VND
+                                            </div>
+                                        </li>`;
+                    }
+                });
+            }
 
             itineraryHTML += `</ul>`;
-            const formatcost = Number(day.estimated_cost).toLocaleString('vi-VN');
-            itineraryHTML += `<p><strong>Chi phí dự kiến cho ngày ${day.day}:</strong> ${formatcost}VND</p></div>`;
+            const formatCost = Number(day.estimated_cost).toLocaleString('vi-VN');
+            itineraryHTML += `<p><strong>Chi phí dự kiến cho ngày ${day.day}:</strong> ${formatCost} VND</p></div>`;
         });
 
         let totalCost = 0;
@@ -152,19 +226,16 @@ fetch(`/describe_hotel?province=${encodeURIComponent(province)}`)
 
         itineraryHTML += `<h3>Tổng chi phí dự kiến: ${totalCost.toLocaleString('vi-VN')} VND</h3>`;
         itineraryDetails.innerHTML = itineraryHTML;
+
         document.querySelectorAll('.day-schedule').forEach((el, i) => {
-        setTimeout(() => {
-            el.classList.add('show');
-        }, i * 500); // Delay 500ms giữa mỗi phần tử
-    });
+            setTimeout(() => {
+                el.classList.add('show');
+            }, i * 500);
+        });
 
         localStorage.setItem('activityNames', JSON.stringify(activityNames));
         localStorage.setItem('locations', JSON.stringify(locations));
     }
-
-
-
-
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'939601982e6ab027',t:'MTc0NjE3MzA0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

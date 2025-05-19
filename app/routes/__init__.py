@@ -4,6 +4,8 @@ from .api_routes import api_blueprint
 from .media_routes import media_blueprint
 from .images_routes import images_blueprint
 from .loginfb_routes import loginfb_blueprint
+from .history_routes import histories_blueprint
+from .federated_routes import federated_blueprint
 
 # Danh sách tất cả blueprint để register trong create_app()
 all_blueprints = [
@@ -12,5 +14,8 @@ all_blueprints = [
     api_blueprint,
     media_blueprint,
     images_blueprint,
-    loginfb_blueprint
+    loginfb_blueprint,
+    histories_blueprint,
+    federated_blueprint
+
 ]

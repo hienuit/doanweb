@@ -175,8 +175,18 @@
 </head>
 <body>
   <div class="login-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="padding: 10px; margin-bottom: 15px; border-radius: 5px; color: white; background-color: {% if category == 'success' %}rgba(40, 167, 69, 0.8){% else %}rgba(220, 53, 69, 0.8){% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <h2>Tham gia ngay tại đây</h2>
     <form class="login-form" action="/loginfunction" method="POST">
+      <input type="hidden" name="next_page" value="{{ request.referrer }}">
       <div class="input-group">
         <i>👤</i>
         <input type="text" name="email" placeholder="Email" required />
@@ -190,7 +200,7 @@
         <label><input type="checkbox" name="remember" /> Nhớ mật khẩu</label>
         <a href="/forgot-password">Forgot Password?</a>
       </div>
-      <p style="color: yellow">Bạn chưa có tài khoản. <a style="color: white" href="/register">Đăng ký</a></p>
+      <p style="color: yellow">Bạn chưa có tài khoản. <a style="color: white" href="/register?next={{ request.url }}">Đăng ký</a></p>
       <button type="submit" class="login-btn">Đăng nhập</button>
       <div class="or">or</div>
       <div class="social-login">
@@ -202,6 +212,7 @@
 
 
   <script>
+    /* hiệu ứng hiện/ẩn mật khẩu */
     document.querySelectorAll(".toggle-password").forEach(function (eye) {
       eye.addEventListener("click", function () {
         const input = document.querySelector(this.getAttribute("toggle"));
@@ -214,8 +225,20 @@
         }
       });
     });
-    const googleLoginUrl = "{{ url_for('auth.login_google') }}";
-    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}";
+    
+    // Lấy tham số next từ trang hiện tại nếu có, nếu không thì dùng referrer
+    const nextPage = "{{ next if next else request.referrer }}";
+    const googleLoginUrl = "{{ url_for('auth.login_google') }}" + (nextPage ? "?next=" + encodeURIComponent(nextPage) : "");
+    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}" + (nextPage ? "?next=" + encodeURIComponent(nextPage) : "");
+
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+          var alerts = document.querySelectorAll('.alert');
+          alerts.forEach(function(alert) {
+              alert.style.display = 'none';
+          });
+      }, 1000);
+  });
   </script>
 </body>
 </html>

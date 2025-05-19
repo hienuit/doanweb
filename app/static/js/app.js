@@ -11,6 +11,23 @@ document.getElementById("destinationInput").addEventListener("keydown", function
     }
 });
 
+// Thêm event listener cho nút tìm kiếm
+document.addEventListener("DOMContentLoaded", function() {
+    const searchButton = document.getElementById("searchButton");
+    if (searchButton) {
+        searchButton.addEventListener("click", function() {
+            const province = document.getElementById("destinationInput").value.trim();
+
+            if (province) {
+                // Gửi kèm tên tỉnh trên URL
+                window.location.href = '/page3?province=' + encodeURIComponent(province);
+            } else {
+                alert("Vui lòng nhập địa điểm du lịch.");
+            }
+        });
+    }
+});
+
 
 const backToTopButton = document.getElementById("backToTop");
         

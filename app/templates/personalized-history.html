@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌍 Gợi ý du lịch cá nhân hóa</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+      min-height: 100vh;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .hero {
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4CAF50;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #description {
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+    #description strong {
+      color: #2c3e50;
+    }
+  </style>
+</head>
+<body class="text-gray-800">
+  <!-- Hero Section -->
+  <section class="hero py-16 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">✨ Khám phá hành trình của riêng bạn ✨</h1>
+    <p class="text-lg md:text-xl max-w-2xl mx-auto">Để chúng tôi mang đến những gợi ý du lịch được thiết kế riêng, phù hợp với tâm trạng và gu khám phá của bạn!</p>
+  </section>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto p-6">
+    <!-- Input Card -->
+    <div class="card bg-white p-8 rounded-lg shadow-lg mb-8">
+      <h2 class="text-2xl font-semibold mb-4">🧳 Tùy chỉnh sở thích của bạn</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label for="mood" class="block text-sm font-medium text-gray-700">Tâm trạng của bạn</label>
+          <select id="mood" class="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-green-500">
+            <option value="chill">Thư giãn</option>
+            <option value="active">Năng động</option>
+            <option value="adventure">Phiêu lưu</option>
+            <option value="relaxed">Bình yên</option>
+          </select>
+        </div>
+        <div>
+          <label for="place" class="block text-sm font-medium text-gray-700">Địa điểm yêu thích</label>
+          <select id="place" class="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-green-500">
+            <option value="river">Sông nước</option>
+            <option value="mountain">Núi đồi</option>
+            <option value="quiet">Yên tĩnh</option>
+            <option value="city">Thành phố</option>
+            <option value="beach">Bãi biển</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex justify-center space-x-4">
+        <button id="trainAndGenerateButton" class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition">🔄 Tạo gợi ý mới</button>
+        <button id="saveSampleButton" class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition">💾 Lưu gợi ý này</button>
+      </div>
+      <p class="mt-4 text-gray-600">Trạng thái: <span id="status" class="font-semibold">Đang chờ...</span></p>
+      <div id="loader" class="loader mt-4 hidden"></div>
+    </div>
+
+    <!-- Recommendation Card -->
+    <div class="card bg-white p-8 rounded-lg shadow-lg mb-8">
+      <h2 class="text-2xl font-semibold mb-4">🧭 Gợi ý dành riêng cho bạn</h2>
+      <p id="sampleResult" class="text-lg text-gray-700 mb-4"></p>
+      <p id="description" class="text-gray-600"></p>
+    </div>
+
+    <!-- History Card -->
+    <div class="card bg-white p-8 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-semibold mb-4">📜 Lịch sử gợi ý của bạn</h2>
+      <ul id="historyList" class="list-disc list-inside text-left text-gray-700"></ul>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("sampleResult");
+    const descEl = document.getElementById("description");
+    const trainBtn = document.getElementById("trainAndGenerateButton");
+    const saveBtn = document.getElementById("saveSampleButton");
+    const moodInput = document.getElementById("mood");
+    const placeInput = document.getElementById("place");
+    const historyList = document.getElementById("historyList");
+    const loader = document.getElementById("loader");
+
+    const moodMap = { chill: 0, active: 1, adventure: 2, relaxed: 3 };
+    const placeMap = { river: 0, mountain: 1, quiet: 2, city: 3, beach: 4 };
+    const locationMap = { south: 0, north: 1, central: 2 };
+    const reverseLocationMap = { 0: 'Miền Nam', 1: 'Miền Bắc', 2: 'Miền Trung' };
+
+    let latestSample = null;
+
+    function getLocalData() {
+      const raw = localStorage.getItem('personalizedHistory');
+      if (!raw) return [{ mood: "adventure", place: "mountain", location: "north" }];
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("Dữ liệu không hợp lệ:", e);
+        return [{ mood: "adventure", place: "mountain", location: "north" }];
+      }
+    }
+
+    function updateHistoryUI() {
+      const history = getLocalData();
+      historyList.innerHTML = history.length === 0
+        ? '<li class="text-gray-500">Chưa có gợi ý nào được lưu.</li>'
+        : history.map(item => `<li><strong class="text-green-600">${item.mood}</strong> - ${item.place} - ${item.location}</li>`).join('');
+    }
+
+    function prepareTensors(data) {
+      const filtered = data.filter(item =>
+        moodMap[item.mood] !== undefined &&
+        placeMap[item.place] !== undefined &&
+        locationMap[item.location] !== undefined
+      );
+
+      const inputs = filtered.map(d => [moodMap[d.mood], placeMap[d.place]]);
+      const labels = filtered.map(d => {
+        const oneHot = [0, 0, 0];
+        oneHot[locationMap[d.location]] = 1;
+        return oneHot;
+      });
+
+      return {
+        X: tf.tensor2d(inputs),
+        y: tf.tensor2d(labels)
+      };
+    }
+
+    async function createModel() {
+      const model = tf.sequential();
+      model.add(tf.layers.dense({ inputShape: [2], units: 32, activation: 'relu' }));
+      model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
+      model.add(tf.layers.dense({ units: 3, activation: 'softmax' }));
+      model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
+      return model;
+    }
+
+    async function getServerWeights() {
+      try {
+        const res = await fetch('/get_weights');
+        if (!res.ok) throw new Error('Không thể tải trọng số.');
+        const weights = await res.json();
+        return weights.map(arr => tf.tensor(arr));
+      } catch (e) {
+        console.error("Lỗi tải trọng số:", e);
+        return null;
+      }
+    }
+
+    async function sendWeights(weights) {
+      try {
+        const plainWeights = await Promise.all(weights.map(w => w.array()));
+        await fetch('/upload_weights', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ weights: plainWeights })
+        });
+      } catch (e) {
+        console.error("Lỗi gửi trọng số:", e);
+      }
+    }
+
+    function generateDescription(sample) {
+      const { mood, place, location } = sample;
+
+      const moodText = {
+        chill: "một tâm hồn yêu sự yên bình, tìm kiếm những khoảnh khắc thư thái giữa thiên nhiên và nhịp sống chậm rãi",
+        active: "một người tràn đầy năng lượng, luôn sẵn sàng cho những trải nghiệm sôi động và những thử thách mới",
+        adventure: "một nhà thám hiểm thực thụ, khao khát chinh phục những đỉnh cao và khám phá những bí ẩn của đất trời",
+        relaxed: "người sống chậm, tận hưởng từng khoảnh khắc đời thường trong sự bình yên và nhẹ nhàng"
+      };
+
+      const placeText = {
+        river: "những dòng sông lấp lánh, nơi bạn có thể thả mình trên thuyền, ngắm cảnh sắc thiên nhiên thơ mộng",
+        mountain: "những ngọn núi trập trùng, nơi mỗi bước chân là một lần chinh phục và hòa mình vào thiên nhiên hùng vĩ",
+        quiet: "những vùng quê thanh bình, nơi tiếng chim hót và làn gió mát lành xoa dịu tâm hồn",
+        city: "những đô thị rực rỡ ánh đèn, nơi nhịp sống sôi động hòa quyện với văn hóa và ẩm thực đa dạng",
+        beach: "những bãi biển xanh ngắt, nơi sóng vỗ rì rào và cát vàng lấp lánh dưới ánh mặt trời"
+      };
+
+      const destinationDetails = {
+        'Miền Bắc': {
+          adventure: {
+            mountain: `Hãy tưởng tượng bạn đang đứng trên **đỉnh Fansipan** ở Sa Pa, nơi mây mù quấn quýt quanh những vách đá và những thửa ruộng bậc thang trải dài như một bức tranh sống động. Hít thở không khí trong lành, cảm nhận làn gió lạnh buốt, bạn sẽ thấy mình như chạm đến bầu trời. Nếu bạn muốn một hành trình khắc nghiệt hơn, hãy thử cung đường **Hà Giang** – nơi những con đèo uốn lượn như rồng lượn, dẫn bạn qua những thung lũng xanh mướt và những cánh đồng hoa tam giác mạch nở rộ vào mùa thu. Dừng chân ở **Cột cờ Lũng Cú**, điểm cực Bắc của Tổ quốc, để tự hào ngắm nhìn đất nước từ một góc nhìn hoàn toàn mới.
+
+Hoặc, nếu bạn muốn kết hợp phiêu lưu với văn hóa, hãy ghé **Mai Châu**, nơi những bản làng người Thái nằm nép mình giữa núi rừng. Tham gia một chuyến trekking qua những con đường mòn, ngủ trong những ngôi nhà sàn truyền thống, và thưởng thức món cơm lam thơm lừng bên bếp lửa. Mỗi khoảnh khắc ở đây là một câu chuyện, một kỷ niệm mà bạn sẽ mang theo mãi mãi.
+
+Hãy chuẩn bị ba lô, đôi giày leo núi, và một trái tim rộng mở. Miền Bắc đang chờ bạn với những chân trời mới, những thử thách mới, và những trải nghiệm được thiết kế riêng cho tinh thần phiêu lưu của bạn!`
+          },
+          chill: {
+            river: `Hãy thả hồn trên dòng **sông Lô** ở Tuyên Quang, nơi bạn có thể ngồi trên chiếc thuyền nhỏ, lướt nhẹ qua những dãy núi đá vôi hùng vĩ và những cánh đồng lúa xanh mướt. Ánh nắng dịu nhẹ phản chiếu trên mặt nước, hòa quyện với tiếng chim hót líu lo, tạo nên một bản giao hưởng của thiên nhiên. Ghé thăm **thác Bản Giốc** ở Cao Bằng, một trong những thác nước đẹp nhất Việt Nam, nơi bạn có thể ngồi bên dòng nước mát lành, nhâm nhi một tách trà và để mọi lo toan tan biến.
+
+Nếu bạn muốn trải nghiệm văn hóa sông nước, hãy đến **Ninh Bình**, nơi được mệnh danh là “Vịnh Hạ Long trên cạn”. Chèo thuyền qua **Tam Cốc** hoặc **Tràng An**, bạn sẽ bị mê hoặc bởi những hang động kỳ bí và những ngôi chùa cổ kính nép mình bên dòng sông. Buổi tối, thưởng thức món **dê núi** đặc sản và nghe những câu hát dân ca Quan Họ ngọt ngào bên bờ sông.
+
+Miền Bắc là nơi để bạn tìm lại sự tĩnh lặng trong tâm hồn. Hãy mang theo một cuốn sách yêu thích, một chiếc máy ảnh, và sẵn sàng để ghi lại những khoảnh khắc yên bình. Dòng sông của Miền Bắc đang chờ bạn khám phá, mang đến những kỷ niệm nhẹ nhàng nhưng sâu sắc, đúng như cách bạn yêu thích!`
+          }
+        },
+        'Miền Trung': {
+          active: {
+            city: `Khám phá **Đà Nẵng**, thành phố của những cây cầu độc đáo và nhịp sống hiện đại. Đừng bỏ qua **cầu Rồng** phun lửa vào cuối tuần, hay một buổi tối dạo quanh **phố cổ Hội An** với những chiếc đèn lồng lung linh. Thưởng thức món **mì Quảng** chính gốc để nạp năng lượng cho hành trình của bạn!
+
+Tiếp tục hành trình đến **Huế**, nơi bạn có thể đạp xe qua những con đường rợp bóng cây, ghé thăm **Đại Nội** để cảm nhận hơi thở lịch sử, hoặc tham gia một lớp học nấu ăn để tự tay làm món **bún bò Huế**. Buổi tối, hãy lên thuyền trên **sông Hương**, nghe ca Huế và thả đèn hoa đăng cầu may mắn.
+
+Miền Trung là sân chơi của những tâm hồn năng động. Hãy chuẩn bị một đôi giày thoải mái, một chiếc mũ lưỡi trai, and sẵn sàng hòa mình vào nhịp sống sôi động của vùng đất này!`
+          }
+        },
+        'Miền Nam': {
+          chill: {
+            beach: `Hãy đến với **Phú Quốc**, thiên đường biển với những bãi cát trắng mịn và hoàng hôn rực rỡ. Thư giãn trên **bãi Sao**, nhâm nhi nước dừa tươi, hoặc lặn ngắm san hô ở **Hòn Thơm**. Một chuyến đi chợ đêm Phú Quốc để thưởng thức hải sản tươi ngon sẽ là điểm nhấn cho kỳ nghỉ của bạn.
+
+Nếu bạn muốn sự yên tĩnh hơn, hãy ghé **Côn Đảo**, nơi những bãi biển hoang sơ như **bãi Đầm Trầu** mang đến cảm giác như lạc vào một thế giới riêng. Đi dạo dưới những hàng cây bàng cổ thụ, khám phá lịch sử tại nhà tù Côn Đảo, hoặc đơn giản là nằm dài trên bãi biển, nghe tiếng sóng vỗ.
+
+Miền Nam là nơi để bạn thả lỏng và tận hưởng. Mang theo một chiếc võng, một playlist nhạc yêu thích, và để biển cả xoa dịu tâm hồn bạn!`
+          }
+        }
+      };
+
+      const baseDescription = `Dựa trên những hành trình trước đây, chúng tôi nhận thấy bạn là ${moodText[mood]}. Những địa điểm như ${placeText[place]} chính là nơi trái tim bạn thuộc về. Với tinh thần và sở thích độc đáo của bạn, **${location}** là điểm đến lý tưởng để bạn tiếp tục viết nên câu chuyện du lịch của mình!`;
+
+      const specificDetails = destinationDetails[location]?.[mood]?.[place] || `Khám phá ${location} để tìm thấy những trải nghiệm phù hợp với cá tính của bạn. Hãy chuẩn bị hành trang và bắt đầu chuyến đi để tạo nên những kỷ niệm không thể nào quên!`;
+
+      const history = getLocalData();
+      const hasAdventureHistory = history.some(item => item.mood === 'adventure' && item.place === 'mountain' && item.location === 'north');
+      const adventureNote = hasAdventureHistory && mood !== 'adventure'
+        ? `\n\nChúng tôi cũng nhận thấy bạn từng yêu thích những chuyến phiêu lưu trên núi ở Miền Bắc. Nếu muốn thêm chút thử thách, bạn có thể kết hợp chuyến đi này với một hành trình trekking nhẹ nhàng hoặc khám phá những cung đường đèo tuyệt đẹp!`
+        : '';
+
+      return `${baseDescription}\n\n${specificDetails}${adventureNote}`;
+    }
+
+    async function generateSampleFromModel(model, localData, userInput) {
+      const { X, y } = prepareTensors(localData);
+      await model.fit(X, y, { epochs: 20, verbose: 0 });
+
+      const input = tf.tensor2d([[moodMap[userInput.mood], placeMap[userInput.place]]]);
+      const prediction = model.predict(input);
+      const predictedIndex = prediction.argMax(-1).dataSync()[0];
+
+      return {
+        mood: userInput.mood,
+        place: userInput.place,
+        location: reverseLocationMap[predictedIndex]
+      };
+    }
+
+    async function runFlow() {
+      statusEl.textContent = "Đang phân tích sở thích của bạn...";
+      loader.classList.remove('hidden');
+
+      const localData = getLocalData();
+      if (localData.length === 0) {
+        statusEl.textContent = "Bạn chưa có dữ liệu lịch sử. Hãy chọn sở thích và tạo gợi ý mới!";
+        loader.classList.add('hidden');
+        return;
+      }
+
+      const userInput = {
+        mood: moodInput.value || localData[0].mood,
+        place: placeInput.value || localData[0].place
+      };
+
+      const model = await createModel();
+      const serverWeights = await getServerWeights();
+      if (serverWeights) model.setWeights(serverWeights);
+
+      try {
+        const newSample = await generateSampleFromModel(model, localData, userInput);
+        latestSample = newSample;
+
+        resultEl.textContent = `Tâm trạng: ${newSample.mood} | Địa điểm yêu thích: ${newSample.place} | Điểm đến gợi ý: ${newSample.location}`;
+        descEl.textContent = generateDescription(newSample);
+        statusEl.textContent = "Gợi ý cá nhân hóa đã sẵn sàng!";
+        await sendWeights(model.getWeights());
+      } catch (e) {
+        statusEl.textContent = "Có lỗi xảy ra. Vui lòng thử lại!";
+        console.error("Lỗi:",e);
+      } finally {
+        loader.classList.add('hidden');
+      }
+    }
+
+    trainBtn.addEventListener("click", runFlow);
+
+    saveBtn.addEventListener("click", () => {
+        
+      if (!latestSample) return alert("Không có gợi ý nào để lưu. Hãy tạo gợi ý mới!");
+      const history = getLocalData();
+      history.push({
+        mood: latestSample.mood,
+        place: latestSample.place,
+        location: latestSample.location
+      });
+      localStorage.setItem('personalizedHistory', JSON.stringify(history));
+      updateHistoryUI();
+      console.log("Lưu gợi ý vào lịch sử:", latestSample);
+      alert("Đã lưu gợi ý vào lịch sử!");
+    });
+
+    window.addEventListener("load", () => {
+      updateHistoryUI();
+      runFlow();
+    });
+  </script>
+</body>
+</html>

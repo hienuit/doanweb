@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thông tin chi tiết khách sạn</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f0f0f0;
+    }
+
+    h1, h2 {
+      color: #333;
+    }
+
+    .hotel-detail {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hotel-detail a {
+      color: blue;
+      text-decoration: underline;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .back-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .back-button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📋 Chi tiết khách sạn đã chọn</h1>
+  <h2>📍 Điểm đến: <span id="destinationName">Đang tải...</span></h2>
+
+  <button onclick="fetchHotelDetails()">📩 Lấy thông tin chi tiết</button>
+
+  <div id="hotel_details"></div>
+
+  <!-- Nút quay lại trang index -->
+  <button class="back-button" onclick="goBackToIndex()">🔙 Quay lại trang chính</button>
+
+  <script>
+    // Lấy tên điểm đến từ localStorage
+    const selectedDestination = JSON.parse(localStorage.getItem("selectedDestination")) || {};
+    const destination = selectedDestination.name || "Chưa chọn điểm đến";
+    document.getElementById("destinationName").textContent = destination;
+
+    // Hàm gửi dữ liệu về backend và hiển thị kết quả
+    function fetchHotelDetails() {
+      const hotelNames = JSON.parse(localStorage.getItem("selectedHotelNames") || "[]");
+
+      if (hotelNames.length === 0) {
+        alert("Bạn chưa chọn khách sạn nào.");
+        return;
+      }
+
+      fetch("http://127.0.0.1:5000/get_hotel_details", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          destination: destination,
+          hotel_names: hotelNames
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const resultDiv = document.getElementById("hotel_details");
+        resultDiv.innerHTML = "<h2>📝 Thông tin chi tiết khách sạn</h2>";
+
+        data.forEach(hotel => {
+          resultDiv.innerHTML += `
+            <div class="hotel-detail">
+              <strong>🏨 ${hotel.name}</strong><br><br>
+              ${hotel.description}<br><br>
+              🏊 Bể bơi: <strong>${hotel.pool}</strong><br>
+              💁 Chất lượng phục vụ: <strong>${hotel.service_quality}</strong><br>
+              🔗 <a href="${hotel.link}" target="_blank">Xem thêm</a>
+            </div>
+          `;
+        });
+      })
+      .catch(err => {
+        console.error("Lỗi khi lấy thông tin chi tiết:", err);
+        document.getElementById("hotel_details").innerHTML = `<p style="color: red;">Lỗi khi tải dữ liệu. Vui lòng thử lại sau.</p>`;
+      });
+    }
+
+    // Hàm quay lại trang index và xóa localStorage
+    function goBackToIndex() {
+      // Xóa tất cả dữ liệu trong localStorage
+      localStorage.clear();
+      
+      // Điều hướng về trang index (hoặc trang chính của bạn)
+      window.location.href = "/";  // Cập nhật lại đường dẫn trang index của bạn
+    }
+  </script>
+
+</body>
+</html>

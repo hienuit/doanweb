@@ -4,9 +4,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Destination Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../static/css/style3.css">
     <link rel="stylesheet" href="../static/css/navbar.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">   
@@ -16,99 +17,298 @@
     <div id="navbar-container">
         {% include 'navbar.html' %}
     </div>
-    <div class = "container_vien">
-        <div class="container_img">
-            <div class="container">
-                <h1>Đôi nét về tỉnh</h1>
-    
-        <!-- Display the selected destination name here -->
-                <div id="destinationDetails" class="destination-info">
-                    Loading destination details...
-                    <button id="toggle-btn" style="display: none;" onclick="toggleDescription()">Xem thêm</button>
-                </div>
-    
-        <!-- Display features or description here -->
-                <div id="Feature" class="feature-info"></div>
-    
-                <div class="input-group">
-                    <select id="budget">
-                        <option value="" disabled selected>Chọn tài chính của bạn</option>
-                        <option value="under2m">Dưới 2 triệu</option>
-                        <option value="under5m">Dưới 5 triệu</option>
-                        <option value="under10m">Dưới 10 triệu</option>
-                        <option value="above10m">Trên 10 triệu</option>
-                    </select>
-                    <input type="number" id="days" placeholder="Enter number of days" min="1"/>
-                    <button id="submitDetails">Submit</button>
-                </div>
+    <div class="container-fluid p-0">
+        <div class="container_vien">
+            <div class="container_img">
+                <div class="container">
+                    <h1>Đôi nét về tỉnh</h1>
+        
+            <!-- Display the selected destination name here -->
+                    <div id="destinationDetails" class="destination-info" >
+                        Loading destination details...
+                        <button id="toggle-btn" style="display: none;" onclick="toggleDescription()">Xem thêm</button>
+                    </div>
+        
+            <!-- Display features or description here -->
+                    <div id="Feature" class="feature-info"></div>
+        
+                    <div class="input-group">
+                        <select id="budget" aria-label="Select your budget">
+                            <option value="" disabled selected>Chọn tài chính của bạn</option>
+                            <option value="under2m">Dưới 2 triệu</option>
+                            <option value="under5m">Dưới 5 triệu</option>
+                            <option value="under10m">Dưới 10 triệu</option>
+                            <option value="above10m">Trên 10 triệu</option>
+                        </select>
+                        <input type="number" id="days" placeholder="Enter number of days" min="1" inputmode="numeric" aria-label="Number of days"/>
+                        <button id="submitDetails">Submit</button>
+                    </div>
 
-        
-        <!-- Back button -->
-                <a href="/" class="back-button">Back to Home</a>
-            </div>
-        
-        <div class="anh">
-            <div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval ="3000" >
-                <div class="carousel-inner">
-                    {% for img in images %}
-                        <div class="carousel-item {% if loop.first %}active{% endif %}">
-                            <img src="{{ img }}" class="d-block w-100" alt="ảnh {{ loop.index }}">
-                        </div>
-                    {% endfor %}
+            
+            <!-- Back button -->
+                    <a href="/" class="back-button">Back to Home</a>
                 </div>
             
-                <!-- Nút điều hướng -->
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                </button>
+            <div class="anh">
+                <div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-inner">
+                        {% for img in images %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <img src="{{ img }}" class="d-block w-100" alt="ảnh {{ loop.index }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                
+                    <!-- Nút điều hướng -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
-</body>
-
-<section id="about" class="container-fluid my-5 " style="border-radius: 15px; background-color: orange; border: 2px solid black;">
-    <div class="row">
-        <div class="col-md-6">
-            <p>Hãy tham gia cùng chúng tôi để tìm được cho mình những chuyến du lịch phù hợp nhé.</p>
         </div>
     </div>
-    <div class="row">
-        <label class="fw-bold fs-4">Liên hệ</label>
-        <div >
-            <p class="py-2">Địa chỉ: Khu phố 6, phường linh trung, thành phố Thủ Đức</p>
-            <p class="py-2">Hiển:(+84) 0856800705</p>
-            <p class="py-2">Dương:(+84) 0716589788</p>
-            <p class="py-2">Email: 23520458@gm.uit.edu.vn</p>
+    </div>
+
+    <!-- Popular Destinations -->
+    <section class="container mb-5">
+        <h2 class="main-title">Điểm Đến Phổ Biến</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="location-card">
+                    <img src="https://onevivu.vn/wp-content/uploads/2020/10/Du-lich-Tam-Coc-Ninh-Binh-3.jpg" alt="Tam Cốc" class="location-img">
+                    <div class="location-details">
+                        <h3 class="location-name">Tam Cốc - Bích Động</h3>
+                        <div class="location-place">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Ninh Bình, Việt Nam</span>
+                        </div>
+                        <p class="location-desc">Khám phá vẻ đẹp hùng vĩ của dãy núi đá vôi, trải nghiệm chèo thuyền qua các hang động tự nhiên.</p>
+                        <div class="location-footer">
+                            <div class="location-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.8/5</span>
+                            </div>
+                            <div class="location-price">1.200.000đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="location-card">
+                    <img src="https://onevivu.vn/wp-content/uploads/2020/10/Du-lich-Trang-An-Ninh-Binh-5.jpg" alt="Tràng An" class="location-img">
+                    <div class="location-details">
+                        <h3 class="location-name">Khu Du Lịch Tràng An</h3>
+                        <div class="location-place">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Ninh Bình, Việt Nam</span>
+                        </div>
+                        <p class="location-desc">Di sản thiên nhiên thế giới với hệ thống hang động, núi đá và hồ nước trong xanh tuyệt đẹp.</p>
+                        <div class="location-footer">
+                            <div class="location-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.9/5</span>
+                            </div>
+                            <div class="location-price">1.500.000đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="location-card">
+                    <img src="https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8aGElMjBsb25nJTIwYmF5fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60" alt="Hạ Long" class="location-img">
+                    <div class="location-details">
+                        <h3 class="location-name">Vịnh Hạ Long</h3>
+                        <div class="location-place">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Quảng Ninh, Việt Nam</span>
+                        </div>
+                        <p class="location-desc">Di sản thiên nhiên thế giới với hàng nghìn hòn đảo đá vôi và những hang động kỳ thú.</p>
+                        <div class="location-footer">
+                            <div class="location-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.7/5</span>
+                            </div>
+                            <div class="location-price">2.500.000đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cta-container">
+            <h3>Ưu Đãi Gần Đây</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="deal-card">
+                    <img src="https://i1-dulich.vnecdn.net/2023/01/05/langchaiPhuQuoc-1672902180-4224-1672902240.jpg?w=0&h=0&q=100&dpr=1&fit=crop&s=5SnS0KBOeGv5xZfGXxKNmQ" alt="Phú Quốc" class="deal-img">
+                    <div class="deal-badge">-20%</div>
+                    <div class="deal-details">
+                        <h3 class="deal-title">Tour Phú Quốc 3 ngày 2 đêm</h3>
+                        <p class="deal-desc">Khám phá đảo ngọc Phú Quốc với bãi biển trắng tinh, nước biển xanh trong, và nhiều hoạt động giải trí thú vị.</p>
+                        <div class="price-container">
+                            <div class="old-price">5.000.000đ</div>
+                            <div class="new-price">4.000.000đ</div>
+                        </div>
+                        <button class="deal-btn">Xem thêm</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="deal-card">
+                    <img src="https://scontent.iocvnpt.com/resources/portal/Images/DLN/dungpx/2019/07/lam-gi-khi-dj-chuyen-dj-da-lat-phan-1-1-25072019150738.jpg" alt="Đà Lạt" class="deal-img">
+                    <div class="deal-badge">-15%</div>
+                    <div class="deal-details">
+                        <h3 class="deal-title">Tour Đà Lạt Mùa Hoa</h3>
+                        <p class="deal-desc">Hành trình khám phá Đà Lạt mùa hoa với các điểm đến nổi tiếng và nhiều hoạt động thú vị.</p>
+                        <div class="price-container">
+                            <div class="old-price">3.500.000đ</div>
+                            <div class="new-price">2.975.000đ</div>
+                        </div>
+                        <button class="deal-btn">Xem thêm</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="deal-card">
+                    <img src="https://res.klook.com/image/upload/q_85/c_fill,w_750/v1596007978/blog/mle0bqiyln6cpeyzfnjo.webp" alt="Sapa" class="deal-img">
+                    <div class="deal-badge">-25%</div>
+                    <div class="deal-details">
+                        <h3 class="deal-title">Sapa Mùa Đông</h3>
+                        <p class="deal-desc">Trải nghiệm không khí mùa đông tại Sapa với khung cảnh thiên nhiên hùng vĩ và văn hóa đặc sắc.</p>
+                        <div class="price-container">
+                            <div class="old-price">4.500.000đ</div>
+                            <div class="new-price">3.375.000đ</div>
+                        </div>
+                        <button class="deal-btn">Xem thêm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a href="/promotions" class="view-all-btn">Xem Tất Cả Ưu Đãi</a>
+        </div>
+    </section>
+
+    <section id="about" class="container-fluid py-5 my-5 contact-section">
+        <div class="container" style="background: none; text-align: left;">
+            <div class="row g-4">
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="about-card">
+                        <h3 class="section-title">Về chúng tôi</h3>
+                        <p class="about-text">Hãy tham gia cùng chúng tôi để tìm được cho mình những chuyến du lịch phù hợp nhé. Chúng tôi sẽ giúp bạn tìm ra những địa điểm tuyệt vời nhất và lên kế hoạch hoàn hảo cho chuyến đi của bạn.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="contact-card">
+                        <h3 class="section-title">Liên hệ</h3>
+                        <ul class="contact-list">
+                            <li>
+                                <i class="fas fa-map-marker-alt contact-icon"></i>
+                                <span>Địa chỉ: Khu phố 6, phường Linh Trung, TP Thủ Đức</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-phone contact-icon"></i>
+                                <span>Hiển: <a href="tel:+84856800705">(+84) 0856800705</a></span>
+                            </li>
+                            <li>
+                                <i class="fas fa-phone contact-icon"></i>
+                                <span>Dương: <a href="tel:+84716589788">(+84) 0716589788</a></span>
+                            </li>
+                            <li>
+                                <i class="fas fa-envelope contact-icon"></i>
+                                <span>Email: <a href="mailto:23520458@gm.uit.edu.vn">23520458@gm.uit.edu.vn</a></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video overlay section -->
+    <div id="videoOverlay">
+        <video id="adVideo" autoplay muted>
+            <source src="../static/video/dulich.mp4" type="video/mp4">
+            Trình duyệt của bạn không hỗ trợ video.
+        </video>
+        <div class="skipbutton">
+            <span id="skipcountdown">Bỏ qua sau 5s</span>
+            <button id="skipBtn">Bỏ qua</button>
         </div>
     </div>
-</section>
+     
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="background: none;">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h3 class="footer-heading">Travel Assistant</h3>
+                    <p>Chúng tôi cam kết mang đến cho bạn những trải nghiệm du lịch tuyệt vời nhất tại Việt Nam với sự hỗ trợ của công nghệ AI tiên tiến.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <h3 class="footer-heading">Liên Kết</h3>
+                    <ul class="footer-links">
+                        <li><a href="/">Trang Chủ</a></li>
+                        <li><a href="/page2">Điểm Đến</a></li>
+                        <li><a href="#">Trải Nghiệm</a></li>
+                        <li><a href="#">Ưu Đãi</a></li>
+                        <li><a href="#">Về Chúng Tôi</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h3 class="footer-heading">Chính Sách</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Điều Khoản Sử Dụng</a></li>
+                        <li><a href="#">Chính Sách Bảo Mật</a></li>
+                        <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                        <li><a href="#">Câu Hỏi Thường Gặp</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h3 class="footer-heading">Liên Hệ</h3>
+                    <div class="footer-contact">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <p>Khu phố 6, phường Linh Trung,<br> TP. Thủ Đức, TP. Hồ Chí Minh</p>
+                        </div>
+                    </div>
+                    <div class="footer-contact">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <p>info@travelassistant.com</p>
+                        </div>
+                    </div>
+                    <div class="footer-contact">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <p>+84 123 456 789</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Travel Assistant. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
 
- <!-- <div id="loadingOverlay">
-    <div class="spinner-border text-light" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div> -->
-<div id="videoOverlay">
-    <video id="adVideo" autoplay muted>
-        <source src="../static/video/dulich.mp4" type="video/mp4">
-        Trình duyệt của bạn không hỗ trợ video.
-    </video>
-    <div class="skipbutton">
-        <span id="skipcountdown">Bỏ qua sau 5s</span>
-        <button id="skipBtn">Bỏ qua</button>
-    </div>
-</div>
- 
-<footer>
-    <p>&copy; Bản quyền thuộc về Dương và Hiển</p>
-    <p>Khi muốn sử dụng thông tin tại trang web này xin hãy liên hệ tới <a href="23520458@gm.uit.edu.vn">23520458@gm.uit.edu.vn</a></p>
-</footer>
+    <a href="#" class="back-to-top" id="backToTop">
+        <i class="fas fa-chevron-up"></i>
+    </a>
+
     <script src="../static/js/app3.js"></script>
     <script src="{{ url_for('static', filename='js/app3.js') }}"></script>  
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script> 
-<body>
+</body>
 </html>

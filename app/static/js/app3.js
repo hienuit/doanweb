@@ -20,6 +20,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 Feature.innerHTML = "";
                 destinationDetails.textContent = `Tỉnh: ${data.name}`;
 
+                if (data.places && Array.isArray(data.places)) {
+                    const locations = [];
+                    const names = [];
+
+                    data.places.forEach(place => {
+                        const [lng, lat] = place.location.split(',').map(Number);
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            locations.push({ lat, lng });
+                            names.push(place.name);
+                        }
+                    });
+
+                    localStorage.setItem('locations', JSON.stringify(locations));
+                    localStorage.setItem('activityNames', JSON.stringify(names));
+                }
+
                 if (data && data.describe) {
                     const MAX_LENGTH = 105;
                     let shortText = data.describe.substring(0, MAX_LENGTH);
@@ -32,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <button id="toggle-popup" style="color: yellow; background: none; border: none; cursor: pointer; padding: 0; font-weight: bold;"><u>Xem thêm</u></button>
                         </p>
 
-                        <!-- Hộp popup -->
+                        <!-- Hộp popup (sẽ bị ghi đè bởi modal mới) -->
                         <div id="popup-container" class="popup-hidden">
                             <div class="popup-content">
                                 <span id="close-popup">&times;</span>
@@ -41,32 +57,50 @@ document.addEventListener("DOMContentLoaded", function () {
                             </div>
                         </div>
                     `;
+                    
+                    // Lưu thông tin popup để modal mới có thể sử dụng
+                    window.fullDescriptionText = fullText;
 
-                    // Popup xử lý
+                    // Xử lý popup cũ (sẽ bị ghi đè bởi popup-modal.js)
                     const popup = document.getElementById("popup-container");
                     const openPopupBtn = document.getElementById("toggle-popup");
                     const closePopupBtn = document.getElementById("close-popup");
 
-                    openPopupBtn.addEventListener("click", () => {
+                    // Lưu function gốc để popup-modal.js có thể ghi đè
+                    window.originalTogglePopup = function() {
                         popup.classList.remove("popup-hidden");
-                    });
+                    };
 
-                    closePopupBtn.addEventListener("click", () => {
-                        popup.classList.add("popup-hidden");
-                    });
+                    if (openPopupBtn) {
+                        openPopupBtn.addEventListener("click", window.originalTogglePopup);
+                    }
 
-                    window.addEventListener("click", (event) => {
-                        if (event.target === popup) {
+                    if (closePopupBtn) {
+                        closePopupBtn.addEventListener("click", () => {
                             popup.classList.add("popup-hidden");
-                        }
-                    });
+                        });
+                    }
+
+                    if (popup) {
+                        window.addEventListener("click", (event) => {
+                            if (event.target === popup) {
+                                popup.classList.add("popup-hidden");
+                            }
+                        });
+                        
+                        window.addEventListener("touchend", (event) => {
+                            if (event.target === popup) {
+                                popup.classList.add("popup-hidden");
+                            }
+                        });
+                    }
                 } else {
-                    Feature.innerHTML = "<p>No description found for this destination.</p>";
+                    Feature.innerHTML = "<p class='text-white'>No description found for this destination.</p>";
                 }
             })
             .catch(error => {
                 console.error("Error fetching description:", error);
-                Feature.innerHTML = "<p>Error fetching data.</p>";
+                Feature.innerHTML = "<p class='text-white'>Error fetching data. Please try again.</p>";
             });
 
         videoOverlay.style.display = "none";
@@ -86,59 +120,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 });
 
-// function createDescription(text) {
-//     const MAX_LENGTH = 150; // Giới hạn số ký tự ban đầu
 
-//     const container = document.createElement("div");
-
-//     if (text.length > MAX_LENGTH) {
-//         const shortText = text.substring(0, MAX_LENGTH) + "...";
-//         container.innerHTML = `
-//             <p style="color:white;font-weight:bold;">
-//                 <strong>Description:</strong> 
-//                 <span id="short-text">${shortText}</span>
-//                 <span id="full-text" style="display: none;">${text}</span>
-//                 <button id="toggle-popup" style="color: yellow; background: none; border: none; cursor: pointer; padding: 0; font-weight: bold;">Xem thêm</button>
-//             </p>
-//             <!-- Hộp popup -->
-//                         <div id="popup-container" class="popup-hidden">
-//                             <div class="popup-content">
-//                                 <span id="close-popup">&times;</span>
-//                                 <h3>Mô tả chi tiết</h3>
-//                                 <p>${fullText}</p>
-//                             </div>
-//                         </div>
-//                     ;
-//                 `;
-
-//                 const popup = document.getElementById("popup-container");
-//                 const openPopupBtn = document.getElementById("toggle-popup");
-//                 const closePopupBtn = document.getElementById("close-popup");
-
-//                 // Khi bấm "Xem thêm" thì hiển thị popup
-//                 openPopupBtn.addEventListener("click", () => {
-//                     popup.classList.remove("popup-hidden");
-//                 });
-
-//                 // Khi bấm "x" thì đóng popup
-//                 closePopupBtn.addEventListener("click", () => {
-//                     popup.classList.add("popup-hidden");
-//                 });
-
-//                 // Khi click bên ngoài thì đóng popup
-//                 window.addEventListener("click", (event) => {
-//                     if (event.target === popup) {
-//                         popup.classList.add("popup-hidden");
-//                     }
-//                 });
-//     } else {
-//         container.innerHTML = `<p style="color:white;font-weight:bold;"><strong>Description:</strong> ${text}</p>`;
-//     }
-
-//     return container;
-// }
 
 document.getElementById("submitDetails").addEventListener("click", function() {
+    // Blur input focus to hide mobile keyboard
+    document.getElementById("days").blur();
+    
     // loadingoverlay = document.getElementById("loadingOverlay");
     // loadingoverlay.style.display = "flex";
 
@@ -172,6 +159,7 @@ document.getElementById("submitDetails").addEventListener("click", function() {
         days: days,
         budget: budget
     };
+    
     videoOverlay.style.display = "flex";
     skipcountdown.style.display =  "block";
     let countdown = 5;
@@ -208,9 +196,10 @@ document.getElementById("submitDetails").addEventListener("click", function() {
             videoOverlay.style.display = "none";
 
         // Chuyển sang trang HTML mới để hiển thị
-            window.location.href = "/schedule";  // Đổi thành tên file HTML của bạn
-            
-        } else {
+        window.location.href = `/schedule?destination=${encodeURIComponent(destination)}`;
+        } 
+        
+        else {
             alert("Có lỗi xảy ra: " + data.error);
             videoOverlay.style.display = "none";
         }
