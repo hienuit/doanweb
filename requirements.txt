@@ -20,3 +20,4 @@ gunicorn
 psycopg2-binary
 pytest==7.4.0
 beautifulsoup4>=4.12.2
+numpy>=1.24.0
