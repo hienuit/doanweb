@@ -1,14 +1,11 @@
-# app/routes/api_routes.py
 from flask import Blueprint, request, jsonify,session
-from app.models.destinations import search_from_db, search_describe,extend_from_db
-from app.models.hotels import Hotel
+from app.models.destinations import search_from_db, search_describe,extend_from_db, Destinations
 import json, re
 import google.generativeai as genai
 from app.models.promotions import Promotion
-import requests
-from bs4 import BeautifulSoup
 import random
 from datetime import datetime, timedelta, timezone
+import unicodedata
 
 genai.configure(api_key="AIzaSyAM-euCjLTAPiFQvXnI4X-5EeNGX2G-k0Q")
 
@@ -48,22 +45,6 @@ def describe():
     # Trả về mô tả tỉnh (chỉ trả về mô tả)
     return jsonify(results[0])  # Trả về phần tử đầu tiên, chỉ chứa mô tả
 
-@api_blueprint.route('/describe_hotel', methods=['GET'])
-def describe_hotel():
-    province_name = request.args.get('province')  # Get the province name from the query parameter
-    
-    # Debugging: Check if the 'province_name' is being passed correctly
-    print(f"Received province_name: {province_name}")
-    
-    # Ensure you have data for the given province
-    hotels = Hotel.query.filter_by(province_name=province_name).all()
-    if not hotels:
-        return jsonify({"message": f"No hotels found for province {province_name}"}), 404
-    
-    # Convert the hotels to dictionaries and return the data
-    hotel_list = [hotel.to_dict() for hotel in hotels]
-    print(f"Hotels found: {hotel_list}")  # Debugging: Check the hotels found
-    return jsonify(hotel_list)
 
 @api_blueprint.route('/create-itinerary', methods=['POST'])
 def create_itinerary():
@@ -471,3 +452,32 @@ def fetch_from_external_apis():
     
     pass  # Placeholder để sau này thực hiện
 
+@api_blueprint.route('/suggest-provinces', methods=['GET'])
+def suggest_provinces():
+    """
+    API endpoint để gợi ý tỉnh thành dựa trên từ khóa tìm kiếm
+    """
+    query = request.args.get('q', '').strip()
+    
+    if not query:
+        return jsonify([])
+    
+    # Normalize query to remove accents for better matching
+    def remove_accents(text):
+        return ''.join(c for c in unicodedata.normalize('NFD', text) 
+                      if unicodedata.category(c) != 'Mn').lower()
+    
+    normalized_query = remove_accents(query)
+    
+    # Get all destinations
+    all_destinations = Destinations.query.with_entities(Destinations.name).distinct().all()
+    
+    # Filter destinations that match the normalized query
+    matching_provinces = []
+    for dest in all_destinations:
+        normalized_name = remove_accents(dest.name)
+        if normalized_query in normalized_name:
+            matching_provinces.append(dest.name)
+    
+    # Limit results to 10
+    return jsonify(matching_provinces[:10])

@@ -915,6 +915,7 @@ footer{
         width: 35px;
         height: 35px;
     }
+
 }
 
 @media screen and (max-width: 320px) {
@@ -1419,3 +1420,120 @@ footer{
         height: 140px;
     }
 }
+
+/* Loading Spinner */
+.loading-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading-message {
+    font-size: 1.5em;
+    color: white;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Auto-suggestion dropdown styles for page3 */
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+    color: #333;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+    background-color: #f8f9fa;
+    color: #007BFF;
+}
+
+.suggestion-item.selected {
+    background-color: #007BFF;
+    color: white;
+}
+
+.search-box-container .input-group {
+    position: relative;
+}
+
+#destinationInput {
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+    .suggestions-dropdown {
+        max-height: 200px;
+        font-size: 14px;
+    }
+    
+    .suggestion-item {
+        padding: 10px 12px;
+    }
+}
+
+/* loading */
+.suggestions-loading {
+    padding: 12px 16px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* không có kết quả */
+.suggestions-empty {
+    padding: 12px 16px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+

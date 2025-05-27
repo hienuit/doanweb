@@ -21,10 +21,13 @@ def init_oauth(app):
     oauth.init_app(app)
     oauth.register(
         name='facebook',
-        client_id='YOUR_FACEBOOK_APP_ID',
-        client_secret='YOUR_FACEBOOK_APP_SECRET',
+        client_id=Config.FACEBOOK_CLIENT_ID,
+        client_secret=Config.FACEBOOK_CLIENT_SECRET,
         access_token_url='https://graph.facebook.com/v18.0/oauth/access_token',
         authorize_url='https://www.facebook.com/v18.0/dialog/oauth',
         api_base_url='https://graph.facebook.com/v18.0/',
-        client_kwargs={'scope': 'email'},
+        client_kwargs={
+            'scope': 'public_profile,email',
+            'response_type': 'code'
+        }
     )

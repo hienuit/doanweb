@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Classy Login Form</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       margin: 0;
@@ -174,6 +175,11 @@
   </style>
 </head>
 <body>
+  <!-- Home Button -->
+  <a href="/" class="home-button" style="position: fixed; top: 20px; left: 20px; z-index: 1000; background-color: rgba(255, 255, 255, 0.9); color: #B61840; padding: 10px 15px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+    <i class="fas fa-home" style="margin-right: 5px;"></i>Trang Chủ
+  </a>
+  
   <div class="login-container">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -186,7 +192,13 @@
     {% endwith %}
     <h2>Tham gia ngay tại đây</h2>
     <form class="login-form" action="/loginfunction" method="POST">
-      <input type="hidden" name="next_page" value="{{ request.referrer }}">
+      {% set safe_next = '' %}
+      {% if next and 'forgot-password' not in next and 'reset-password-otp' not in next and 'set-new-password' not in next and 'verify_otp' not in next and 'verify-otp' not in next and 'register' not in next %}
+        {% set safe_next = next %}
+      {% elif request.referrer and 'forgot-password' not in request.referrer and 'reset-password-otp' not in request.referrer and 'set-new-password' not in request.referrer and 'verify_otp' not in request.referrer and 'verify-otp' not in request.referrer and 'register' not in request.referrer %}
+        {% set safe_next = request.referrer %}
+      {% endif %}
+      <input type="hidden" name="next_page" value="{{ safe_next }}">
       <div class="input-group">
         <i>👤</i>
         <input type="text" name="email" placeholder="Email" required />
@@ -227,9 +239,9 @@
     });
     
     // Lấy tham số next từ trang hiện tại nếu có, nếu không thì dùng referrer
-    const nextPage = "{{ next if next else request.referrer }}";
+    const nextPage = "{{ safe_next }}";
     const googleLoginUrl = "{{ url_for('auth.login_google') }}" + (nextPage ? "?next=" + encodeURIComponent(nextPage) : "");
-    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}" + (nextPage ? "?next=" + encodeURIComponent(nextPage) : "");
+    const facebookLoginUrl = "{{ url_for('loginfb.facebook_login') }}" + (nextPage ? "?next=" + encodeURIComponent(nextPage) : "");
 
     document.addEventListener('DOMContentLoaded', function() {
       setTimeout(function() {

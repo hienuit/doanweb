@@ -22,7 +22,7 @@ def save_history():
         activity_names=activity_names,
         days=days,
         total_cost=budget,
-        destination=destination  # nhớ thêm nếu chưa có trong model
+        destination=destination  
     )
     db.session.add(history)
     db.session.commit()

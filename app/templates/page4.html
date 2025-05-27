@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhận diện Giọng nói và Gợi ý Du lịch</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #4285F4;
@@ -22,6 +23,29 @@
             background-color: var(--light-bg);
             color: #333;
             line-height: 1.6;
+        }
+
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary-color);
+        }
+
+        .home-button:hover {
+            background-color: white;
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
         }
 
         .header {
@@ -392,6 +416,11 @@
     </style>
 </head>
 <body>
+    <!-- Home Button -->
+    <a href="/" class="home-button">
+        <i class="fas fa-home" style="margin-right: 8px;"></i>Trang Chủ
+    </a>
+    
     <div class="header">
         <h1>Hãy nói cho chúng tôi biết bạn muốn đi đâu!</h1>
         <p class="subtitle">Dùng giọng nói để khám phá các địa điểm du lịch tuyệt vời</p>

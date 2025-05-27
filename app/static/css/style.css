@@ -539,15 +539,102 @@ body {
 
 @media (max-width: 767px) {
     .destination-img {
-        width: 80px;
-        height: 80px;
+        height: 150px;
     }
     
     .destination-info .fw-bold {
-        font-size: 14px;
+        font-size: 0.9rem;
     }
     
     .destination-info .small {
-        font-size: 11px;
+        font-size: 0.8rem;
     }
+}
+
+/* Auto-suggestion dropdown styles */
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+    color: #333;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+}
+
+.suggestion-item.selected {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Ensure the search input container has relative positioning */
+.search-box-container .input-group {
+    position: relative;
+}
+
+/* Style for the search input to work with suggestions */
+#destinationInput {
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+}
+
+.search-box-container .input-group-text {
+    border-radius: 8px 0 0 8px;
+}
+
+.search-box-container .btn-primary {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Mobile responsive adjustments for suggestions */
+@media (max-width: 768px) {
+    .suggestions-dropdown {
+        max-height: 200px;
+        font-size: 14px;
+    }
+    
+    .suggestion-item {
+        padding: 10px 12px;
+    }
+}
+
+/* Loading state for suggestions */
+.suggestions-loading {
+    padding: 12px 16px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* No results state */
+.suggestions-empty {
+    padding: 12px 16px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
 }

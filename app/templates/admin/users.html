@@ -1,0 +1,194 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Quản lý người dùng{% endblock %}
+{% block header %}Quản lý người dùng{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Danh sách người dùng</h6>
+        <div>
+            <input type="text" class="form-control d-inline-block w-auto" id="searchInput" placeholder="Tìm kiếm...">
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Tên</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.created_at.strftime('%d-%m-%Y') if user.created_at else 'N/A' }}</td>
+                        <td>
+                            <span class="badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ 'Hoạt động' if user.is_active else 'Đã khóa' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewUserDetails({{ user.id }})">
+                                <i class="bx bx-info-circle"></i> Chi tiết
+                            </button>
+                            {% if user.is_active %}
+                            <button class="btn btn-sm btn-danger" onclick="toggleUserStatus({{ user.id }}, false)">
+                                <i class="bx bx-lock"></i> Khóa
+                            </button>
+                            {% else %}
+                            <button class="btn btn-sm btn-success" onclick="toggleUserStatus({{ user.id }}, true)">
+                                <i class="bx bx-lock-open"></i> Mở khóa
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Phân trang -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.users', page=pagination.prev_num) }}">Trước</a>
+                </li>
+                {% endif %}
+                
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin.users', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.users', page=pagination.next_num) }}">Sau</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Modal Chi tiết người dùng -->
+<div class="modal fade" id="userDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết người dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="userDetailContent">
+                    <!-- Nội dung sẽ được load bằng AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewUserDetails(userId) {
+    // Load chi tiết người dùng bằng AJAX
+    fetch(`/admin/users/${userId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('userDetailContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> ${data.email}</p>
+                        <p><strong>Tên:</strong> ${data.name}</p>
+                        <p><strong>Ngày đăng ký:</strong> ${data.created_at}</p>
+                        <p><strong>Trạng thái:</strong> ${data.is_active ? 'Hoạt động' : 'Đã khóa'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Số tour đã đặt:</strong> ${data.total_bookings}</p>
+                        <p><strong>Tổng chi tiêu:</strong> ${data.total_spent}</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h6>Lịch sử đặt tour</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tour</th>
+                                <th>Ngày đặt</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.bookings.map(booking => `
+                                <tr>
+                                    <td>${booking.tour_name}</td>
+                                    <td>${booking.booking_date}</td>
+                                    <td>${booking.status}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('userDetailModal')).show();
+        });
+}
+
+function toggleUserStatus(userId, newStatus) {
+    if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái người dùng này?')) return;
+    
+    fetch(`/admin/users/${userId}/toggle-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+}
+
+// Tìm kiếm
+document.getElementById('searchInput').addEventListener('keyup', function(e) {
+    const searchText = e.target.value.toLowerCase();
+    const table = document.getElementById('usersTable');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+        
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().indexOf(searchText) > -1) {
+                found = true;
+                break;
+            }
+        }
+        
+        row.style.display = found ? '' : 'none';
+    }
+});
+</script>
+{% endblock %} 

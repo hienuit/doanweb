@@ -1,9 +1,8 @@
-
     body {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      background: url('../static/images/ho-lak-dak-lak-tay-nguyen-hoang-hon-sunset.jpeg') no-repeat center center fixed;
+      background: url('../images/ho-lak-dak-lak-tay-nguyen-hoang-hon-sunset.jpeg') no-repeat center center fixed;
       background-size: cover;
       display: flex;
       justify-content: center;
@@ -231,4 +230,99 @@
     gap: 10px;
     text-align: left;
   }
+}
+
+/* CSS cho Password Strength Indicator */
+.password-strength-container {
+  margin-top: 5px;
+}
+
+.password-strength-bar {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 5px 0;
+}
+
+.password-strength-fill {
+  height: 100%;
+  width: 0%;
+  transition: all 0.3s ease;
+  border-radius: 3px;
+}
+
+.strength-weak .password-strength-fill {
+  background-color: #dc3545;
+  width: 33%;
+}
+
+.strength-medium .password-strength-fill {
+  background-color: #ffc107;
+  width: 66%;
+}
+
+.strength-strong .password-strength-fill {
+  background-color: #28a745;
+  width: 100%;
+}
+
+.password-strength-text {
+  font-size: 12px;
+  margin-top: 3px;
+  min-height: 14px;
+}
+
+.strength-weak .password-strength-text {
+  color: #dc3545;
+}
+
+.strength-medium .password-strength-text {
+  color: #ffc107;
+}
+
+.strength-strong .password-strength-text {
+  color: #28a745;
+}
+
+.password-suggestions {
+  margin-top: 5px;
+  font-size: 11px;
+  color: #ffc107;
+}
+
+.password-suggestions ul {
+  margin: 3px 0 0 0;
+  padding-left: 15px;
+}
+
+.password-suggestions li {
+  margin: 2px 0;
+}
+
+.requirements-list {
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.requirement.met {
+  color: #28a745;
+}
+
+.requirement-icon {
+  margin-right: 5px;
+  font-size: 10px;
+}
+
+.submit-disabled {
+  background: #666 !important;
+  cursor: not-allowed !important;
 }

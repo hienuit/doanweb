@@ -3,67 +3,59 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xe chạy + Hoạt động từng điểm + Điều chỉnh tốc độ</title>
+  <title>Bản đồ</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAX7VUJAOydS5bl0Ms8iywvd1log047yj0&libraries=places&callback=initMap" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
 </head>
 <body>
+<!-- Home Button -->
+<a href="/" class="home-button" style="position: fixed; top: 20px; left: 20px; z-index: 1001; background-color: rgba(255, 255, 255, 0.95); color: #FF9F1C; padding: 12px 18px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; border: 2px solid #FF9F1C;">
+  <i class="fas fa-home" style="margin-right: 8px;"></i>Trang Chủ
+</a>
+
+<div id="day-controls">
+  <div class="day-navigation">
+    <button id="prevDayBtn" class="day-nav-btn" disabled>
+      <i class="fas fa-chevron-left"></i> Ngày trước
+    </button>
+    <div class="current-day-info">
+      <span id="currentDayLabel">Ngày 1</span>
+      <div id="dayProgress">
+        <span id="dayCounter">1 / 1</span>
+      </div>
+    </div>
+    <button id="nextDayBtn" class="day-nav-btn" disabled>
+      Ngày sau <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+  
+  <div class="day-summary">
+    <div class="summary-item">
+      <span class="summary-label">Hoạt động:</span>
+      <span id="activitiesCount">0</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Chi phí:</span>
+      <span id="dayCost">0 VND</span>
+    </div>
+  </div>
+</div>
 
 <div id="controls">
   <label>Tốc độ: <span id="speedLabel">100</span> ms/bước</label><br>
   <input type="range" id="speedSlider" min="10" max="1000" value="100">
 </div>
+
 <button id="findHotelsBtn" class="hotel-button">🏨 Tìm khách sạn gần đây</button>
-<button id="tips-button"><span class="notification-dot blink"></span> 💡 Gợi ý</button>
+
 <div id="trip-buttons-wrapper">
-  <button id="start-trip-btn" class="visible">🚗 Bắt đầu hành trình</button>
+  <button id="start-trip-btn" class="visible">🚗 Bắt đầu hành trình ngày này</button>
   <button id="reset-trip-btn" class="hidden">🔄 Đặt lại hành trình</button>
+  <button id="auto-play-btn" class="hidden">⏯️ Tự động chạy tất cả ngày</button>
 </div>
 
-<div id="tips-container">
-  <button id="tips-close">✕</button>
-  <h3>Gợi ý hữu ích</h3>
-  
-  <div class="tip-item">
-    <h4>🚗 Điều khiển tốc độ</h4>
-    <p>Sử dụng thanh trượt ở góc phải phía trên để điều chỉnh tốc độ di chuyển của xe (ms/bước).</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>🔢 Các điểm trên bản đồ</h4>
-    <p>Các con số trên bản đồ là các điểm dừng trong hành trình của bạn. Nhấp vào để xem thông tin chi tiết.</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>🏨 Tìm khách sạn</h4>
-    <p>Nhấn nút "Tìm khách sạn gần đây" để hiển thị các khách sạn xung quanh vị trí hiện tại của xe. Nhấp vào biểu tượng khách sạn để xem thông tin chi tiết.</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>🌍 Thay đổi kiểu bản đồ</h4>
-    <p>Sử dụng các nút ở góc trái bên dưới để chuyển giữa các chế độ: Mặc định, Vệ tinh, Địa hình và Ban đêm.</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>📊 Thông tin chuyến đi</h4>
-    <p>Bảng thông tin ở góc phải bên dưới hiển thị tổng quãng đường, thời gian ước tính, số điểm dừng và tiến độ di chuyển.</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>🔄 Tải lại trang</h4>
-    <p>Nếu bạn muốn bắt đầu lại hành trình, chỉ cần tải lại trang web. Lưu ý rằng điều này sẽ đặt lại tiến độ hiện tại.</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>⚠️ Lỗi tìm khách sạn</h4>
-    <p>Nếu không thể tìm khách sạn, hãy kiểm tra kết nối internet hoặc thử lại sau. API Google Places có giới hạn yêu cầu.</p>
-  </div>
-  
-  <div class="tip-item">
-    <h4>📱 Tương thích thiết bị</h4>
-    <p>Ứng dụng hoạt động tốt nhất trên màn hình lớn như máy tính và máy tính bảng. Trải nghiệm trên di động có thể không được tối ưu.</p>
-  </div>
-</div>
+
 
 <div id="map"></div>
 
@@ -77,20 +69,28 @@
 <div id="trip-info">
   <h3>Thông tin chuyến đi</h3>
   <div class="info-item">
-    <span class="info-label">Tổng quãng đường:</span>
-    <span id="total-distance">Đang tính...</span>
+    <span class="info-label">Ngày hiện tại:</span>
+    <span id="current-day-info">Ngày 1</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Quãng đường ngày:</span>
+    <span id="day-distance">Đang tính...</span>
   </div>
   <div class="info-item">
     <span class="info-label">Thời gian ước tính:</span>
-    <span id="total-duration">Đang tính...</span>
+    <span id="day-duration">Đang tính...</span>
   </div>
   <div class="info-item">
     <span class="info-label">Điểm dừng:</span>
-    <span id="total-stops">0</span>
+    <span id="day-stops">0</span>
   </div>
   <div class="info-item">
-    <span class="info-label">Tiến độ:</span>
-    <span id="progress">0%</span>
+    <span class="info-label">Tiến độ ngày:</span>
+    <span id="day-progress">0%</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">Tổng tiến độ:</span>
+    <span id="total-progress">0%</span>
   </div>
 </div>
 
@@ -104,6 +104,35 @@
   <img id="smallGif" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThtbnZ4a2owZHhwc2ozdDJwbWI1azcyNHZtb3hnMmxtNWx5ZWowbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dg/k7rvJoAgijk9qxyCKy/giphy.gif" alt="GIF" />
 </div>
 
-    <script src="{{ url_for('static', filename='js/map.js') }}"></script>  
+<!-- Route Legend -->
+<div id="route-legend">
+  <h4>🗺️ Chú thích tuyến đường</h4>
+  <div class="legend-item">
+    <div class="legend-line driving"></div>
+    <span>🚗 Đường bộ (xe hơi)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line transit"></div>
+    <span>🚌 Phương tiện công cộng</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line walking"></div>
+    <span>🚶 Đi bộ</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line water"></div>
+    <span>🌊 Đường biển/hàng không</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line direct"></div>
+    <span>🔗 Kết nối trực tiếp</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line straight"></div>
+    <span>✈️ Đường thẳng</span>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>  
 </body>
 </html>

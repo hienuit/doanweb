@@ -6,19 +6,24 @@
     <title>User Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        // Khởi tạo biến từ dữ liệu server
+        const userFromServer = {{ user_data|tojson|safe }};
+        const historyFromServer = {{ history|tojson|safe }};
+        
+        // Expose chart data globally
+        window.destinationStatsData = {{ destination_stats|tojson|safe }};
+        window.travelStyleStatsData = {{ travel_style_stats|tojson|safe }};
+        
+        // Make dashboard instance globally accessible
+        window.dashboard = null;
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.3/cdn.min.js" defer></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
 <body class="bg-gray-100 font-sans">
     
-    <script>
-        const userFromServer = {{ user_data|tojson|safe }};
-        const historyFromServer = {{ history|tojson|safe }};
-    </script>
-    
-    
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-
     <div x-data="dashboard">
         <!-- Thanh điều hướng -->
         <nav class="bg-primary text-white shadow-lg">
@@ -26,13 +31,22 @@
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <div class="flex-shrink-0 flex items-center">
-                            <span class="text-xl font-bold">MyDashboard</span>
+                            <a href="/" class="text-xl font-bold hover:text-amber-200 transition">MyDashboard</a>
                         </div>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center space-x-4">
+                        <!-- Nút Trang chủ -->
+                        <a href="/" class="flex items-center px-4 py-2 text-white hover:bg-amber-600 rounded-lg transition duration-200">
+                            <i class="fas fa-home mr-2"></i>
+                            <span>Trang chủ</span>
+                        </a>
+                        
                         <div class="relative" x-data="{ isOpen: false }">
                             <button @click="isOpen = !isOpen" class="flex items-center space-x-2 focus:outline-none">
-                                <img class="h-8 w-8 rounded-full object-cover" src="/api/placeholder/150/150" alt="Avatar">
+                                <img class="h-8 w-8 rounded-full object-cover" 
+                                     :src="user.avatar_url || '/static/images/default-avatar.png'" 
+                                     alt="Avatar"
+                                     onerror="this.src='/static/images/default-avatar.png'">
                                 <span x-text="user.name"></span>
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -60,6 +74,12 @@
                         <button @click="activeTab = 'history'" :class="{'bg-white text-primary border-primary': activeTab === 'history', 'text-gray-600 hover:text-gray-800': activeTab !== 'history'}" class="px-6 py-4 font-medium border-b-2 border-transparent focus:outline-none transition">
                             <i class="fas fa-history mr-2"></i>Lịch sử hoạt động
                         </button>
+                        <button @click="activeTab = 'experiences'" :class="{'bg-white text-primary border-primary': activeTab === 'experiences', 'text-gray-600 hover:text-gray-800': activeTab !== 'experiences'}" class="px-6 py-4 font-medium border-b-2 border-transparent focus:outline-none transition">
+                            <i class="fas fa-map-marked-alt mr-2"></i>Quản lý bài đăng
+                        </button>
+                        <button @click="activeTab = 'feedback'" :class="{'bg-white text-primary border-primary': activeTab === 'feedback', 'text-gray-600 hover:text-gray-800': activeTab !== 'feedback'}" class="px-6 py-4 font-medium border-b-2 border-transparent focus:outline-none transition">
+                            <i class="fas fa-comment mr-2"></i>Góp ý
+                        </button>
                     </div>
                 </div>
 
@@ -84,8 +104,17 @@
                     <div class="flex flex-col md:flex-row">
                         <div class="md:w-1/3 flex flex-col items-center p-4">
                             <div class="relative mb-4">
-                                <img class="h-40 w-40 rounded-full object-cover border-4 border-secondary" src="/api/placeholder/300/300" alt="Avatar">
-                                <button class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-lg hover:bg-amber-600 transition">
+                                <img class="h-40 w-40 rounded-full object-cover border-4 border-secondary" 
+                                     :src="user.avatar_url || '/static/images/default-avatar.png'" 
+                                     alt="Avatar"
+                                     onerror="this.src='/static/images/default-avatar.png'">
+                                <input type="file" 
+                                       id="avatar-input" 
+                                       accept="image/*" 
+                                       class="hidden" 
+                                       @change="uploadAvatar($event)">
+                                <button @click="document.getElementById('avatar-input').click()" 
+                                        class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow-lg hover:bg-amber-600 transition">
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
@@ -229,6 +258,253 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Quản lý bài đăng -->
+                <div x-show="activeTab === 'experiences'" class="p-6">
+                    <!-- Thống kê tổng quan -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-pen-fancy text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-2xl font-bold">{{ experiences_stats.total_experiences }}</div>
+                                    <div class="text-blue-100">Bài đăng</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-heart text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-2xl font-bold">{{ experiences_stats.total_likes }}</div>
+                                    <div class="text-red-100">Lượt thích</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-eye text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-2xl font-bold">{{ experiences_stats.total_views }}</div>
+                                    <div class="text-green-100">Lượt xem</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-comments text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-2xl font-bold">{{ experiences_stats.total_comments }}</div>
+                                    <div class="text-purple-100">Bình luận</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts và thống kê -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Biểu đồ điểm đến -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h4 class="text-lg font-semibold mb-4">Điểm đến yêu thích</h4>
+                            <div class="chart-container">
+                                <canvas id="destinationChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Biểu đồ phong cách du lịch -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h4 class="text-lg font-semibold mb-4">Phong cách du lịch</h4>
+                            <div class="chart-container">
+                                <canvas id="travelStyleChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thống kê ngân sách -->
+                    {% if budget_stats and budget_stats.total_budget %}
+                    <div class="bg-white rounded-lg shadow p-6 mb-8">
+                        <h4 class="text-lg font-semibold mb-4">Thống kê ngân sách</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">{{ "{:,.0f}".format(budget_stats.avg_budget) }}đ</div>
+                                <div class="text-gray-600">Trung bình</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">{{ "{:,.0f}".format(budget_stats.min_budget) }}đ</div>
+                                <div class="text-gray-600">Thấp nhất</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-red-600">{{ "{:,.0f}".format(budget_stats.max_budget) }}đ</div>
+                                <div class="text-gray-600">Cao nhất</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600">{{ "{:,.0f}".format(budget_stats.total_budget) }}đ</div>
+                                <div class="text-gray-600">Tổng cộng</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Achievements -->
+                    {% if achievements %}
+                    <div class="bg-white rounded-lg shadow p-6 mb-8">
+                        <h4 class="text-lg font-semibold mb-4">Thành tích đạt được</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {% for achievement in achievements %}
+                            <div class="flex items-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <div class="flex-shrink-0">
+                                    <i class="{{ achievement.icon }} text-2xl text-yellow-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="font-semibold text-yellow-800">{{ achievement.name }}</div>
+                                    <div class="text-sm text-yellow-600">{{ achievement.description }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Top experiences -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        {% if most_liked_experience %}
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h4 class="text-lg font-semibold mb-4">Bài đăng được yêu thích nhất</h4>
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-medium">{{ most_liked_experience.title }}</h5>
+                                <p class="text-gray-600 text-sm mt-1">{{ most_liked_experience.destination }}</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-heart text-red-500 mr-1"></i>
+                                    <span class="text-sm">{{ most_liked_experience.likes }} lượt thích</span>
+                                    <i class="fas fa-eye text-blue-500 ml-4 mr-1"></i>
+                                    <span class="text-sm">{{ most_liked_experience.views }} lượt xem</span>
+                                </div>
+                                <a href="/experience/{{ most_liked_experience.id }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Xem chi tiết →</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if most_viewed_experience %}
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h4 class="text-lg font-semibold mb-4">Bài đăng được xem nhiều nhất</h4>
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-medium">{{ most_viewed_experience.title }}</h5>
+                                <p class="text-gray-600 text-sm mt-1">{{ most_viewed_experience.destination }}</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-eye text-blue-500 mr-1"></i>
+                                    <span class="text-sm">{{ most_viewed_experience.views }} lượt xem</span>
+                                    <i class="fas fa-heart text-red-500 ml-4 mr-1"></i>
+                                    <span class="text-sm">{{ most_viewed_experience.likes }} lượt thích</span>
+                                </div>
+                                <a href="/experience/{{ most_viewed_experience.id }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Xem chi tiết →</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Danh sách bài đăng -->
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-lg font-semibold">Danh sách bài đăng của bạn</h4>
+                                <a href="/share-experience" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition">
+                                    <i class="fas fa-plus mr-2"></i>Thêm bài đăng mới
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div id="experiencesContainer">
+                                <!-- Experiences sẽ được load bằng JavaScript -->
+                                <div class="text-center py-8">
+                                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
+                                    <p class="text-gray-500 mt-2">Đang tải dữ liệu...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <div id="experiencesPagination" class="flex justify-center mt-6" style="display: none;">
+                                <!-- Pagination sẽ được tạo bằng JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thêm phần nội dung tab Góp ý -->
+                <div x-show="activeTab === 'feedback'" class="p-6">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Gửi góp ý mới</h3>
+                        <form @submit.prevent="submitFeedback()" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
+                                <input type="text" x-model="feedbackForm.subject" required class="w-full p-2 border rounded-lg" :disabled="feedbackForm.isSubmitting">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nội dung góp ý</label>
+                                <textarea x-model="feedbackForm.message" required rows="4" class="w-full p-2 border rounded-lg" :disabled="feedbackForm.isSubmitting"></textarea>
+                            </div>
+                            <button type="submit" class="bg-primary text-white py-2 px-4 rounded-lg hover:bg-amber-600 transition" :disabled="feedbackForm.isSubmitting">
+                                <template x-if="!feedbackForm.isSubmitting">
+                                    <span><i class="fas fa-paper-plane mr-2"></i>Gửi góp ý</span>
+                                </template>
+                                <template x-if="feedbackForm.isSubmitting">
+                                    <span><i class="fas fa-spinner fa-spin mr-2"></i>Đang gửi...</span>
+                                </template>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Lịch sử góp ý</h3>
+                        <div class="space-y-4">
+                            <template x-for="feedback in userFeedbacks" :key="feedback.id">
+                                <div class="bg-white rounded-lg shadow p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h4 class="text-lg font-medium text-gray-800" x-text="feedback.subject"></h4>
+                                        <span class="px-3 py-1 rounded-full text-sm"
+                                              :class="{
+                                                  'bg-yellow-100 text-yellow-800': feedback.status === 'pending',
+                                                  'bg-green-100 text-green-800': feedback.status === 'responded',
+                                                  'bg-gray-100 text-gray-800': feedback.status !== 'pending' && feedback.status !== 'responded'
+                                              }"
+                                              x-text="feedback.status">
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-600 mb-2" x-text="feedback.message"></p>
+                                    <div class="text-sm text-gray-500">
+                                        Gửi lúc: <span x-text="feedback.created_at"></span>
+                                    </div>
+                                    <template x-if="feedback.response">
+                                        <div class="mt-3 bg-blue-50 p-3 rounded">
+                                            <h5 class="font-medium text-blue-800 mb-1">Phản hồi từ admin:</h5>
+                                            <p class="text-blue-900" x-text="feedback.response"></p>
+                                            <div class="text-sm text-blue-700 mt-1" x-show="feedback.response_at">
+                                                Phản hồi lúc: <span x-text="feedback.response_at"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template x-if="userFeedbacks.length === 0">
+                                <div class="text-center text-gray-500 py-8">
+                                    <i class="fas fa-inbox text-4xl mb-2"></i>
+                                    <p>Bạn chưa có góp ý nào</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -299,9 +575,37 @@
                     </div>
                 </div>
             </div>
+
+        <!-- Modal xác nhận xóa experience -->
+        <div x-show="showDeleteExperienceModal" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center" x-cloak>
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" @click.away="showDeleteExperienceModal = false">
+                <div class="border-b px-6 py-4">
+                    <h3 class="text-lg font-medium text-gray-900">Xác nhận xóa bài đăng</h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-700 mb-4">Bạn có chắc chắn muốn xóa bài đăng này? Hành động này không thể hoàn tác.</p>
+                    <div class="flex justify-end">
+                        <button @click="showDeleteExperienceModal = false" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg mr-2 hover:bg-gray-300 transition">
+                            Hủy
+                        </button>
+                        <button @click="confirmDeleteExperience()" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition">
+                            Xóa bài đăng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <style>
+        #notification {
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1000;
+        }
+    </style>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>

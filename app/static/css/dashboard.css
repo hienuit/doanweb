@@ -56,3 +56,23 @@ footer a:hover {
 [x-cloak] {
     display: none !important;
 }
+
+/* Chart containers */
+#destinationChart, #travelStyleChart {
+    max-height: 300px !important;
+    width: 100% !important;
+    position: relative;
+}
+
+/* Prevent chart containers from causing layout shifts */
+.chart-container {
+    height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Disable any potential infinite animations */
+canvas {
+    animation: none !important;
+    transition: none !important;
+}

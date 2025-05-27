@@ -1,0 +1,266 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Cài đặt hệ thống{% endblock %}
+{% block header %}Cài đặt hệ thống{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Thông tin website -->
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Thông tin website</h6>
+            </div>
+            <div class="card-body">
+                <form id="siteSettingsForm">
+                    <div class="mb-3">
+                        <label for="siteName" class="form-label">Tên website</label>
+                        <input type="text" class="form-control" id="siteName" name="site_name" value="{{ settings.site_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="siteDescription" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="siteDescription" name="site_description" rows="3">{{ settings.site_description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactEmail" class="form-label">Email liên hệ</label>
+                        <input type="email" class="form-control" id="contactEmail" name="contact_email" value="{{ settings.contact_email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactPhone" class="form-label">Số điện thoại liên hệ</label>
+                        <input type="text" class="form-control" id="contactPhone" name="contact_phone" value="{{ settings.contact_phone }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cài đặt email -->
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Cài đặt email</h6>
+            </div>
+            <div class="card-body">
+                <form id="emailSettingsForm">
+                    <div class="mb-3">
+                        <label for="smtpServer" class="form-label">SMTP Server</label>
+                        <input type="text" class="form-control" id="smtpServer" name="smtp_server" value="{{ settings.smtp_server }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtpPort" class="form-label">SMTP Port</label>
+                        <input type="number" class="form-control" id="smtpPort" name="smtp_port" value="{{ settings.smtp_port }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtpUsername" class="form-label">SMTP Username</label>
+                        <input type="text" class="form-control" id="smtpUsername" name="smtp_username" value="{{ settings.smtp_username }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtpPassword" class="form-label">SMTP Password</label>
+                        <input type="password" class="form-control" id="smtpPassword" name="smtp_password" value="{{ settings.smtp_password }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailFrom" class="form-label">Email From</label>
+                        <input type="email" class="form-control" id="emailFrom" name="email_from" value="{{ settings.email_from }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    <button type="button" class="btn btn-info" onclick="testEmailSettings()">Kiểm tra kết nối</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cài đặt thanh toán -->
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Cài đặt thanh toán</h6>
+            </div>
+            <div class="card-body">
+                <form id="paymentSettingsForm">
+                    <div class="mb-3">
+                        <label for="paymentCurrency" class="form-label">Đơn vị tiền tệ</label>
+                        <select class="form-select" id="paymentCurrency" name="payment_currency">
+                            <option value="VND" {% if settings.payment_currency == 'VND' %}selected{% endif %}>VND</option>
+                            <option value="USD" {% if settings.payment_currency == 'USD' %}selected{% endif %}>USD</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="paypalClientId" class="form-label">PayPal Client ID</label>
+                        <input type="text" class="form-control" id="paypalClientId" name="paypal_client_id" value="{{ settings.paypal_client_id }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="paypalSecret" class="form-label">PayPal Secret</label>
+                        <input type="password" class="form-control" id="paypalSecret" name="paypal_secret" value="{{ settings.paypal_secret }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="vnpayTmnCode" class="form-label">VNPay TMN Code</label>
+                        <input type="text" class="form-control" id="vnpayTmnCode" name="vnpay_tmn_code" value="{{ settings.vnpay_tmn_code }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="vnpayHashSecret" class="form-label">VNPay Hash Secret</label>
+                        <input type="password" class="form-control" id="vnpayHashSecret" name="vnpay_hash_secret" value="{{ settings.vnpay_hash_secret }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cài đặt bảo mật -->
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Cài đặt bảo mật</h6>
+            </div>
+            <div class="card-body">
+                <form id="securitySettingsForm">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enableTwoFactor" name="enable_two_factor" {% if settings.enable_two_factor %}checked{% endif %}>
+                            <label class="form-check-label" for="enableTwoFactor">Bật xác thực 2 lớp</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enableCaptcha" name="enable_captcha" {% if settings.enable_captcha %}checked{% endif %}>
+                            <label class="form-check-label" for="enableCaptcha">Bật CAPTCHA</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sessionTimeout" class="form-label">Thời gian timeout phiên (phút)</label>
+                        <input type="number" class="form-control" id="sessionTimeout" name="session_timeout" value="{{ settings.session_timeout }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxLoginAttempts" class="form-label">Số lần đăng nhập tối đa</label>
+                        <input type="number" class="form-control" id="maxLoginAttempts" name="max_login_attempts" value="{{ settings.max_login_attempts }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Xử lý form thông tin website
+document.getElementById('siteSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    fetch('/admin/settings/site', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Đã lưu thay đổi thành công!');
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+});
+
+// Xử lý form cài đặt email
+document.getElementById('emailSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    fetch('/admin/settings/email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Đã lưu thay đổi thành công!');
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+});
+
+// Xử lý form cài đặt thanh toán
+document.getElementById('paymentSettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    fetch('/admin/settings/payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Đã lưu thay đổi thành công!');
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+});
+
+// Xử lý form cài đặt bảo mật
+document.getElementById('securitySettingsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert checkbox values to boolean
+    data.enable_two_factor = !!formData.get('enable_two_factor');
+    data.enable_captcha = !!formData.get('enable_captcha');
+    
+    fetch('/admin/settings/security', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Đã lưu thay đổi thành công!');
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+});
+
+// Kiểm tra cài đặt email
+function testEmailSettings() {
+    const formData = new FormData(document.getElementById('emailSettingsForm'));
+    const data = Object.fromEntries(formData.entries());
+    
+    fetch('/admin/settings/email/test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Kết nối email thành công!');
+        } else {
+            alert('Kết nối email thất bại: ' + data.error);
+        }
+    });
+}
+</script>
+{% endblock %} 

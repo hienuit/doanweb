@@ -1,0 +1,521 @@
+/* Weather Widget Styles */
+.weather-widget {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    margin: 20px 0;
+    box-shadow: 0 8px 32px rgba(116, 185, 255, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.weather-widget:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(116, 185, 255, 0.4);
+}
+
+.weather-widget.loading {
+    background: linear-gradient(135deg, #ddd 0%, #bbb 100%);
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+.weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.weather-city {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.weather-time {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.weather-temp {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.weather-icon {
+    font-size: 3rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.weather-description {
+    font-size: 1.1rem;
+    margin: 0 0 15px 0;
+    text-transform: capitalize;
+    opacity: 0.9;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.weather-detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.weather-detail i {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* Thời tiết */
+.weather-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 60px 0;
+    margin: 40px 0;
+}
+
+.weather-section .section-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Thời tiết điểm đến */
+.destination-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.destination-weather {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.destination-weather:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.05);
+}
+
+.destination-weather i {
+    font-size: 1.1rem;
+}
+
+.destination-weather.loading {
+    background: rgba(128, 128, 128, 0.7);
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+/* Dự bóa thời tiết */
+.weather-forecast {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.forecast-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2d3436;
+    text-align: center;
+}
+
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.forecast-item {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.forecast-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #f1f3f4 100%);
+}
+
+.forecast-day {
+    font-weight: 600;
+    color: #2d3436;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.forecast-date {
+    font-size: 0.8rem;
+    color: #636e72;
+    margin-bottom: 10px;
+}
+
+.forecast-icon {
+    font-size: 2rem;
+    margin: 10px 0;
+    color: #74b9ff;
+}
+
+.forecast-temp {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d3436;
+    margin-bottom: 5px;
+}
+
+.forecast-desc {
+    font-size: 0.8rem;
+    color: #636e72;
+    text-transform: capitalize;
+}
+
+.weather-modal .modal-content {
+    border-radius: 20px;
+    border: none;
+    overflow: hidden;
+}
+
+.weather-modal .modal-header {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    color: white;
+    border: none;
+    padding: 20px 30px;
+}
+
+.weather-modal .modal-title {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+.weather-modal .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.weather-modal .modal-body {
+    padding: 30px;
+    background: #f8f9fa;
+}
+
+/* Cho mobile */
+@media (max-width: 768px) {
+    .weather-widget {
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .weather-temp {
+        font-size: 2.5rem;
+    }
+    
+    .weather-icon {
+        font-size: 2.5rem;
+    }
+    
+    .weather-details {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .weather-detail {
+        padding: 6px;
+        font-size: 0.8rem;
+    }
+    
+    .destination-weather {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    
+    .forecast-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .forecast-item {
+        padding: 10px;
+    }
+    
+    .forecast-icon {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .weather-section .section-title {
+        font-size: 2rem;
+    }
+    
+    .weather-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .forecast-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* hiệu ứng loading */
+.weather-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: white;
+}
+
+.weather-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* lỗi */
+.weather-error {
+    background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+    color: white;
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.weather-error i {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* chủ đề thời tiết */
+.weather-sunny {
+    background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+}
+
+.weather-cloudy {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+}
+
+.weather-rainy {
+    background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+}
+
+.weather-snowy {
+    background: linear-gradient(135deg, #ddd 0%, #74b9ff 100%);
+}
+
+.weather-stormy {
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+}
+
+/* chọn thành phố */
+.city-selector {
+    margin-bottom: 30px;
+}
+
+.quick-cities {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-cities .btn {
+    border-radius: 20px;
+    font-size: 0.9rem;
+    padding: 6px 15px;
+    transition: all 0.3s ease;
+}
+
+.quick-cities .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+/* chọn thành phố */
+.city-tabs .nav-pills .nav-link {
+    border-radius: 20px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.city-tabs .nav-pills .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.city-tabs .nav-pills .nav-link:not(.active) {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.city-tabs .nav-pills .nav-link:not(.active):hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.selected-cities-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.selected-cities-list .badge {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    margin: 2px;
+}
+
+.selected-cities-list .btn-close {
+    margin-left: 8px;
+    font-size: 0.6em;
+    opacity: 0.8;
+}
+
+.selected-cities-list .btn-close:hover {
+    opacity: 1;
+}
+
+/* Form checks in modal */
+.city-tabs .form-check {
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.city-tabs .form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.city-tabs .form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.city-tabs .form-check-label {
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* chỉ số dữ liệu demo */
+.demo-indicator {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    margin-left: 8px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.demo-indicator:hover {
+    opacity: 1;
+}
+
+.demo-indicator i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* mobile*/
+@media (max-width: 768px) {
+    .quick-cities {
+        justify-content: center;
+        margin-top: 15px;
+    }
+    
+    .quick-cities span {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .city-selector .row {
+        text-align: center;
+    }
+    
+    .city-selector .col-md-4 {
+        margin-top: 15px;
+    }
+    
+    .demo-indicator {
+        font-size: 0.7rem;
+        margin-left: 5px;
+    }
+}

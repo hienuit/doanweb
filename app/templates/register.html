@@ -4,32 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Classy Login Form</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
 <body>
+  <!-- Home Button -->
+  <a href="/" class="home-button" style="position: fixed; top: 20px; left: 20px; z-index: 1000; background-color: rgba(255, 255, 255, 0.9); color: #B61840; padding: 10px 15px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+    <i class="fas fa-home" style="margin-right: 5px;"></i>Trang Chủ
+  </a>
+  
   <div class="login-container">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-{{ category }}" style="
-                    padding: 10px;
-                    margin-bottom: 15px;
-                    border-radius: 5px;
-                    {% if category == 'success' %}
-                        background-color: rgba(40, 167, 69, 0.8);
-                    {% elif category == 'error' %}
-                        background-color: rgba(220, 53, 69, 0.8);
-                    {% endif %}
-                    color: white;
-                    ">
-                    {{ message }}
-                </div>
+                {% if category == 'success' %}
+                    <div class="alert alert-success" style="padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: rgba(40, 167, 69, 0.8); color: white;">
+                        {{ message }}
+                    </div>
+                {% elif category == 'error' %}
+                    <div class="alert alert-error" style="padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: rgba(220, 53, 69, 0.8); color: white;">
+                        {{ message }}
+                    </div>
+                {% endif %}
             {% endfor %}
         {% endif %}
     {% endwith %}
     <h2>Tham gia ngay tại đây</h2>
-    <form class="login-form" action="/registerfunction" method="POST">
-      <input type="hidden" name="next_page" value="{{ next if next else request.referrer }}">
+    <form class="login-form" action="/registerfunction" method="POST" id="registerForm">
+      {% set safe_next = '' %}
+      {% if next and 'verify_otp' not in next and 'verify-otp' not in next and 'register' not in next and 'forgot-password' not in next and 'reset-password-otp' not in next and 'set-new-password' not in next %}
+        {% set safe_next = next %}
+      {% elif request.referrer and 'verify_otp' not in request.referrer and 'verify-otp' not in request.referrer and 'register' not in request.referrer and 'forgot-password' not in request.referrer and 'reset-password-otp' not in request.referrer and 'set-new-password' not in request.referrer %}
+        {% set safe_next = request.referrer %}
+      {% endif %}
+      <input type="hidden" name="next_page" value="{{ safe_next }}">
       <div class="input-group">
         <input type="text" name="fname" placeholder="Họ và tên" required />
       </div>
@@ -43,15 +51,47 @@
         <input type="password" id="password" name="pass" placeholder="Nhập mật khẩu" required />
         <span class="toggle-password" toggle="#password">👁</span>
       </div>
+      <!-- Password Strength Indicator -->
+      <div class="password-strength-container" id="passwordStrengthContainer" style="display: none;">
+        <div class="password-strength-bar">
+          <div class="password-strength-fill" id="passwordStrengthFill"></div>
+        </div>
+        <div class="password-strength-text" id="passwordStrengthText"></div>
+        <div class="requirements-list" id="requirementsList">
+          <div class="requirement" id="req-length">
+            <span class="requirement-icon">✗</span>
+            <span>Ít nhất 8 ký tự</span>
+          </div>
+          <div class="requirement" id="req-uppercase">
+            <span class="requirement-icon">✗</span>
+            <span>Có chữ cái viết hoa (A-Z)</span>
+          </div>
+          <div class="requirement" id="req-lowercase">
+            <span class="requirement-icon">✗</span>
+            <span>Có chữ cái viết thường (a-z)</span>
+          </div>
+          <div class="requirement" id="req-digit">
+            <span class="requirement-icon">✗</span>
+            <span>Có số (0-9)</span>
+          </div>
+          <div class="requirement" id="req-special">
+            <span class="requirement-icon">✗</span>
+            <span>Có ký tự đặc biệt (!@#$%^&*)</span>
+          </div>
+        </div>
+      </div>
+      
       <div class="input-group">
         <input type="password" id="confirm_pass" name="confirm_pass" placeholder="Nhập lại mật khẩu" required />
         <span class="toggle-password" toggle="#confirm_pass">👁</span>
       </div>
+      <div id="passwordMatchMessage" style="font-size: 12px; margin-top: -15px; margin-bottom: 10px;"></div>
+      
       <div class="options">
         <label><input type="checkbox" name="remember" /> Remember me</label>
-        <p style="color: yellow">Bạn đã có tài khoản. <a href="/login?next={{ next if next else request.url }}" style="color: white">Đăng nhập</a></p>
+        <p style="color: yellow">Bạn đã có tài khoản. <a href="/login{% if safe_next %}?next={{ safe_next|urlencode }}{% endif %}" style="color: white">Đăng nhập</a></p>
       </div>
-      <button type="submit" class="login-btn">Đăng ký</button>
+      <button type="submit" class="login-btn" id="submitBtn">Đăng ký</button>
       <div class="or" style="font-size: large;">or</div>
       <div class="social-login">
         <button type="button" class="social-btn facebook" onclick="window.location.href = facebookLoginUrl">Facebook</button>
@@ -65,6 +105,7 @@
   </div>
 
   <script>
+    // Toggle password visibility
     document.querySelectorAll(".toggle-password").forEach(function (eye) {
       eye.addEventListener("click", function () {
         const input = document.querySelector(this.getAttribute("toggle"));
@@ -77,8 +118,173 @@
         }
       });
     });
-    const googleLoginUrl = "{{ url_for('auth.login_google') }}" + "?next={{ next if next else request.url|urlencode }}";
-    const facebookLoginUrl = "{{ url_for('loginfb.login_facebook') }}" + "?next={{ next if next else request.url|urlencode }}";
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+      if (!password) {
+        return { level: "weak", score: 0, criteria: {} };
+      }
+
+      const criteria = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        digit: /\d/.test(password),
+        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+        no_common: !isCommonPassword(password)
+      };
+
+      let score = 0;
+
+      // Tính điểm
+      if (criteria.length) {
+        score += 25;
+        if (password.length >= 12) score += 10;
+        if (password.length >= 16) score += 10;
+      }
+      if (criteria.uppercase) score += 15;
+      if (criteria.lowercase) score += 10;
+      if (criteria.digit) score += 15;
+      if (criteria.special) score += 20;
+      if (criteria.no_common) score += 5;
+
+      // Xác định mức độ
+      let level;
+      if (score >= 80 && criteria.length && criteria.uppercase && criteria.special) {
+        level = "strong";
+      } else if (score >= 60 && criteria.length) {
+        level = "medium";
+      } else {
+        level = "weak";
+      }
+
+      return { level, score, criteria };
+    }
+
+    function isCommonPassword(password) {
+      const commonPasswords = [
+        'password', '123456', '123456789', 'qwerty', 'abc123',
+        'password123', 'admin', '12345678', '1234567890', 'welcome'
+      ];
+      return commonPasswords.includes(password.toLowerCase());
+    }
+
+    function updatePasswordStrength(password) {
+      const container = document.getElementById('passwordStrengthContainer');
+      const fill = document.getElementById('passwordStrengthFill');
+      const text = document.getElementById('passwordStrengthText');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!password) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      const result = checkPasswordStrength(password);
+
+      // Cập nhật thanh strength
+      container.className = 'password-strength-container strength-' + result.level;
+
+      // Cập nhật text
+      const texts = {
+        weak: '❌ Mật khẩu yếu - Không được phép',
+        medium: '⚠️ Mật khẩu trung bình',
+        strong: '✅ Mật khẩu mạnh'
+      };
+      text.textContent = texts[result.level];
+
+      // Cập nhật requirements
+      updateRequirements(result.criteria);
+
+      // Vô hiệu hóa nút submit nếu mật khẩu yếu
+      if (result.level === 'weak') {
+        submitBtn.classList.add('submit-disabled');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Mật khẩu không đủ mạnh';
+      } else {
+        submitBtn.classList.remove('submit-disabled');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Đăng ký';
+      }
+    }
+
+    function updateRequirements(criteria) {
+      const requirements = {
+        'req-length': criteria.length,
+        'req-uppercase': criteria.uppercase,
+        'req-lowercase': criteria.lowercase,
+        'req-digit': criteria.digit,
+        'req-special': criteria.special
+      };
+
+      Object.keys(requirements).forEach(reqId => {
+        const element = document.getElementById(reqId);
+        const icon = element.querySelector('.requirement-icon');
+        
+        if (requirements[reqId]) {
+          element.classList.add('met');
+          icon.textContent = '✓';
+        } else {
+          element.classList.remove('met');
+          icon.textContent = '✗';
+        }
+      });
+    }
+
+    function checkPasswordMatch() {
+      const password = document.getElementById('password').value;
+      const confirmPass = document.getElementById('confirm_pass').value;
+      const messageDiv = document.getElementById('passwordMatchMessage');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (confirmPass && password !== confirmPass) {
+        messageDiv.innerHTML = '<span style="color: #dc3545;">❌ Mật khẩu không khớp</span>';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('submit-disabled');
+      } else if (confirmPass && password === confirmPass) {
+        messageDiv.innerHTML = '<span style="color: #28a745;">✅ Mật khẩu khớp</span>';
+        // Chỉ enable nếu mật khẩu cũng đủ mạnh
+        const passwordStrength = checkPasswordStrength(password);
+        if (passwordStrength.level !== 'weak') {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('submit-disabled');
+          submitBtn.textContent = 'Đăng ký';
+        }
+      } else {
+        messageDiv.innerHTML = '';
+      }
+    }
+
+    // Event listeners
+    document.getElementById('password').addEventListener('input', function() {
+      updatePasswordStrength(this.value);
+      checkPasswordMatch();
+    });
+
+    document.getElementById('confirm_pass').addEventListener('input', checkPasswordMatch);
+
+    // Ngăn submit form nếu mật khẩu yếu
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      const password = document.getElementById('password').value;
+      const confirmPass = document.getElementById('confirm_pass').value;
+      const passwordStrength = checkPasswordStrength(password);
+
+      if (passwordStrength.level === 'weak') {
+        e.preventDefault();
+        alert('Mật khẩu quá yếu! Vui lòng chọn mật khẩu khác đạt yêu cầu tối thiểu.');
+        return false;
+      }
+
+      if (password !== confirmPass) {
+        e.preventDefault();
+        alert('Mật khẩu xác nhận không khớp!');
+        return false;
+      }
+    });
+
+    const googleLoginUrl = "{{ url_for('auth.login_google') }}" + "{% if safe_next %}?next={{ safe_next|urlencode }}{% endif %}";
+    const facebookLoginUrl = "{{ url_for('loginfb.facebook_login') }}" + "{% if safe_next %}?next={{ safe_next|urlencode }}{% endif %}";
   </script>
 </body>
 </html>

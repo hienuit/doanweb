@@ -1,302 +1,512 @@
 #map { height: 100vh; }
-    #controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-family: sans-serif;
-      width: 200px;
-      box-shadow: 0 0 5px #aaa;
-    }
-    label { font-size: 14px; }
-    #myModal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(5px);
-    }
-    .modal-content {
-      background-image: url('https://img5.thuthuatphanmem.vn/uploads/2021/10/20/background-du-lich-bau-troi_110850711.jpg');
-      background-size: cover;
-      background-position: center;
-      color: black;
-      padding: 30px;
-      border-radius: 15px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      width: 80%;
-      max-width: 350px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      font-family: 'Arial', sans-serif;
-      border: 5px solid orange;
-    }
-    .modal-content p {
-      font-size: 22px;
-      font-weight: bold;
-      margin: 0;
-      animation: slideIn 1s ease-out forwards;
-    }
-    @keyframes slideIn {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(0); }
-    }
-    #speedSlider { width: 100%; }
-    #gifSmall {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 700px;
-      height: 500px;
-      z-index: 2000;
-    }
-    #gifSmall img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .hotel-info-window {
-      width: 200px;
-      font-family: Arial, sans-serif;
-    }
-    .hotel-info-window img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 4px;
-      margin-bottom: 5px;
-    }
-    .hotel-info-window h4 {
-      margin: 5px 0;
-      font-size: 14px;
-    }
-    .hotel-info-window p {
-      margin: 3px 0;
-      font-size: 12px;
-    }
-    .hotel-info-window a {
-      color: blue;
-      text-decoration: none;
-      font-size: 12px;
-    }
-    .hotel-icon {
-      background-color: #4285F4;
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
-      padding: 8px;
-      border-radius: 50%;
-      text-align: center;
-      width: 34px;
-      height: 34px;
-      line-height: 20px;
-      border: 2px solid white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-    .hotel-button {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      background: #4285F4;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-    .map-style-control {
-      position: absolute;
-      bottom: 30px;
-      left: 10px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .style-button {
-      background: white;
-      color: #333;
-      border: 1px solid #ccc;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .style-button:hover {
-      background: #f0f0f0;
-    }
-    .style-button.active {
-      background: #4285F4;
-      color: white;
-      border-color: #2c5aa0;
-    }
-    #trip-info {
-      position: absolute;
-      bottom: 30px;
-      right: 10px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 15px;
-      border-radius: 8px;
-      font-family: sans-serif;
-      width: 250px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    #trip-info h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      color: #333;
-      font-size: 16px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
-    }
-    #trip-info p {
-      margin: 5px 0;
-      font-size: 14px;
-    }
-    .info-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    .info-label {
-      font-weight: bold;
-      color: #555;
-    }
-    #tips-button {
-      position: absolute;
-      top: 70px;
-      left: 10px;
-      z-index: 1000;
-      background: #ff9800;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    #tips-container {
-      display: none;
-      position: absolute;
-      top: 120px;
-      left: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      width: 300px;
-      max-height: 70vh;
-      overflow-y: auto;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      font-family: Arial, sans-serif;
-    }
-    #tips-container h3 {
-      margin-top: 0;
-      color: #ff9800;
-      border-bottom: 2px solid #ff9800;
-      padding-bottom: 5px;
-    }
-    .tip-item {
-      margin-bottom: 15px;
-      border-left: 3px solid #ff9800;
-      padding-left: 10px;
-    }
-    .tip-item h4 {
-      margin: 0 0 5px 0;
-      color: #333;
-    }
-    .tip-item p {
-      margin: 0;
-      color: #555;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-    #tips-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      color: #777;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    .blink {
-      animation: blink-animation 1s steps(5, start) infinite;
-    }
-    @keyframes blink-animation {
-      to {
+
+/* Day Navigation Controls */
+#day-controls {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-family: sans-serif;
+    min-width: 400px;
+}
+
+.day-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.day-nav-btn {
+    background: #4285F4;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.day-nav-btn:hover:not(:disabled) {
+    background: #3367d6;
+    transform: translateY(-1px);
+}
+
+.day-nav-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.current-day-info {
+    text-align: center;
+    flex: 1;
+    margin: 0 20px;
+}
+
+#currentDayLabel {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    display: block;
+}
+
+#dayProgress {
+    margin-top: 5px;
+}
+
+#dayCounter {
+    font-size: 12px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.day-summary {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-label {
+    font-size: 12px;
+    color: #666;
+    display: block;
+}
+
+#activitiesCount, #dayCost {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+#controls {
+    position: absolute;
+    top: 120px;
+    right: 10px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    width: 200px;
+    box-shadow: 0 0 5px #aaa;
+}
+
+label { font-size: 14px; }
+
+#myModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-image: url('https://img5.thuthuatphanmem.vn/uploads/2021/10/20/background-du-lich-bau-troi_110850711.jpg');
+    background-size: cover;
+    background-position: center;
+    color: black;
+    padding: 30px;
+    border-radius: 15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 80%;
+    max-width: 350px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Arial', sans-serif;
+    border: 5px solid orange;
+}
+
+.modal-content p {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+    animation: slideIn 1s ease-out forwards;
+}
+
+@keyframes slideIn {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+#speedSlider { width: 100%; }
+
+#gifSmall {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 500px;
+    z-index: 2000;
+}
+
+#gifSmall img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hotel-info-window {
+    width: 200px;
+    font-family: Arial, sans-serif;
+}
+
+.hotel-info-window img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.hotel-info-window h4 {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.hotel-info-window p {
+    margin: 3px 0;
+    font-size: 12px;
+}
+
+.hotel-info-window a {
+    color: blue;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.hotel-icon {
+    background-color: #4285F4;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px;
+    border-radius: 50%;
+    text-align: center;
+    width: 34px;
+    height: 34px;
+    line-height: 20px;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.hotel-button {
+    position: absolute;
+    top: 120px;
+    left: 10px;
+    z-index: 1000;
+    background: #4285F4;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.map-style-control {
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.style-button {
+    background: white;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.style-button:hover {
+    background: #f0f0f0;
+}
+
+.style-button.active {
+    background: #4285F4;
+    color: white;
+    border-color: #2c5aa0;
+}
+
+#trip-info {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    width: 250px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+#trip-info h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+#trip-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.blink {
+    animation: blink-animation 1s steps(5, start) infinite;
+}
+
+@keyframes blink-animation {
+    to {
         visibility: hidden;
-      }
     }
-    .notification-dot {
-      width: 8px;
-      height: 8px;
-      background-color: red;
-      border-radius: 50%;
-    }
-    #start-trip-btn {
-      background: #4CAF50;
-      color: white;
-    }
-    #reset-trip-btn {
-      background: #f44336;
-      color: white;
-    }
+}
 
+.notification-dot {
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+}
+
+#start-trip-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+#reset-trip-btn {
+    background: #f44336;
+    color: white;
+}
+
+#auto-play-btn {
+    background: #ff9800;
+    color: white;
+}
+
+#trip-buttons-wrapper {
+    position: absolute;
+    top: 120px;
+    left: 250px;
+    width: 200px;
+    height: 44px;
+    z-index: 1000;
+}
+
+#trip-buttons-wrapper button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    transition: opacity 0.3s ease;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    #day-controls {
+        position: relative;
+        left: 0;
+        transform: none;
+        margin: 10px;
+        min-width: auto;
+        width: calc(100% - 20px);
+    }
+    
+    .day-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .current-day-info {
+        margin: 0;
+    }
+    
+    #controls {
+        top: 200px;
+        right: 10px;
+        width: 150px;
+    }
+    
     #trip-buttons-wrapper {
-      position: absolute;
-      top: 10px;
-      left: 250px;
-      width: 150px; /* đủ rộng cho nút dài nhất */
-      height: 44px;
-      z-index: 1000;
+        top: 200px;
+        left: 10px;
+        width: 150px;
     }
+    
+    #trip-info {
+        width: 200px;
+    }
+}
 
-    #trip-buttons-wrapper button {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      transition: opacity 0.3s ease;
-    }
+/* Thanh tiến trình di chuyển  */
+.progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 1000;
+}
 
-    .hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #feca57);
+    width: 0%;
+    transition: width 0.3s ease;
+}
 
-    .visible {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
+/* Chú thích tuyến đường */
+#route-legend {
+    position: absolute;
+    top: 200px;
+    left: 10px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    max-width: 200px;
+    backdrop-filter: blur(5px);
+}
+
+#route-legend h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+.legend-line {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.legend-line.driving {
+    background-color: #4285F4;
+}
+
+.legend-line.transit {
+    background-color: #34A853;
+}
+
+.legend-line.walking {
+    background-color: #FBBC04;
+}
+
+.legend-line.water {
+    background-color: #FF6B6B;
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.3) 2px,
+        rgba(255,255,255,0.3) 4px
+    );
+}
+
+.legend-line.direct {
+    background-color: #FF9800;
+    background-image: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.4) 2px,
+        rgba(255,255,255,0.4) 4px
+    );
+}
+
+.legend-line.straight {
+    background-color: #FF6B6B;
+    background-image: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3px,
+        rgba(255,255,255,0.5) 3px,
+        rgba(255,255,255,0.5) 6px
+    );
+}
+
+.legend-item span {
+    color: #555;
+    font-weight: 500;
+}

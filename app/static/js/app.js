@@ -1,33 +1,141 @@
-document.getElementById("destinationInput").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        const province = event.target.value.trim();
+// Auto-suggestion functionality for destination search
+let suggestionTimeout;
+let currentSuggestionIndex = -1;
 
-        if (province) {
-            // Gửi kèm tên tỉnh trên URL
-            window.location.href = '/page3?province=' + encodeURIComponent(province);
-        } else {
-            alert("Please enter a valid destination.");
-        }
-    }
-});
-
-// Thêm event listener cho nút tìm kiếm
 document.addEventListener("DOMContentLoaded", function() {
+    const destinationInput = document.getElementById("destinationInput");
     const searchButton = document.getElementById("searchButton");
-    if (searchButton) {
-        searchButton.addEventListener("click", function() {
-            const province = document.getElementById("destinationInput").value.trim();
-
-            if (province) {
-                // Gửi kèm tên tỉnh trên URL
-                window.location.href = '/page3?province=' + encodeURIComponent(province);
+    
+    if (destinationInput) {
+        // Create suggestions dropdown
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'suggestions-container';
+        suggestionsContainer.className = 'suggestions-dropdown';
+        destinationInput.parentNode.appendChild(suggestionsContainer);
+        
+        // Input event for auto-suggestion
+        destinationInput.addEventListener("input", function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(suggestionTimeout);
+            
+            if (query.length >= 2) {
+                // Debounce the API call
+                suggestionTimeout = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
             } else {
-                alert("Vui lòng nhập địa điểm du lịch.");
+                hideSuggestions();
+            }
+        });
+        
+        // Handle keyboard navigation
+        destinationInput.addEventListener("keydown", function(event) {
+            const suggestions = document.querySelectorAll('.suggestion-item');
+            
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+                updateSuggestionSelection(suggestions);
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+                updateSuggestionSelection(suggestions);
+            } else if (event.key === "Enter") {
+                event.preventDefault();
+                if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
+                    selectSuggestion(suggestions[currentSuggestionIndex].textContent);
+                } else {
+                    performSearch();
+                }
+            } else if (event.key === "Escape") {
+                hideSuggestions();
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", function(event) {
+            if (!destinationInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+                hideSuggestions();
             }
         });
     }
+    
+    // Search button click event
+    if (searchButton) {
+        searchButton.addEventListener("click", performSearch);
+    }
+    
+    function fetchSuggestions(query) {
+        fetch(`/suggest-provinces?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(suggestions => {
+                displaySuggestions(suggestions);
+            })
+            .catch(error => {
+                console.error('Error fetching suggestions:', error);
+                hideSuggestions();
+            });
+    }
+    
+    function displaySuggestions(suggestions) {
+        const container = document.getElementById('suggestions-container');
+        container.innerHTML = '';
+        currentSuggestionIndex = -1;
+        
+        if (suggestions.length === 0) {
+            hideSuggestions();
+            return;
+        }
+        
+        suggestions.forEach((suggestion, index) => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.textContent = suggestion;
+            item.addEventListener('click', () => selectSuggestion(suggestion));
+            container.appendChild(item);
+        });
+        
+        container.style.display = 'block';
+    }
+    
+    function updateSuggestionSelection(suggestions) {
+        suggestions.forEach((item, index) => {
+            if (index === currentSuggestionIndex) {
+                item.classList.add('selected');
+                destinationInput.value = item.textContent;
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+    
+    function selectSuggestion(suggestion) {
+        destinationInput.value = suggestion;
+        hideSuggestions();
+        performSearch();
+    }
+    
+    function hideSuggestions() {
+        const container = document.getElementById('suggestions-container');
+        if (container) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+        }
+        currentSuggestionIndex = -1;
+    }
+    
+    function performSearch() {
+        const province = destinationInput.value.trim();
+        
+        if (province) {
+            window.location.href = '/page3?province=' + encodeURIComponent(province);
+        } else {
+            alert("Vui lòng nhập địa điểm du lịch.");
+        }
+    }
 });
-
 
 const backToTopButton = document.getElementById("backToTop");
         

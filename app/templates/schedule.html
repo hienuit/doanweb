@@ -3,239 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch trình</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">
-    <style>
-        .day-schedule {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .day-schedule.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .schedule-item {
-            margin: 10px 0;
-            padding: 10px;
-            border-left: 4px solid #4CAF50;
-            background-color: #fff;
-            border-radius: 3px;
-            display: flex;
-            align-items: flex-start;
-        }
-        .schedule-item.meal {
-            border-left-color: #ff9800;
-        }
-        .schedule-item.rest {
-            border-left-color: #2196f3;
-        }
-        .time-label {
-            font-weight: bold;
-            color: #333;
-            min-width: 60px;
-            margin-right: 10px;
-        }
-        .description {
-            flex: 1;
-        }
-        #map {
-            position: relative;
-            width: 100px;
-            height: 40px;
-
-            background-color: red;
-            color: white;
-            border-radius: 10px;
-        }
-        #map:hover {
-            background-color: green;
-        }
-        #save-history-btn {
-
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #save-history-btn:hover {
-            background-color: #45a049;
-        }
-        /* New styles for button container */
-        .button-container {
-            display: flex;
-            justify-content: center; /* Center the buttons */
-            gap: 10px; /* Space between buttons */
-            margin-top: 20px; /* Space above the buttons */
-        }
-        #map {
-
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        #map:hover {
-            background-color: green;
-        }
-    </style>
+    <title>Lịch trình Du lịch</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="itineraryDetails" class="itinerary-info" style="text-align: center;">
-        <!-- Lịch trình sẽ được hiển thị tại đây -->
+    <!-- Home Button -->
+    <a href="/" class="home-button" style="position: fixed; top: 20px; left: 20px; z-index: 1000; background-color: rgba(255, 255, 255, 0.95); color: #4285F4; padding: 12px 18px; border-radius: 25px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease; border: 2px solid #4285F4;">
+        <i class="fas fa-home" style="margin-right: 8px;"></i>Trang Chủ
+    </a>
+    
+    <!-- hiệu ứng nền  -->
+    <div class="animated-background">
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+            <div class="shape shape-6"></div>
+        </div>
+        <canvas id="particleCanvas"></canvas>
     </div>
 
-    <!-- Button container -->
-    <div class="button-container">
-        <button id="map">Tìm điểm đến</button>
-
-        {% if "user_name" in session %}
-        <button id="save-history-btn">Lưu vào lịch sử</button>
-        {% endif %}
+    <!-- thanh quá trình chuyến đi -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
     </div>
 
-    <script>
-        
-        window.onload = function() {
-            const itinerary = JSON.parse(localStorage.getItem('itinerary'));
-            let province = itinerary.destination || "Không rõ";
-            console.log(itinerary);
+    <!-- hiệu ứng loading -->
+    <div class="loading-animation" id="loadingAnimation">
+        <div class="loading-container">
+            <div class="plane-icon">
+                <i class="fas fa-plane"></i>
+            </div>
+            <div class="loading-text">
+                <h3>Đang chuẩn bị chuyến đi tuyệt vời...</h3>
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="schedule-container" id="scheduleContainer" style="display: none;">
+        <div class="header">
+            <div class="header-decoration">
+                <div class="decoration-element decoration-1"></div>
+                <div class="decoration-element decoration-2"></div>
+                <div class="decoration-element decoration-3"></div>
+            </div>
+            <h1><i class="fas fa-map-marked-alt"></i> Lịch Trình Du Lịch</h1>
+            <p class="subtitle">Hành trình khám phá những điều tuyệt vời</p>
+            <div class="weather-widget" id="weatherWidget">
+                <i class="fas fa-sun"></i>
+                <span>Thời tiết thuận lợi cho chuyến đi</span>
+            </div>
+        </div>
+
+        <!-- bảng tóm tắt chuyến đi -->
+        <div class="trip-summary" id="tripSummary">
+            <!-- Summary cards will be generated here -->
+        </div>
+
+        <!-- bản xem trước chuyến đi -->
+        <div class="journey-preview">
+            <h3><i class="fas fa-route"></i> Tổng quan hành trình</h3>
+            <div class="journey-path" id="journeyPath">
+                <!-- Journey points will be generated here -->
+            </div>
+            <div class="journey-info" id="journeyInfo">
+                <!-- Journey statistics will be generated here -->
+            </div>
+        </div>
+
+        <!-- thời gian chi tiết cho chuyến đi -->
+        <div class="timeline-container">
+            <div class="timeline" id="timeline">
+                <!-- Timeline items will be generated here -->
+            </div>
             
+            <!-- tổng giá -->
+            <div class="total-cost" id="totalCost">
+                <div class="cost-decoration">
+                    <i class="fas fa-coins"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-heart"></i>
+                </div>
+                <span>Tổng chi phí dự kiến: </span>
+                <span class="counter" id="totalCostValue">0</span>
+                <span> VND</span>
+            </div>
+        </div>
 
-            // Hiển thị lịch trình
-            if (itinerary && itinerary.days) {
-                displayItinerary(itinerary);
-            } else {
-                alert("Không có dữ liệu hành trình hoặc dữ liệu không hợp lệ.");
-                console.error("Dữ liệu lịch trình không hợp lệ:", itinerary);
-            }
+        <div class="fun-facts">
+            <h3><i class="fas fa-lightbulb"></i> Thông tin thú vị</h3>
+            <div class="facts-grid" id="factsGrid">
+            </div>
+        </div>
 
-            // Chuyển hướng đến trang bản đồ
-            document.getElementById("map").addEventListener("click", function(event) {
-                event.preventDefault();
-                window.location.href = '/map';
-            });
+        <!-- nút xem trên bản đồ, lưu vào lịch sử, chia sẻ -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="mapBtn">
+                <i class="fas fa-map"></i>
+                <span>Xem trên bản đồ</span>
+                <div class="btn-ripple"></div>
+            </button>
+            {% if "user_name" in session %}
+            <button class="btn btn-secondary" id="saveHistoryBtn">
+                <i class="fas fa-save"></i>
+                <span>Lưu vào lịch sử</span>
+                <div class="btn-ripple"></div>
+            </button>
+            {% endif %}
+            <button class="btn btn-accent" id="shareBtn">
+                <i class="fas fa-share-alt"></i>
+                <span>Chia sẻ</span>
+                <div class="btn-ripple"></div>
+            </button>
+        </div>
+    </div>
 
-            // Lưu lịch sử khi nhấn nút
-            const saveHistoryBtn = document.getElementById("save-history-btn");
-            if (saveHistoryBtn) {
-                saveHistoryBtn.addEventListener("click", function() {
-                    const activityNames = JSON.parse(localStorage.getItem('activityNames')) || [];
+    <!-- nút thêm, xem thời tiết, ghi chú, ảnh -->
+    <div class="floating-action-button" id="fabMenu">
+        <div class="fab-main">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="fab-options">
+            <div class="fab-option" data-action="weather">
+                <i class="fas fa-cloud-sun"></i>
+                <span>Thời tiết</span>
+            </div>
+            <div class="fab-option" data-action="notes">
+                <i class="fas fa-sticky-note"></i>
+                <span>Ghi chú</span>
+            </div>
+            <div class="fab-option" data-action="photos">
+                <i class="fas fa-camera"></i>
+                <span>Ảnh</span>
+            </div>
+        </div>
+    </div>
 
-                    // Tính tổng chi phí
-                    let totalCost = 0;
-                    itinerary.days.forEach(day => {
-                        totalCost += Number(day.estimated_cost) || 0;
-                    });
-
-                    // Dữ liệu gửi lên server
-                    const data = {
-                        activityNames: activityNames,
-                        days: itinerary.days.length,
-                        budget: totalCost.toString(),
-                        destination: province
-                    };
-
-                    fetch('/save-history', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => { throw new Error(err.message); });
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        alert(result.message);
-                        window.location.href = '/history';
-                    })
-                    .catch(error => {
-                        console.error('Lỗi:', error);
-                        alert('Lỗi khi lưu lịch sử: ' + error.message);
-                    });
-                });
-            }
-        };
-
-    function displayItinerary(itinerary) {
-        const activityNames = [];
-        const locations = [];
-
-        const itineraryDetails = document.getElementById("itineraryDetails");
-        itineraryDetails.innerHTML = "";
-
-        let itineraryHTML = "<h1>Lịch trình gợi ý cho bạn</h1>";
-        itinerary.days.forEach(day => {
-            itineraryHTML += `<div class="day-schedule"><h3>Ngày ${day.day}</h3>`;
-            itineraryHTML += `<ul class="activities-list">`;
-
-            // Kiểm tra xem ngày có schedule hay activities
-            const scheduleItems = day.schedule || day.activities || [];
-            if (!scheduleItems.length) {
-                itineraryHTML += `<li>Không có lịch trình chi tiết cho ngày này.</li>`;
-            } else {
-                scheduleItems.forEach(item => {
-                    // Xử lý cấu trúc mới (schedule)
-                    if (item.time && item.type) {
-                        if (item.type === "activity") {
-                            activityNames.push(item.description.split(":")[0]);
-                            locations.push(item.location);
-                        }
-                        const formatItemCost = Number(item.cost).toLocaleString('vi-VN');
-                        itineraryHTML += `
-                            <li class="schedule-item ${item.type}">
-                                <span class="time-label">${item.time}</span>
-                                <div class="description">
-                                    ${item.description}
-                                    ${item.cost ? `<br><strong>Chi phí:</strong> ${formatItemCost} VND` : ""}
-                                </div>
-                            </li>`;
-                    } else {
-                        // Xử lý cấu trúc cũ (activities)
-                        activityNames.push(item.name);
-                        locations.push(item.location);
-                        const formatactivityCost = Number(item.cost).toLocaleString('vi-VN');
-                        itineraryHTML += `<li class="schedule-item">
-                                            <span class="time-label">N/A</span>
-                                            <div class="description">
-                                                <strong>${item.name}</strong>: ${item.description}
-                                                <br><strong>Chi phí:</strong> ${formatactivityCost} VND
-                                            </div>
-                                        </li>`;
-                    }
-                });
-            }
-
-            itineraryHTML += `</ul>`;
-            const formatCost = Number(day.estimated_cost).toLocaleString('vi-VN');
-            itineraryHTML += `<p><strong>Chi phí dự kiến cho ngày ${day.day}:</strong> ${formatCost} VND</p></div>`;
-        });
-
-        let totalCost = 0;
-        itinerary.days.forEach(day => {
-            totalCost += Number(day.estimated_cost) || 0;
-        });
-
-        itineraryHTML += `<h3>Tổng chi phí dự kiến: ${totalCost.toLocaleString('vi-VN')} VND</h3>`;
-        itineraryDetails.innerHTML = itineraryHTML;
-
-        document.querySelectorAll('.day-schedule').forEach((el, i) => {
-            setTimeout(() => {
-                el.classList.add('show');
-            }, i * 500);
-        });
-
-        localStorage.setItem('activityNames', JSON.stringify(activityNames));
-        localStorage.setItem('locations', JSON.stringify(locations));
-    }
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'939601982e6ab027',t:'MTc0NjE3MzA0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
+    <script src="{{ url_for('static', filename='js/schedule.js') }}"></script>
+</body>
+</html> 

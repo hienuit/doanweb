@@ -1,78 +1,100 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Gán ảnh vào tỉnh thành</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+{% extends "admin/base.html" %}
 
-        h2 {
-            margin-bottom: 20px;
-        }
+{% block title %}Quản lý ảnh tỉnh thành{% endblock %}
 
-        .gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
+{% block extra_css %}
+<style>
+    .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
 
-        .image-item {
-            text-align: center;
-            width: 150px;
-        }
+    .image-item {
+        text-align: center;
+        width: 150px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
 
-        .image-item img {
-            width: 100px;
-            height: auto;
-            border: 1px solid #ccc;
-            margin-top: 5px;
-        }
+    .image-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
 
-        .image-item small {
-            display: block;
-            margin-top: 5px;
-            font-size: 12px;
-            color: #555;
-            word-break: break-all;
-        }
+    .image-item small {
+        display: block;
+        font-size: 11px;
+        color: #666;
+        word-break: break-all;
+        margin-bottom: 8px;
+    }
 
-        select, button {
-            padding: 6px 10px;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
+    .image-item input[type="checkbox"] {
+        transform: scale(1.2);
+    }
 
-<h2>Gán ảnh có sẵn vào tỉnh thành</h2>
+    .form-section {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
 
-<form method="POST" action="/add-images-from-static">
-    <label>Chọn tỉnh thành:</label>
-    <select name="destination_id" required>
-        {% for d in destinations %}
-            <option value="{{ d.id }}">{{ d.name }}</option>
-        {% endfor %}
-    </select>
-
-    <br><br>
-
-    <label>Chọn ảnh:</label>
-    <div class="gallery">
-        {% for filename in image_files %}
-            <div class="image-item">
-                <input type="checkbox" name="selected_images" value="{{ filename }}">
-                <img src="{{ url_for('static', filename='images/' + filename) }}" alt="ảnh">
-                <small>{{ 'images/' + filename }}</small>
-            </div>
-        {% endfor %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Quản lý ảnh tỉnh thành</h1>
     </div>
 
-    <br><br>
-    <button type="submit">Thêm ảnh vào tỉnh thành</button>
-</form>
+    <div class="form-section">
+        <form method="POST" action="/add-images-from-static">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Chọn tỉnh thành:</label>
+                    <select name="destination_id" class="form-select" required>
+                        <option value="">-- Chọn tỉnh thành --</option>
+                        {% for d in destinations %}
+                            <option value="{{ d.id }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
-</body>
-</html>
+            <div class="mb-3">
+                <label class="form-label">Chọn ảnh từ thư viện:</label>
+                {% if image_files %}
+                    <div class="gallery">
+                        {% for filename in image_files %}
+                            <div class="image-item">
+                                <input type="checkbox" name="selected_images" value="{{ filename }}" class="form-check-input">
+                                <img src="{{ url_for('static', filename='images/' + filename) }}" alt="ảnh" class="img-fluid">
+                                <small>{{ filename }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Không có ảnh nào chưa được gán cho tỉnh thành. Tất cả ảnh trong thư viện đã được sử dụng.
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if image_files %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Thêm ảnh vào tỉnh thành
+                </button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

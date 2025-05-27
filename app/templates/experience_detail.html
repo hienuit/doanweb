@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ experience.title }} - Travel Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .experience-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+        }
+        
+        .experience-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: -30px;
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 20px;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .user-info h4 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .user-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .rating-display {
+            font-size: 1.5rem;
+            margin: 20px 0;
+        }
+        
+        .rating-display .stars {
+            color: #ffc107;
+            margin-right: 10px;
+        }
+        
+        .experience-stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .experience-images {
+            margin: 30px 0;
+        }
+        
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .gallery-image {
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .gallery-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .experience-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin: 30px 0;
+        }
+        
+        .travel-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .info-card i {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .info-card h6 {
+            margin: 10px 0 5px 0;
+            color: #333;
+        }
+        
+        .info-card p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            justify-content: center;
+        }
+        
+        .btn-like {
+            background: #ff6b6b;
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-like:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-like.liked {
+            background: #e91e63;
+        }
+        
+        .comments-section {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+        
+        .comment-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .comment-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .comment-user {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .related-experiences {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+        
+        .related-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .related-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .related-image {
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-route logo-icon"></i>
+                Travel Assistant
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Trang Chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/page2">Điểm Đến</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/experiences">Trải Nghiệm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/promotions">Ưu Đãi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Về Chúng Tôi</a>
+                    </li>
+                </ul>
+                <div class="auth-buttons">
+                    {% if "user_name" in session or "full_name" in session %}
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2" onerror="this.src='/static/images/default-avatar.png'">
+                                {{ session['full_name'] if session.get('full_name') else session['user_name'] }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="/dashboard">
+                                        <i class="fas fa-user-circle me-2"></i>
+                                        <span>Hồ sơ</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/history">
+                                        <i class="fas fa-history me-2"></i>
+                                        <span>Lịch sử truy vấn</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="/logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>
+                                        <span>Đăng xuất</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="/login" class="btn btn-auth btn-login">Đăng nhập</a>
+                        <a href="/register" class="btn btn-auth btn-register">Đăng ký</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Experience Header -->
+    <section class="experience-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold mb-3">{{ experience.title }}</h1>
+                    <p class="lead">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ experience.destination }}
+                        <span class="ms-4">
+                            <i class="fas fa-calendar-alt me-2"></i>{{ experience.travel_date.strftime('%d/%m/%Y') }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <div class="rating-display">
+                        <span class="stars">
+                            {% for i in range(experience.rating) %}
+                            <i class="fas fa-star"></i>
+                            {% endfor %}
+                            {% for i in range(5 - experience.rating) %}
+                            <i class="far fa-star"></i>
+                            {% endfor %}
+                        </span>
+                        <span class="rating-text">{{ experience.rating }}/5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="experience-content">
+            <!-- User Profile -->
+            <div class="user-profile">
+                                            <img src="{{ experience.user.avatar_url if experience.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}"
+                                 class="user-avatar" alt="User Avatar" onerror="this.src='/static/images/default-avatar.png'">
+                <div class="user-info">
+                    <h4>{{ experience.user.fname if experience.user.fname else experience.user.email.split('@')[0] }}</h4>
+                    <div class="user-meta">
+                        <i class="fas fa-clock me-1"></i>Chia sẻ vào {{ experience.created_at.strftime('%d/%m/%Y lúc %H:%M') }}
+                        {% if experience.travel_style %}
+                        <span class="ms-3">
+                            <i class="fas fa-users me-1"></i>
+                            {% if experience.travel_style == 'solo' %}Du lịch một mình
+                            {% elif experience.travel_style == 'couple' %}Du lịch đôi
+                            {% elif experience.travel_style == 'family' %}Du lịch gia đình
+                            {% elif experience.travel_style == 'group' %}Du lịch nhóm
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experience Stats -->
+            <div class="experience-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ experience.views }}</div>
+                    <div class="stat-label">Lượt xem</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="likesCount">{{ experience.likes }}</div>
+                    <div class="stat-label">Lượt thích</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="commentsCount">{{ experience.comments|length }}</div>
+                    <div class="stat-label">Bình luận</div>
+                </div>
+                {% if experience.travel_duration %}
+                <div class="stat-item">
+                    <div class="stat-number">{{ experience.travel_duration }}</div>
+                    <div class="stat-label">Ngày</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Travel Info Cards -->
+            {% if experience.budget or experience.travel_duration %}
+            <div class="travel-info">
+                {% if experience.budget %}
+                <div class="info-card">
+                    <i class="fas fa-wallet"></i>
+                    <h6>Ngân sách</h6>
+                    <p>{{ "{:,.0f}".format(experience.budget) }} VNĐ</p>
+                </div>
+                {% endif %}
+                {% if experience.travel_duration %}
+                <div class="info-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h6>Thời gian</h6>
+                    <p>{{ experience.travel_duration }} ngày</p>
+                </div>
+                {% endif %}
+                <div class="info-card">
+                    <i class="fas fa-star"></i>
+                    <h6>Đánh giá</h6>
+                    <p>{{ experience.rating }}/5 sao</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h6>Điểm đến</h6>
+                    <p>{{ experience.destination }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Experience Images -->
+            {% if experience.images %}
+            <div class="experience-images">
+                <h4><i class="fas fa-camera me-2"></i>Hình Ảnh Chuyến Đi</h4>
+                <div class="image-gallery">
+                    {% for image in experience.images %}
+                    <div class="gallery-image" onclick="showImageModal('{{ image.image_url }}')">
+                        <img src="{{ image.image_url }}" alt="Experience Image">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Experience Content -->
+            <div class="experience-text">
+                <h4><i class="fas fa-pen me-2"></i>Chia Sẻ Trải Nghiệm</h4>
+                <p>{{ experience.content|replace('\n', '<br>')|safe }}</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                {% if "user_name" in session or "full_name" in session %}
+                <button class="btn btn-like {{ 'liked' if user_liked }}" id="likeBtn" onclick="toggleLike()">
+                    <i class="fas fa-heart me-2"></i>
+                    <span id="likeText">{{ 'Đã thích' if user_liked else 'Thích' }}</span>
+                </button>
+                {% endif %}
+                <button class="btn btn-outline-primary" onclick="shareExperience()">
+                    <i class="fas fa-share me-2"></i>Chia sẻ
+                </button>
+                <a href="/experiences" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <h4><i class="fas fa-comments me-2"></i>Bình Luận (<span id="commentsCountText">{{ experience.comments|length }}</span>)</h4>
+                
+                <!-- Comment Form -->
+                {% if "user_name" in session or "full_name" in session %}
+                <div class="comment-form">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="commentContent" rows="3" placeholder="Chia sẻ cảm nghĩ của bạn về trải nghiệm này..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitComment()">
+                        <i class="fas fa-paper-plane me-2"></i>Gửi bình luận
+                    </button>
+                </div>
+                {% else %}
+                <div class="comment-form text-center">
+                    <p class="mb-3">Vui lòng đăng nhập để bình luận</p>
+                    <a href="/login" class="btn btn-primary">Đăng nhập</a>
+                </div>
+                {% endif %}
+
+                <!-- Comments List -->
+                <div id="commentsList">
+                    {% for comment in experience.comments %}
+                    <div class="comment-item">
+                        <div class="comment-user">
+                            <img src="{{ comment.user.avatar_url if comment.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}" 
+                                 class="comment-avatar" alt="User">
+                            <div>
+                                <strong>{{ comment.user.fname if comment.user.fname else comment.user.email.split('@')[0] }}</strong>
+                                <small class="text-muted ms-2">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">{{ comment.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Experiences -->
+        {% if related_experiences %}
+        <div class="related-experiences">
+            <h3><i class="fas fa-compass me-2"></i>Trải Nghiệm Liên Quan Tại {{ experience.destination }}</h3>
+            <div class="row mt-4">
+                {% for related in related_experiences %}
+                <div class="col-md-3 mb-4">
+                    <div class="card related-card h-100">
+                        {% if related.images %}
+                        <img src="{{ related.images[0].image_url }}" class="card-img-top related-image" alt="{{ related.title }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h6 class="card-title">{{ related.title }}</h6>
+                            <p class="card-text small">{{ related.content[:80] }}...</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% for i in range(related.rating) %}
+                                    <i class="fas fa-star text-warning small"></i>
+                                    {% endfor %}
+                                </div>
+                                <a href="/experience/{{ related.id }}" class="btn btn-sm btn-primary">Xem</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" class="modal-image" src="" alt="Experience Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h3 class="footer-heading">Travel Assistant</h3>
+                    <p>Chúng tôi cam kết mang đến cho bạn những trải nghiệm du lịch tuyệt vời nhất tại Việt Nam với sự hỗ trợ của công nghệ AI tiên tiến.</p>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <h3 class="footer-heading">Liên Kết</h3>
+                    <ul class="footer-links">
+                        <li><a href="/">Trang Chủ</a></li>
+                        <li><a href="/page2">Điểm Đến</a></li>
+                        <li><a href="/experiences">Trải Nghiệm</a></li>
+                        <li><a href="/promotions">Ưu Đãi</a></li>
+                        <li><a href="#about">Về Chúng Tôi</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h3 class="footer-heading">Chính Sách</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Điều Khoản Sử Dụng</a></li>
+                        <li><a href="#">Chính Sách Bảo Mật</a></li>
+                        <li><a href="#">Chính Sách Hoàn Tiền</a></li>
+                        <li><a href="#">Câu Hỏi Thường Gặp</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h3 class="footer-heading">Liên Hệ</h3>
+                    <div class="footer-contact">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <p>Khu phố 6, phường Linh Trung,<br> TP. Thủ Đức, TP. Hồ Chí Minh</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Travel Assistant. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const experienceId = parseInt('{{ experience.id }}');
+        let userLiked = {{ 'true' if user_liked else 'false' }};
+
+        // Toggle like functionality
+        function toggleLike() {
+            fetch('/like-experience', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    experience_id: experienceId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userLiked = data.liked;
+                    const likeBtn = document.getElementById('likeBtn');
+                    const likeText = document.getElementById('likeText');
+                    const likesCount = document.getElementById('likesCount');
+                    
+                    if (data.liked) {
+                        likeBtn.classList.add('liked');
+                        likeText.textContent = 'Đã thích';
+                    } else {
+                        likeBtn.classList.remove('liked');
+                        likeText.textContent = 'Thích';
+                    }
+                    
+                    likesCount.textContent = data.likes_count;
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi thực hiện thao tác!');
+            });
+        }
+
+        // Submit comment
+        function submitComment() {
+            const content = document.getElementById('commentContent').value.trim();
+            
+            if (!content) {
+                alert('Vui lòng nhập nội dung bình luận!');
+                return;
+            }
+            
+            fetch('/comment-experience', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    experience_id: experienceId,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Add new comment to the list
+                    const commentsList = document.getElementById('commentsList');
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment-item';
+                    newComment.innerHTML = `
+                        <div class="comment-user">
+                            <img src="${data.comment.user_avatar}" class="comment-avatar" alt="User">
+                            <div>
+                                <strong>${data.comment.user_name}</strong>
+                                <small class="text-muted ms-2">${data.comment.created_at}</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">${data.comment.content}</p>
+                    `;
+                    commentsList.insertBefore(newComment, commentsList.firstChild);
+                    
+                    // Clear the form
+                    document.getElementById('commentContent').value = '';
+                    
+                    // Update comments count
+                    const currentCount = parseInt(document.getElementById('commentsCount').textContent);
+                    document.getElementById('commentsCount').textContent = currentCount + 1;
+                    document.getElementById('commentsCountText').textContent = currentCount + 1;
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gửi bình luận!');
+            });
+        }
+
+        // Show image modal
+        function showImageModal(imageUrl) {
+            document.getElementById('modalImage').src = imageUrl;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
+
+        // Share experience
+        function shareExperience() {
+            const title = '{{ experience.title|replace("'", "\\'") }}';
+            const destination = '{{ experience.destination|replace("'", "\\'") }}';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: `Xem trải nghiệm du lịch tuyệt vời này tại ${destination}!`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Đã sao chép link chia sẻ vào clipboard!');
+                });
+            }
+        }
+
+        // Auto-resize textarea
+        const commentTextarea = document.getElementById('commentContent');
+        if (commentTextarea) {
+            commentTextarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        }
+    </script>
+</body>
+</html> 

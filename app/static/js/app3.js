@@ -1,4 +1,141 @@
+// Auto-suggestion functionality for destination search in page3
+let suggestionTimeout;
+let currentSuggestionIndex = -1;
+
+// Initialize auto-suggestion for page3 search input
+function initializeAutoSuggestion() {
+    const destinationInput = document.getElementById("destinationInput");
+    
+    if (destinationInput) {
+        // Create suggestions dropdown
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'suggestions-container';
+        suggestionsContainer.className = 'suggestions-dropdown';
+        destinationInput.parentNode.appendChild(suggestionsContainer);
+        
+        // Input event for auto-suggestion
+        destinationInput.addEventListener("input", function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(suggestionTimeout);
+            
+            if (query.length >= 2) {
+                // Debounce the API call
+                suggestionTimeout = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
+            } else {
+                hideSuggestions();
+            }
+        });
+        
+        // Handle keyboard navigation
+        destinationInput.addEventListener("keydown", function(event) {
+            const suggestions = document.querySelectorAll('.suggestion-item');
+            
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+                updateSuggestionSelection(suggestions);
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+                updateSuggestionSelection(suggestions);
+            } else if (event.key === "Enter") {
+                event.preventDefault();
+                if (currentSuggestionIndex >= 0 && suggestions[currentSuggestionIndex]) {
+                    selectSuggestion(suggestions[currentSuggestionIndex].textContent);
+                } else {
+                    performSearchPage3();
+                }
+            } else if (event.key === "Escape") {
+                hideSuggestions();
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", function(event) {
+            if (!destinationInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+                hideSuggestions();
+            }
+        });
+    }
+}
+
+function fetchSuggestions(query) {
+    fetch(`/suggest-provinces?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(suggestions => {
+            displaySuggestions(suggestions);
+        })
+        .catch(error => {
+            console.error('Error fetching suggestions:', error);
+            hideSuggestions();
+        });
+}
+
+function displaySuggestions(suggestions) {
+    const container = document.getElementById('suggestions-container');
+    container.innerHTML = '';
+    currentSuggestionIndex = -1;
+    
+    if (suggestions.length === 0) {
+        hideSuggestions();
+        return;
+    }
+    
+    suggestions.forEach((suggestion, index) => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.textContent = suggestion;
+        item.addEventListener('click', () => selectSuggestion(suggestion));
+        container.appendChild(item);
+    });
+    
+    container.style.display = 'block';
+}
+
+function updateSuggestionSelection(suggestions) {
+    suggestions.forEach((item, index) => {
+        if (index === currentSuggestionIndex) {
+            item.classList.add('selected');
+            document.getElementById("destinationInput").value = item.textContent;
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function selectSuggestion(suggestion) {
+    document.getElementById("destinationInput").value = suggestion;
+    hideSuggestions();
+    performSearchPage3();
+}
+
+function hideSuggestions() {
+    const container = document.getElementById('suggestions-container');
+    if (container) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+    }
+    currentSuggestionIndex = -1;
+}
+
+function performSearchPage3() {
+    const province = document.getElementById("destinationInput").value.trim();
+    
+    if (province) {
+        window.location.href = '/page3?province=' + encodeURIComponent(province);
+    } else {
+        alert("Please enter a valid destination.");
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+        // Initialize auto-suggestion
+        initializeAutoSuggestion();
+        
         const urlParams = new URLSearchParams(window.location.search);
         const province = urlParams.get('province');
 
@@ -107,17 +244,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    document.getElementById("destinationInput").addEventListener("keydown", function(event) {
-        if (event.key === "Enter") {
-            const province = event.target.value.trim();
+document.addEventListener("DOMContentLoaded", function () {
+    let background = document.querySelector(".container_vien");
+    let carousel = document.getElementById("carouselExample");
 
-            if (province) {
-                // Gửi kèm tên tỉnh trên URL
-                window.location.href = '/page3?province=' + encodeURIComponent(province);
-            } else {
-                alert("Please enter a valid destination.");
-            }
+    function updateBackground() {
+        let activeSlide = document.querySelector(".carousel-item.active img");
+        if (activeSlide) {
+            background.style.backgroundImage = `url(${activeSlide.src})`;
         }
+    }
+
+    carousel.addEventListener("slid.bs.carousel", updateBackground);
+    updateBackground();
 });
 
 
@@ -126,13 +265,11 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     // Blur input focus to hide mobile keyboard
     document.getElementById("days").blur();
     
-    // loadingoverlay = document.getElementById("loadingOverlay");
-    // loadingoverlay.style.display = "flex";
-
-
     const videoOverlay = document.getElementById("videoOverlay");
     const skipBtn = document.getElementById("skipBtn");
     const skipcountdown = document.getElementById("skipcountdown");
+    const loadingContainer = document.getElementById("loadingContainer");
+    let isApiRequestComplete = false;
 
     const urlParams = new URLSearchParams(window.location.search);
     const province = urlParams.get("province");
@@ -142,7 +279,6 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     const budget = document.getElementById("budget").value;
 
     if (!destination || !days || !budget) {
-        // loadingoverlay.style.display = "none";
         alert("Vui lòng điền đầy đủ thông tin!");
         videoOverlay.style.display = "none";
         return;
@@ -161,7 +297,7 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     };
     
     videoOverlay.style.display = "flex";
-    skipcountdown.style.display =  "block";
+    skipcountdown.style.display = "block";
     let countdown = 5;
     skipcountdown.textContent = 'Bỏ qua sau 5s';
 
@@ -177,8 +313,12 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     }, 1000); 
 
     skipBtn.onclick = function() {
-       videoOverlay.style.display = "none"; // Ẩn video khi bấm bỏ qua
+        videoOverlay.style.display = "none"; // Ẩn video khi bấm bỏ qua
+        if (!isApiRequestComplete) {
+            loadingContainer.style.display = "flex";
+        }
     };
+
     const apiURL = `${window.location.origin}/create-itinerary`;
     fetch(apiURL, {
         method: "POST",
@@ -189,24 +329,24 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     })
     .then(response => response.json())
     .then(data => {
-        // loadingoverlay.style.display = "none";
+        isApiRequestComplete = true;
+        loadingContainer.style.display = "none";
+        
         if (data.success) {
-            // Lưu dữ liệu vào localStorage
             localStorage.setItem('itinerary', JSON.stringify(data.itinerary));
             videoOverlay.style.display = "none";
-
-        // Chuyển sang trang HTML mới để hiển thị
-        window.location.href = `/schedule?destination=${encodeURIComponent(destination)}`;
-        } 
-        
-        else {
+            window.location.href = `/schedule?destination=${encodeURIComponent(destination)}`;
+        } else {
             alert("Có lỗi xảy ra: " + data.error);
             videoOverlay.style.display = "none";
         }
     })
     .catch(error => {
-        // loadingoverlay.style.display = "none";
+        isApiRequestComplete = true;
+        loadingContainer.style.display = "none";
+        
         console.error("Error:", error);
+
         alert("Đã xảy ra lỗi khi gửi yêu cầu.");
         videoOverlay.style.display = "none";
     });
@@ -238,22 +378,6 @@ function displayItinerary(itinerary) {
     itineraryHTML += `<h3>Total Estimated Cost: ${itinerary.total_estimated_cost}</h3>`;
     Feature.innerHTML = itineraryHTML;
 }
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    let background = document.querySelector(".container_vien");
-    let carousel = document.getElementById("carouselExample");
-
-    function updateBackground() {
-        let activeSlide = document.querySelector(".carousel-item.active img");
-        if (activeSlide) {
-            background.style.backgroundImage = `url(${activeSlide.src})`;
-        }
-    }
-
-    carousel.addEventListener("slid.bs.carousel", updateBackground);
-    updateBackground();
-});
 
 
 

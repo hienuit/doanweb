@@ -13,6 +13,9 @@
         
         <div class="nav-links" id="navLinks">
             <a href="/" id="homebutton">Trang chủ</a>
+            <a href="/page2" class="nav-link">Điểm Đến</a>
+            <a href="/experiences" class="nav-link">Trải Nghiệm</a>
+            <a href="/promotions" class="nav-link">Ưu Đãi</a>
             {% if "user_name" in session or "full_name" in session %}
                 <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -23,6 +26,11 @@
                         <li>
                             <a class="dropdown-item" href="/dashboard">
                                 <span class="menu-action-text">Hồ sơ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/feedback">
+                                <span class="menu-action-text">Góp ý</span>
                             </a>
                         </li>
                         <li>
@@ -241,7 +249,7 @@
         </div>
     </div>
 
-    <!-- Add JavaScript for hamburger menu functionality -->
+    <!-- thêm javascript cho hamburger menu cho mobile -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const hamburgerBtn = document.getElementById('hamburgerBtn');

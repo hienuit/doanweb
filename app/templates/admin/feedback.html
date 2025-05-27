@@ -1,0 +1,230 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Quản lý góp ý{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Quản lý góp ý</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách góp ý</h6>
+            <div>
+                <select class="form-select d-inline-block w-auto" id="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="pending">Đang chờ</option>
+                    <option value="responded">Đã phản hồi</option>
+                    <option value="closed">Đã đóng</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="feedbackTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người gửi</th>
+                            <th>Tiêu đề</th>
+                            <th>Ngày gửi</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in feedbacks.items %}
+                        <tr>
+                            <td>{{ feedback.id }}</td>
+                            <td>{{ feedback.user.name }}</td>
+                            <td>{{ feedback.subject }}</td>
+                            <td>{{ feedback.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                            <td>
+                                <span class="badge {% if feedback.status == 'pending' %}bg-warning{% elif feedback.status == 'responded' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ feedback.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewFeedbackDetails({{ feedback.id }})">
+                                    <i class="bx bx-info-circle"></i> Chi tiết
+                                </button>
+                                {% if feedback.status == 'pending' %}
+                                <button class="btn btn-sm btn-success" onclick="showResponseModal({{ feedback.id }})">
+                                    <i class="bx bx-message-dots"></i> Phản hồi
+                                </button>
+                                {% endif %}
+                                {% if feedback.status != 'closed' %}
+                                <button class="btn btn-sm btn-danger" onclick="closeFeedback({{ feedback.id }})">
+                                    <i class="bx bx-x"></i> Đóng
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if feedbacks.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.feedback', page=feedbacks.prev_num) }}">Trước</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page in feedbacks.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {% if page == feedbacks.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('admin.feedback', page=page) }}">{{ page }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if feedbacks.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.feedback', page=feedbacks.next_num) }}">Sau</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết góp ý -->
+<div class="modal fade" id="feedbackDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết góp ý</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="feedbackDetailContent">
+                    <!-- Nội dung sẽ được load bằng AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Phản hồi -->
+<div class="modal fade" id="responseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Phản hồi góp ý</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="responseForm">
+                    <input type="hidden" id="feedbackId" name="feedbackId">
+                    <div class="mb-3">
+                        <label for="response" class="form-label">Nội dung phản hồi</label>
+                        <textarea class="form-control" id="response" name="response" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Gửi phản hồi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewFeedbackDetails(feedbackId) {
+    fetch(`/admin/feedback/${feedbackId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('feedbackDetailContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Người gửi:</strong> ${data.user_name}</p>
+                        <p><strong>Email:</strong> ${data.user_email}</p>
+                        <p><strong>Ngày gửi:</strong> ${data.created_at}</p>
+                        <p><strong>Trạng thái:</strong> ${data.status}</p>
+                    </div>
+                    <div class="col-md-12">
+                        <h6>Tiêu đề:</h6>
+                        <p>${data.subject}</p>
+                        <h6>Nội dung:</h6>
+                        <p>${data.message}</p>
+                    </div>
+                    ${data.response ? `
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h6>Phản hồi:</h6>
+                                <p>${data.response}</p>
+                                <small>Ngày phản hồi: ${data.response_at}</small>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('feedbackDetailModal')).show();
+        });
+}
+
+function showResponseModal(feedbackId) {
+    document.getElementById('feedbackId').value = feedbackId;
+    new bootstrap.Modal(document.getElementById('responseModal')).show();
+}
+
+document.getElementById('responseForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const feedbackId = document.getElementById('feedbackId').value;
+    const response = document.getElementById('response').value;
+    
+    fetch(`/admin/feedback/${feedbackId}/respond`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ response: response })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+});
+
+function closeFeedback(feedbackId) {
+    if (!confirm('Bạn có chắc chắn muốn đóng góp ý này?')) return;
+    
+    fetch(`/admin/feedback/${feedbackId}/close`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    });
+}
+
+// Lọc theo trạng thái
+document.getElementById('statusFilter').addEventListener('change', function(e) {
+    const status = e.target.value;
+    window.location.href = status 
+        ? `${window.location.pathname}?status=${status}` 
+        : window.location.pathname;
+});
+
+// Set giá trị cho filter từ URL
+const urlParams = new URLSearchParams(window.location.search);
+const statusParam = urlParams.get('status');
+if (statusParam) {
+    document.getElementById('statusFilter').value = statusParam;
+}
+</script>
+{% endblock %} 
