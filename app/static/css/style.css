@@ -21,6 +21,18 @@ body {
     padding: 1rem 0;
 }
 
+/* Đảm bảo navbar luôn mở rộng trên desktop */
+@media (min-width: 992px) {
+    .navbar-collapse {
+        display: flex !important;
+        flex-basis: auto;
+    }
+    
+    .navbar-toggler {
+        display: none;
+    }
+}
+
 .navbar-brand {
     display: flex;
     align-items: center;
@@ -38,7 +50,7 @@ body {
 .navbar-nav .nav-link {
     color: var(--dark-color);
     font-weight: 500;
-    margin: 0 0.5rem;
+    padding: 0.5rem 1rem;
     transition: color 0.3s;
 }
 
@@ -53,7 +65,7 @@ body {
 
 .nav-icon {
     font-size: 1.2rem;
-    margin-left: 1rem;
+    margin-left: 1.25rem;
     color: var(--dark-color);
     cursor: pointer;
     transition: color 0.3s;
@@ -597,7 +609,7 @@ body {
     position: relative;
 }
 
-/* Style for the search input to work with suggestions */
+/* gợi ý cho thanh tìm kiếm */
 #destinationInput {
     border-radius: 8px 0 0 8px;
     border-right: none;

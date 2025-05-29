@@ -91,7 +91,7 @@
             margin: 30px 0;
         }
         
-        .image-gallery {
+        .thumucanh {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
@@ -211,6 +211,114 @@
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
+        }
+        
+        /* Styles cho reply comments */
+        .cac-tra-loi {
+            margin-left: 30px;
+            margin-top: 15px;
+            border-left: 3px solid #e9ecef;
+            padding-left: 15px;
+        }
+        
+        .tra-loi-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        
+        .tra-loi-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .nut-tra-loi {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 0.9rem;
+            padding: 5px 0;
+            margin-top: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .nut-tra-loi:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .form-tra-loi {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border-left: 3px solid #007bff;
+        }
+        
+        .form-tra-loi textarea {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .nut-huy-tra-loi {
+            background: #6c757d;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        
+        .nut-gui-tra-loi {
+            background: #007bff;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .so-luong-tra-loi {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        /* Styles cho nút xóa bình luận */
+        .nut-xoa-binh-luan {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 0.9rem;
+            padding: 5px 0;
+            margin-top: 8px;
+            margin-left: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .nut-xoa-binh-luan:hover {
+            color: #c82333;
+            text-decoration: underline;
+        }
+        
+        .cac-nut-hanh-dong {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+            gap: 10px;
+        }
+        
+        .loading-xoa {
+            opacity: 0.6;
+            pointer-events: none;
         }
         
         .related-experiences {
@@ -416,11 +524,11 @@
             </div>
             {% endif %}
 
-            <!-- Experience Images -->
+            <!-- Ảnh chuyến đi -->
             {% if experience.images %}
             <div class="experience-images">
                 <h4><i class="fas fa-camera me-2"></i>Hình Ảnh Chuyến Đi</h4>
-                <div class="image-gallery">
+                <div class="thumucanh">
                     {% for image in experience.images %}
                     <div class="gallery-image" onclick="showImageModal('{{ image.image_url }}')">
                         <img src="{{ image.image_url }}" alt="Experience Image">
@@ -473,19 +581,91 @@
                 </div>
                 {% endif %}
 
-                <!-- Comments List -->
-                <div id="commentsList">
-                    {% for comment in experience.comments %}
-                    <div class="comment-item">
+                <!-- Danh sách comment -->
+                <div id="danhsachbinhluan">
+                    {% for item in danh_sach_binh_luan_day_du %}
+                    <!-- Comment gốc -->
+                    <div class="comment-item" data-comment-id="{{ item.binh_luan_goc.id }}">
                         <div class="comment-user">
-                            <img src="{{ comment.user.avatar_url if comment.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}" 
-                                 class="comment-avatar" alt="User">
+                            <img src="{{ item.binh_luan_goc.user.avatar_url if item.binh_luan_goc.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}" 
+                                 class="comment-avatar" alt="User" onerror="this.src='/static/images/default-avatar.png'">
                             <div>
-                                <strong>{{ comment.user.fname if comment.user.fname else comment.user.email.split('@')[0] }}</strong>
-                                <small class="text-muted ms-2">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                <strong>{{ item.binh_luan_goc.user.fname if item.binh_luan_goc.user.fname else item.binh_luan_goc.user.email.split('@')[0] }}</strong>
+                                <small class="text-muted ms-2">{{ item.binh_luan_goc.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                             </div>
                         </div>
-                        <p class="mb-0">{{ comment.content }}</p>
+                        <p class="mb-0">{{ item.binh_luan_goc.content }}</p>
+                        
+                        <!-- Các nút hành động -->
+                        <div class="cac-nut-hanh-dong">
+                            <!-- Nút trả lời chỉ hiển thị khi user đã đăng nhập -->
+                            {% if "user_name" in session or "full_name" in session %}
+                            <button class="nut-tra-loi" onclick="hienFormTraLoi({{ item.binh_luan_goc.id }})">
+                                <i class="fas fa-reply me-1"></i>Trả lời
+                            </button>
+                            {% endif %}
+                            
+                            <!-- Nút xóa chỉ hiển thị cho người tạo comment -->
+                            {% if ("user_name" in session or "full_name" in session) and item.binh_luan_goc.user_id == session.get('user_id') %}
+                            <button class="nut-xoa-binh-luan" onclick="xoaBinhLuan({{ item.binh_luan_goc.id }}, true)" id="nutXoa{{ item.binh_luan_goc.id }}">
+                                <i class="fas fa-trash me-1"></i>Xóa
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Hiển thị số lượng trả lời nếu có -->
+                        {% if item.cac_tra_loi|length > 0 %}
+                        <div class="so-luong-tra-loi">
+                            <i class="fas fa-comments me-1"></i>{{ item.cac_tra_loi|length }} trả lời
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Form trả lời (ẩn mặc định) -->
+                        <div id="formTraLoi{{ item.binh_luan_goc.id }}" class="form-tra-loi" style="display: none;">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="noiDungTraLoi{{ item.binh_luan_goc.id }}" rows="2" 
+                                          placeholder="Viết trả lời của bạn..."></textarea>
+                            </div>
+                            <div class="d-flex">
+                                <button class="nut-gui-tra-loi" onclick="guiTraLoi({{ item.binh_luan_goc.id }})">
+                                    <i class="fas fa-paper-plane me-1"></i>Gửi
+                                </button>
+                                <button class="nut-huy-tra-loi" onclick="anFormTraLoi({{ item.binh_luan_goc.id }})">
+                                    Hủy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Danh sách các trả lời -->
+                        {% if item.cac_tra_loi|length > 0 %}
+                        <div class="cac-tra-loi" id="cacTraLoi{{ item.binh_luan_goc.id }}">
+                            {% for tra_loi in item.cac_tra_loi %}
+                            <div class="tra-loi-item">
+                                <div class="comment-user">
+                                    <img src="{{ tra_loi.user.avatar_url if tra_loi.user.avatar_url else url_for('static', filename='images/default-avatar.png') }}" 
+                                         class="tra-loi-avatar" alt="User" onerror="this.src='/static/images/default-avatar.png'">
+                                    <div>
+                                        <strong>{{ tra_loi.user.fname if tra_loi.user.fname else tra_loi.user.email.split('@')[0] }}</strong>
+                                        <small class="text-muted ms-2">{{ tra_loi.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                    </div>
+                                </div>
+                                <p class="mb-0">{{ tra_loi.content }}</p>
+                                
+                                <!-- Nút xóa reply cho người tạo -->
+                                {% if ("user_name" in session or "full_name" in session) and tra_loi.user_id == session.get('user_id') %}
+                                <div class="cac-nut-hanh-dong">
+                                    <button class="nut-xoa-binh-luan" onclick="xoaBinhLuan({{ tra_loi.id }}, false, {{ item.binh_luan_goc.id }})" id="nutXoa{{ tra_loi.id }}">
+                                        <i class="fas fa-trash me-1"></i>Xóa
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <!-- Container trống cho replies mới -->
+                        <div class="cac-tra-loi" id="cacTraLoi{{ item.binh_luan_goc.id }}" style="display: none;"></div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -632,6 +812,8 @@
                 return;
             }
             
+            const isLoggedIn = {% if "user_name" in session or "full_name" in session %}true{% else %}false{% endif %};
+            
             fetch('/comment-experience', {
                 method: 'POST',
                 headers: {
@@ -645,26 +827,61 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Add new comment to the list
-                    const commentsList = document.getElementById('commentsList');
-                    const newComment = document.createElement('div');
-                    newComment.className = 'comment-item';
-                    newComment.innerHTML = `
+                    // Thêm comment mới vào danh sách với cấu trúc parent-child
+                    const danhsachbinhluan = document.getElementById('danhsachbinhluan');
+                    const commentMoi = document.createElement('div');
+                    commentMoi.className = 'comment-item';
+                    commentMoi.setAttribute('data-comment-id', data.comment.id);
+                    
+                    let replyButton = '';
+                    if (isLoggedIn) {
+                        replyButton = `
+                            <button class="nut-tra-loi" onclick="hienFormTraLoi(${data.comment.id})">
+                                <i class="fas fa-reply me-1"></i>Trả lời
+                            </button>
+                            
+                            <div id="formTraLoi${data.comment.id}" class="form-tra-loi" style="display: none;">
+                                <div class="mb-3">
+                                    <textarea class="form-control" id="noiDungTraLoi${data.comment.id}" rows="2" 
+                                              placeholder="Viết trả lời của bạn..."></textarea>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="nut-gui-tra-loi" onclick="guiTraLoi(${data.comment.id})">
+                                        <i class="fas fa-paper-plane me-1"></i>Gửi
+                                    </button>
+                                    <button class="nut-huy-tra-loi" onclick="anFormTraLoi(${data.comment.id})">
+                                        Hủy
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Tạo HTML cho comment mới
+                    commentMoi.innerHTML = `
                         <div class="comment-user">
-                            <img src="${data.comment.user_avatar}" class="comment-avatar" alt="User">
+                            <img src="${data.comment.user_avatar}" class="comment-avatar" alt="User" onerror="this.src='/static/images/default-avatar.png'">
                             <div>
                                 <strong>${data.comment.user_name}</strong>
                                 <small class="text-muted ms-2">${data.comment.created_at}</small>
                             </div>
                         </div>
                         <p class="mb-0">${data.comment.content}</p>
+                        <div class="cac-nut-hanh-dong">
+                            ${replyButton}
+                            <!-- Nút xóa cho comment mới (luôn hiển thị vì đây là comment của user hiện tại) -->
+                            <button class="nut-xoa-binh-luan" onclick="xoaBinhLuan(${data.comment.id}, true)" id="nutXoa${data.comment.id}">
+                                <i class="fas fa-trash me-1"></i>Xóa
+                            </button>
+                        </div>
+                        <div class="cac-tra-loi" id="cacTraLoi${data.comment.id}" style="display: none;"></div>
                     `;
-                    commentsList.insertBefore(newComment, commentsList.firstChild);
+                    danhsachbinhluan.insertBefore(commentMoi, danhsachbinhluan.firstChild);
                     
-                    // Clear the form
+                    // xóa nội dung của ô nhập bình luận
                     document.getElementById('commentContent').value = '';
                     
-                    // Update comments count
+                    // cập nhật số lượng comment 
                     const currentCount = parseInt(document.getElementById('commentsCount').textContent);
                     document.getElementById('commentsCount').textContent = currentCount + 1;
                     document.getElementById('commentsCountText').textContent = currentCount + 1;
@@ -678,13 +895,13 @@
             });
         }
 
-        // Show image modal
+        // Hiển thị hình ảnh modal
         function showImageModal(imageUrl) {
             document.getElementById('modalImage').src = imageUrl;
             new bootstrap.Modal(document.getElementById('imageModal')).show();
         }
 
-        // Share experience
+        // Chia sẻ trải nghiệm
         function shareExperience() {
             const title = '{{ experience.title|replace("'", "\\'") }}';
             const destination = '{{ experience.destination|replace("'", "\\'") }}';
@@ -696,19 +913,206 @@
                     url: window.location.href
                 });
             } else {
-                // Fallback: copy to clipboard
+                // Phương án nếu không hỗ trợ chia sẻ
                 navigator.clipboard.writeText(window.location.href).then(() => {
                     alert('Đã sao chép link chia sẻ vào clipboard!');
                 });
             }
         }
 
-        // Auto-resize textarea
+        // Tự động chỉnh kích cỡ ô nhập bình luận
         const commentTextarea = document.getElementById('commentContent');
         if (commentTextarea) {
             commentTextarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = this.scrollHeight + 'px';
+            });
+        }
+        
+        // === CÁC HÀM XỬ LÝ REPLY COMMENT ===
+        
+        // Hiển thị form trả lời
+        function hienFormTraLoi(idBinhLuan) {
+            const formTraLoi = document.getElementById(`formTraLoi${idBinhLuan}`);
+            const nutTraLoi = document.querySelector(`[data-comment-id="${idBinhLuan}"] .nut-tra-loi`);
+            
+            // Ẩn tất cả form reply khác trước khi hiện form mới
+            document.querySelectorAll('.form-tra-loi').forEach(form => {
+                form.style.display = 'none';
+            });
+            
+            // Hiện form reply cho comment này
+            formTraLoi.style.display = 'block';
+            document.getElementById(`noiDungTraLoi${idBinhLuan}`).focus();
+        }
+        
+        // Ẩn form trả lời
+        function anFormTraLoi(idBinhLuan) {
+            const formTraLoi = document.getElementById(`formTraLoi${idBinhLuan}`);
+            const textarea = document.getElementById(`noiDungTraLoi${idBinhLuan}`);
+            
+            formTraLoi.style.display = 'none';
+            textarea.value = ''; // Xóa nội dung đã nhập
+        }
+        
+        // Gửi trả lời
+        function guiTraLoi(idBinhLuanGoc) {
+            const noiDungTraLoi = document.getElementById(`noiDungTraLoi${idBinhLuanGoc}`).value.trim();
+            
+            if (!noiDungTraLoi) {
+                alert('Vui lòng nhập nội dung trả lời!');
+                return;
+            }
+            
+            fetch('/reply-comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    experience_id: experienceId,
+                    parent_id: idBinhLuanGoc,
+                    content: noiDungTraLoi
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Thêm reply mới vào danh sách
+                    const containerTraLoi = document.getElementById(`cacTraLoi${idBinhLuanGoc}`);
+                    const traLoiMoi = document.createElement('div');
+                    traLoiMoi.className = 'tra-loi-item';
+                    traLoiMoi.innerHTML = `
+                        <div class="comment-user">
+                            <img src="${data.reply.user_avatar}" class="tra-loi-avatar" alt="User" onerror="this.src='/static/images/default-avatar.png'">
+                            <div>
+                                <strong>${data.reply.user_name}</strong>
+                                <small class="text-muted ms-2">${data.reply.created_at}</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">${data.reply.content}</p>
+                    `;
+                    
+                    // Nếu container đang ẩn thì hiện nó
+                    if (containerTraLoi.style.display === 'none') {
+                        containerTraLoi.style.display = 'block';
+                    }
+                    
+                    containerTraLoi.appendChild(traLoiMoi);
+                    
+                    // Ẩn form trả lời và xóa nội dung
+                    anFormTraLoi(idBinhLuanGoc);
+                    
+                    // Cập nhật số lượng trả lời
+                    const soLuongTraLoi = document.querySelector(`[data-comment-id="${idBinhLuanGoc}"] .so-luong-tra-loi`);
+                    if (soLuongTraLoi) {
+                        const soLuongHienTai = parseInt(soLuongTraLoi.textContent.match(/\d+/)[0]);
+                        soLuongTraLoi.innerHTML = `<i class="fas fa-comments me-1"></i>${soLuongHienTai + 1} trả lời`;
+                    } else {
+                        // Tạo mới element hiển thị số lượng nếu chưa có
+                        const nutTraLoi = document.querySelector(`[data-comment-id="${idBinhLuanGoc}"] .nut-tra-loi`);
+                        const soLuongMoi = document.createElement('div');
+                        soLuongMoi.className = 'so-luong-tra-loi';
+                        soLuongMoi.innerHTML = '<i class="fas fa-comments me-1"></i>1 trả lời';
+                        nutTraLoi.parentNode.insertBefore(soLuongMoi, nutTraLoi.nextSibling);
+                    }
+                    
+                    // Cập nhật tổng số bình luận
+                    const tongSoBinhLuan = parseInt(document.getElementById('commentsCount').textContent);
+                    document.getElementById('commentsCount').textContent = tongSoBinhLuan + 1;
+                    document.getElementById('commentsCountText').textContent = tongSoBinhLuan + 1;
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gửi trả lời!');
+            });
+        }
+        
+        // === HÀM XỬ LÝ XÓA BÌNH LUẬN ===
+        
+        // Xóa bình luận hoặc reply
+        function xoaBinhLuan(idBinhLuan, laBinhLuanGoc, idBinhLuanCha = null) {
+            // Xác nhận trước khi xóa
+            const loaiBinhLuan = laBinhLuanGoc ? 'bình luận' : 'trả lời';
+            const thongBaoXacNhan = laBinhLuanGoc ? 
+                'Bạn có chắc muốn xóa bình luận này? Tất cả trả lời sẽ bị xóa theo.' : 
+                'Bạn có chắc muốn xóa trả lời này?';
+            
+            if (!confirm(thongBaoXacNhan)) {
+                return;
+            }
+            
+            // Hiển thị trạng thái loading
+            const nutXoa = document.getElementById(`nutXoa${idBinhLuan}`);
+            nutXoa.classList.add('loading-xoa');
+            nutXoa.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xóa...';
+            
+            fetch('/delete-comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    comment_id: idBinhLuan
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (laBinhLuanGoc) {
+                        // Xóa toàn bộ comment gốc và replies
+                        const commentElement = document.querySelector(`[data-comment-id="${idBinhLuan}"]`);
+                        if (commentElement) {
+                            commentElement.remove();
+                        }
+                    } else {
+                        // Xóa chỉ reply
+                        nutXoa.closest('.tra-loi-item').remove();
+                        
+                        // Cập nhật số lượng replies cho comment cha
+                        const containerTraLoi = document.getElementById(`cacTraLoi${idBinhLuanCha}`);
+                        const soLuongReplyConLai = containerTraLoi.querySelectorAll('.tra-loi-item').length;
+                        
+                        // Cập nhật hiển thị số lượng replies
+                        const soLuongTraLoi = document.querySelector(`[data-comment-id="${idBinhLuanCha}"] .so-luong-tra-loi`);
+                        if (soLuongReplyConLai === 0) {
+                            // Ẩn container nếu không còn reply nào
+                            containerTraLoi.style.display = 'none';
+                            if (soLuongTraLoi) {
+                                soLuongTraLoi.remove();
+                            }
+                        } else {
+                            // Cập nhật số lượng
+                            if (soLuongTraLoi) {
+                                soLuongTraLoi.innerHTML = `<i class="fas fa-comments me-1"></i>${soLuongReplyConLai} trả lời`;
+                            }
+                        }
+                    }
+                    
+                    // Cập nhật tổng số bình luận
+                    const tongSoBinhLuan = parseInt(document.getElementById('commentsCount').textContent);
+                    const soBinhLuanMoi = tongSoBinhLuan - data.deleted_count;
+                    document.getElementById('commentsCount').textContent = soBinhLuanMoi;
+                    document.getElementById('commentsCountText').textContent = soBinhLuanMoi;
+                    
+                    // Hiển thị thông báo thành công
+                    alert(`Đã xóa ${loaiBinhLuan} thành công!`);
+                } else {
+                    // Khôi phục nút nếu có lỗi
+                    nutXoa.classList.remove('loading-xoa');
+                    nutXoa.innerHTML = '<i class="fas fa-trash me-1"></i>Xóa';
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Khôi phục nút nếu có lỗi
+                nutXoa.classList.remove('loading-xoa');
+                nutXoa.innerHTML = '<i class="fas fa-trash me-1"></i>Xóa';
+                alert('Có lỗi xảy ra khi xóa bình luận!');
             });
         }
     </script>

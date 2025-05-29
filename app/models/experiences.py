@@ -80,20 +80,24 @@ class ExperienceComment(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     experience_id = db.Column(db.Integer, db.ForeignKey('experiences.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user2.id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('experience_comments.id'), nullable=True)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     experience = db.relationship('Experience', back_populates='comments')
     user = db.relationship('Users', backref=db.backref('experience_comments', lazy=True))
+    cac_tra_loi = db.relationship('ExperienceComment', backref=db.backref('binh_luan_goc', remote_side=[id]), lazy='dynamic')
     
     def to_dict(self):
         return {
             'id': self.id,
+            'parent_id': self.parent_id,
             'user_name': self.user.fname if self.user.fname else self.user.email.split('@')[0],
             'user_avatar': get_avatar_url(self.user.avatar_url) or '/static/images/default-avatar.png',
             'content': self.content,
-            'created_at': self.created_at.strftime('%d/%m/%Y %H:%M')
+            'created_at': self.created_at.strftime('%d/%m/%Y %H:%M'),
+            'so_luong_tra_loi': self.cac_tra_loi.count() if self.parent_id is None else 0
         }
 
 class ExperienceLike(db.Model):

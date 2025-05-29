@@ -2,12 +2,9 @@ from flask import Flask
 from app.extension import db, mail, oauth, cors, init_oauth  # Import từ extensions.py
 from config import Config
 from app.models.users import Users  # Import models sau khi khởi tạo app
-from app.models.destinations import Destinations, seed_destinations
-from app.models.hotels import Hotel, seed_hotels
-from app.models.experiences import Experience, ExperienceImage, ExperienceComment, ExperienceLike
+from app.models.destinations import seed_destinations
 from flask_migrate import Migrate
 from .routes import all_blueprints
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
 
@@ -50,7 +47,6 @@ def create_app(config_filename="config.py"):
     with app.app_context():
         db.create_all()  # Tạo tất cả bảng trong database
         seed_destinations()
-        seed_hotels()
         
         # Tạo tài khoản admin mặc định nếu chưa có
         from app.admin.models import Admin

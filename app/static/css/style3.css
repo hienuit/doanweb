@@ -3,7 +3,7 @@ body {
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
-    padding-top: 0;
+    padding-top: 70px; /* Bù cho navbar sticky */
     overflow-x: hidden;
 }
 
@@ -1055,84 +1055,6 @@ footer{
     font-size: 1.1rem;
 }
 
-/* Promotion Card Styles */
-.promo-card {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    height: 100%;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid #eaeaea;
-}
-
-.promo-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
-
-.discount-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: #ef4444;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 0.85rem;
-    z-index: 1;
-    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
-}
-
-.promo-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    transition: transform 0.5s;
-}
-
-.promo-card:hover img {
-    transform: scale(1.05);
-}
-
-.promo-content {
-    padding: 20px;
-}
-
-.promo-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.promo-description {
-    color: #555;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    line-height: 1.5;
-}
-
-.promo-price-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.original-price {
-    text-decoration: line-through;
-    color: #888;
-    font-size: 0.9rem;
-}
-
-.sale-price {
-    color: #ef4444;
-    font-weight: 700;
-    font-size: 1.2rem;
-}
 
 /* Button styles */
 .btn-primary {
@@ -1536,4 +1458,5 @@ footer{
     color: #999;
     font-style: italic;
 }
+
 

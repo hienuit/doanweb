@@ -95,10 +95,30 @@ def experience_detail(experience_id):
                 experience_id=experience.id, user_id=user.id
             ).first() is not None
     
+    # Lấy comments có cấu trúc parent-child
+    # Chỉ lấy comments gốc (parent_id = None) và sắp xếp theo thời gian tạo
+    cac_binh_luan_goc = ExperienceComment.query.filter_by(
+        experience_id=experience_id, 
+        parent_id=None
+    ).order_by(ExperienceComment.created_at.desc()).all()
+    
+    # Với mỗi comment gốc, lấy các replies của nó
+    danh_sach_binh_luan_day_du = []
+    for binh_luan_goc in cac_binh_luan_goc:
+        cac_tra_loi = ExperienceComment.query.filter_by(
+            parent_id=binh_luan_goc.id
+        ).order_by(ExperienceComment.created_at.asc()).all()
+        
+        danh_sach_binh_luan_day_du.append({
+            'binh_luan_goc': binh_luan_goc,
+            'cac_tra_loi': cac_tra_loi
+        })
+    
     return render_template('experience_detail.html', 
                          experience=experience,
                          related_experiences=related_experiences,
-                         user_liked=user_liked)
+                         user_liked=user_liked,
+                         danh_sach_binh_luan_day_du=danh_sach_binh_luan_day_du)
 
 @experience_blueprint.route('/share-experience')
 def share_experience():
@@ -231,6 +251,98 @@ def comment_experience():
         'success': True,
         'comment': comment.to_dict()
     })
+
+@experience_blueprint.route('/reply-comment', methods=['POST'])
+def tra_loi_binh_luan():
+    """Trả lời bình luận - giống chức năng reply của Facebook"""
+    if 'user_name' not in session and 'oauth_token' not in session:
+        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập'}), 401
+    
+    user = get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': 'Không tìm thấy thông tin người dùng'}), 404
+    
+    id_binh_luan_goc = request.json.get('parent_id')  # ID của comment gốc
+    id_trai_nghiem = request.json.get('experience_id')
+    noi_dung_tra_loi = request.json.get('content', '').strip()
+    
+    if not noi_dung_tra_loi:
+        return jsonify({'success': False, 'message': 'Nội dung trả lời không được để trống'}), 400
+    
+    # Kiểm tra comment gốc có tồn tại không
+    binh_luan_goc = ExperienceComment.query.get_or_404(id_binh_luan_goc)
+    if binh_luan_goc.parent_id is not None:
+        return jsonify({'success': False, 'message': 'Chỉ có thể trả lời comment gốc, không thể trả lời reply'}), 400
+    
+    # Tạo reply mới
+    tra_loi_moi = ExperienceComment(
+        experience_id=id_trai_nghiem,
+        user_id=user.id,
+        parent_id=id_binh_luan_goc,
+        content=noi_dung_tra_loi
+    )
+    
+    db.session.add(tra_loi_moi)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'reply': tra_loi_moi.to_dict()
+    })
+
+@experience_blueprint.route('/delete-comment', methods=['POST'])
+def xoa_binh_luan():
+    """Xóa bình luận - chỉ người tạo mới được xóa"""
+    if 'user_name' not in session and 'oauth_token' not in session:
+        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập'}), 401
+    
+    user_hien_tai = get_current_user()
+    if not user_hien_tai:
+        return jsonify({'success': False, 'message': 'Không tìm thấy thông tin người dùng'}), 404
+    
+    id_binh_luan = request.json.get('comment_id')
+    if not id_binh_luan:
+        return jsonify({'success': False, 'message': 'ID bình luận không hợp lệ'}), 400
+    
+    # Tìm bình luận cần xóa
+    binh_luan_can_xoa = ExperienceComment.query.get_or_404(id_binh_luan)
+    
+    # Kiểm tra quyền sở hữu - chỉ người tạo mới được xóa
+    if binh_luan_can_xoa.user_id != user_hien_tai.id:
+        return jsonify({'success': False, 'message': 'Bạn chỉ có thể xóa bình luận của chính mình'}), 403
+    
+    try:
+        # Nếu là comment gốc, xóa tất cả replies của nó
+        if binh_luan_can_xoa.parent_id is None:
+            # Đếm số replies trước khi xóa
+            so_luong_replies = ExperienceComment.query.filter_by(parent_id=id_binh_luan).count()
+            
+            # Xóa tất cả replies
+            ExperienceComment.query.filter_by(parent_id=id_binh_luan).delete()
+            
+            # Xóa comment gốc
+            db.session.delete(binh_luan_can_xoa)
+            
+            # Tổng số bình luận bị xóa
+            tong_so_xoa = so_luong_replies + 1
+        else:
+            # Nếu là reply, chỉ xóa reply đó
+            db.session.delete(binh_luan_can_xoa)
+            tong_so_xoa = 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Xóa bình luận thành công',
+            'deleted_count': tong_so_xoa,
+            'comment_id': id_binh_luan,
+            'is_parent': binh_luan_can_xoa.parent_id is None
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Có lỗi xảy ra: {str(e)}'}), 500
 
 @experience_blueprint.route('/get-experience-comments/<int:experience_id>')
 def get_experience_comments(experience_id):

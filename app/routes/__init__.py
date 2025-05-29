@@ -4,7 +4,7 @@ from .api_routes import api_blueprint
 from .media_routes import media_blueprint
 from .loginfb_routes import loginfb_blueprint
 from .history_routes import histories_blueprint
-from .federated_routes import federated_blueprint
+# from .federated_routes import federated_blueprint
 from .experience_routes import experience_blueprint
 from .weather_routes import weather_blueprint
 from app.admin import admin as admin_blueprint
@@ -18,7 +18,7 @@ all_blueprints = [
     media_blueprint,
     loginfb_blueprint,
     histories_blueprint,
-    federated_blueprint,
+    # federated_blueprint,
     experience_blueprint,
     weather_blueprint,
     admin_blueprint

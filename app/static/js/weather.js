@@ -256,33 +256,37 @@ class WeatherWidget {
 
         const selectorHTML = `
             <div class="city-selector mb-4">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12 text-center">
                         <h3 class="section-title mb-0">
                             <i class="fas fa-cloud-sun me-3"></i>
                             Thời Tiết Các Điểm Đến
                         </h3>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <button class="btn btn-outline-light btn-sm" onclick="weatherWidget.showCityModal()">
-                            <i class="fas fa-cog me-2"></i>Chọn Tỉnh/Thành Phố
-                        </button>
+                </div>
+                <div class="row justify-content-center mt-3">
+                    <div class="col-12 text-center">
+                        <div class="quick-cities">
+                            <span class="text-light me-3">Nhanh:</span>
+                            <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('popular')">
+                                <i class="fas fa-star me-1"></i>Phổ Biến
+                            </button>
+                            <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('north')">
+                                <i class="fas fa-mountain me-1"></i>Miền Bắc
+                            </button>
+                            <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('central')">
+                                <i class="fas fa-water me-1"></i>Miền Trung
+                            </button>
+                            <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('south')">
+                                <i class="fas fa-sun me-1"></i>Miền Nam
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-3">
-                    <div class="quick-cities">
-                        <span class="text-light me-3">Nhanh:</span>
-                        <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('popular')">
-                            <i class="fas fa-star me-1"></i>Phổ Biến
-                        </button>
-                        <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('north')">
-                            <i class="fas fa-mountain me-1"></i>Miền Bắc
-                        </button>
-                        <button class="btn btn-sm btn-outline-light me-2" onclick="weatherWidget.loadQuickCities('central')">
-                            <i class="fas fa-water me-1"></i>Miền Trung
-                        </button>
-                        <button class="btn btn-sm btn-outline-light" onclick="weatherWidget.loadQuickCities('south')">
-                            <i class="fas fa-sun me-1"></i>Miền Nam
+                <div class="row justify-content-center mt-2">
+                    <div class="col-12 text-center">
+                        <button class="btn btn-outline-light btn-sm" onclick="weatherWidget.showCityModal()">
+                            <i class="fas fa-cog me-2"></i>Chọn Tỉnh/Thành Phố
                         </button>
                     </div>
                 </div>

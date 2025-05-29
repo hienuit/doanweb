@@ -112,6 +112,8 @@
     font-size: 2.5rem;
     font-weight: 700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    display: block;
 }
 
 .weather-grid {
@@ -379,11 +381,23 @@
 /* chọn thành phố */
 .city-selector {
     margin-bottom: 30px;
+    text-align: center;
+}
+
+.city-selector .row {
+    justify-content: center;
+    align-items: center;
+}
+
+.city-selector h3.section-title {
+    text-align: center;
+    margin-bottom: 0;
 }
 
 .quick-cities {
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 8px;
 }
@@ -498,12 +512,24 @@
     .quick-cities {
         justify-content: center;
         margin-top: 15px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     
     .quick-cities span {
         width: 100%;
         text-align: center;
         margin-bottom: 10px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        display: block;
+    }
+    
+    .quick-cities .btn {
+        margin: 2px;
+        font-size: 0.8rem;
+        padding: 5px 12px;
     }
     
     .city-selector .row {
@@ -512,10 +538,33 @@
     
     .city-selector .col-md-4 {
         margin-top: 15px;
+        text-align: center;
+    }
+    
+    .city-selector .col-md-8 {
+        text-align: center;
     }
     
     .demo-indicator {
         font-size: 0.7rem;
         margin-left: 5px;
+    }
+}
+
+/* Thêm responsive cho mobile nhỏ */
+@media (max-width: 576px) {
+    .quick-cities {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .quick-cities .btn {
+        width: auto;
+        min-width: 120px;
+        margin: 3px;
+    }
+    
+    .weather-section .section-title {
+        font-size: 1.8rem;
     }
 }

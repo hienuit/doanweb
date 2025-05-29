@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/weather.css') }}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="/">
                 <i class="fas fa-route logo-icon"></i>
@@ -22,16 +22,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/">Trang Chủ</a>
+                        <a class="nav-link" href="/">Trang Chủ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/page2">Điểm Đến</a>
+                        <a class="nav-link active" href="/page2">Điểm Đến</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/experiences">Trải Nghiệm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Ưu Đãi</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Về Chúng Tôi</a>
@@ -307,7 +304,6 @@
                         <li><a href="/">Trang Chủ</a></li>
                         <li><a href="/page2">Điểm Đến</a></li>
                         <li><a href="/experiences">Trải Nghiệm</a></li>
-                        <li><a href="/promotions">Ưu Đãi</a></li>
                         <li><a href="#">Về Chúng Tôi</a></li>
                     </ul>
                 </div>

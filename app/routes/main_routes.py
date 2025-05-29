@@ -300,12 +300,6 @@ def history():
 def personalized_history():
     return render_template('personalized-history.html')
 
-# Thêm route để hiển thị trang ưu đãi
-@main_blueprint.route('/promotions')
-def promotions():
-    """Hiển thị trang ưu đãi du lịch."""
-    return render_template('promotions.html')
-
 #feedback
 @main_blueprint.route('/feedback', methods=['GET'])
 def feedback():

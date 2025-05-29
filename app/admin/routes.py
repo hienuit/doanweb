@@ -38,15 +38,10 @@ def index():
 @admin_required
 def dashboard():
     from app.models.history import History
-    from app.models.promotions import Promotion
     
     # Tính toán thống kê
     total_users = Users.query.count()
-    total_bookings = History.query.count() 
-    active_tours = Promotion.query.filter(
-        Promotion.end_date > datetime.utcnow()
-    ).count()
-    
+    total_bookings = History.query.count()         
     # Tính tổng doanh thu từ history (chuyển đổi string thành số)
     histories = History.query.all()
     revenue = 0
@@ -97,7 +92,6 @@ def dashboard():
     return render_template('admin/dashboard.html',
                          total_users=total_users,
                          total_bookings=total_bookings,
-                         active_tours=active_tours,
                          revenue=revenue,
                          booking_labels=booking_labels,
                          booking_data=booking_data,
