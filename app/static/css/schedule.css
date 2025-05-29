@@ -1132,5 +1132,29 @@ body {
     background: linear-gradient(90deg, #ff6b6b, #feca57);
     width: 0%;
     transition: width 0.3s ease;
+    border-radius: 5px;
+}
+
+/* Animations cho notification */
+@keyframes slideInRight {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
 }
         

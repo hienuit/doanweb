@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify,session
 from app.models.destinations import search_from_db, search_describe,extend_from_db, Destinations
 import json, re
 import google.generativeai as genai
-from datetime import datetime, timedelta, timezone
 import unicodedata
 
 genai.configure(api_key="AIzaSyAM-euCjLTAPiFQvXnI4X-5EeNGX2G-k0Q")

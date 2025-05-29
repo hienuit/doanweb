@@ -1,10 +1,10 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+<nav class="navbar navbar-expand-lg sticky-top">
     <div class="container">
         <a class="navbar-brand" href="/">
             <i class="fas fa-route logo-icon"></i>
             Travel Assistant
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -26,7 +26,7 @@
                 {% if "user_name" in session or "full_name" in session %}
                     <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2" alt="User Avatar" onerror="this.src='/static/images/default-avatar.png'">
+                            <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2" onerror="this.src='/static/images/default-avatar.png'">
                             {{ session['full_name'] if session.get('full_name') else session['user_name'] }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -59,3 +59,19 @@
         </div>
     </div>
 </nav>
+
+<div class="search-box-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-primary"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" placeholder="Tìm kiếm địa điểm du lịch..." id="destinationInput" autocomplete="off">
+                    <button class="btn btn-primary" type="button" id="searchButton">Tìm Kiếm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

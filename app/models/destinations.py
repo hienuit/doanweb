@@ -492,11 +492,10 @@ def search_from_db(mood, place, location):
     return [{"name": destination.name} for destination in results]
 
 def extend_from_db(destination):
-    # Query Destinations table for entries matching the destination name
     results = Destinations.query.filter_by(name=destination).all()
-    # Return a list of dictionaries with mood, place, and location
     return [{"mood": dest.mood, "place": dest.place, "location": dest.location} for dest in results]
 
+#Hàm bỏ dấu tiếng việt
 def normalize(text):
     text = text.lower()
     text = unicodedata.normalize('NFD', text)
@@ -504,6 +503,7 @@ def normalize(text):
     text = text.replace('đ', 'd')
     return text
 
+#Hàm chuẩn hóa tên tỉnh
 def standardize_province_name(name):
     normalized = normalize(name)
 
@@ -520,13 +520,10 @@ def standardize_province_name(name):
 
 def search_describe(province):
     try:
-        print(f"Input province: {province}")
+
         standardized = standardize_province_name(province)
-        print(f"Standardized: {standardized}")
         normalized_input = normalize(standardized)
-        print(f"Normalized input: {normalized_input}")
         all_destinations = Destinations.query.all()
-        print(f"Total destinations in DB: {len(all_destinations)}")
 
         # Danh sách 5 TP trực thuộc TƯ
         city_list = ["Hà Nội", "Hồ Chí Minh", "Cần Thơ", "Hải Phòng", "Đà Nẵng"]

@@ -1,4 +1,3 @@
-
         let itinerary = null;
         let totalCost = 0;
         let particleSystem = null;
@@ -83,19 +82,18 @@
         // tải dữ liệu lịch trình
         function loadItinerary() {
             try {
-                itinerary = JSON.parse(localStorage.getItem('itinerary'));
+                // Kiểm tra xem có đang xem từ lịch sử hay không
+                const currentPath = window.location.pathname;
+                const historyMatch = currentPath.match(/\/schedule-from-history\/(\d+)/);
                 
-                if (!itinerary || !itinerary.days) {
-                    throw new Error('Không có dữ liệu lịch trình');
+                if (historyMatch) {
+                    // Đang xem từ lịch sử, load từ API
+                    const historyId = historyMatch[1];
+                    loadItineraryFromHistory(historyId);
+                } else {
+                    // Load từ localStorage như bình thường
+                    loadItineraryFromLocalStorage();
                 }
-
-                hideLoading();
-                generateTripSummary();
-                generateJourneyPreview();
-                generateTimeline();
-                generateFunFacts();
-                setupEventListeners();
-                startAnimations();
                 
             } catch (error) {
                 console.error('Lỗi:', error);
@@ -104,14 +102,99 @@
             }
         }
 
+        function loadItineraryFromLocalStorage() {
+            itinerary = JSON.parse(localStorage.getItem('itinerary'));
+            
+            if (!itinerary || !itinerary.days) {
+                throw new Error('Không có dữ liệu lịch trình');
+            }
+
+            hideLoading();
+            generateTripSummary();
+            generateJourneyPreview();
+            generateTimeline();
+            generateFunFacts();
+            setupEventListeners();
+            startAnimations();
+        }
+
+        function loadItineraryFromHistory(historyId) {
+            fetch(`/get-history-detail/${historyId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Không thể tải lịch sử');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.itinerary) {
+                        itinerary = data.itinerary;
+                        
+                        hideLoading();
+                        generateTripSummary();
+                        generateJourneyPreview();
+                        generateTimeline();
+                        generateFunFacts();
+                        setupEventListeners();
+                        startAnimations();
+                        
+                        // Cập nhật localStorage để tính năng khác hoạt động bình thường
+                        localStorage.setItem('itinerary', JSON.stringify(itinerary));
+                        
+                        // Hiển thị thông báo đang xem từ lịch sử
+                        showHistoryViewNotification();
+                    } else {
+                        throw new Error('Không thể tải dữ liệu lịch sử');
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải lịch sử:', error);
+                    hideLoading();
+                    alert('Lỗi khi tải lịch sử: ' + error.message);
+                });
+        }
+
+        function showHistoryViewNotification() {
+            // thông báo là đang coi lại lịch sử của lịch trình cũ
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(45deg, #2196F3, #21CBF3);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-weight: bold;
+                z-index: 1001;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                animation: slideInRight 0.5s ease;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-history"></i> Đang xem từ lịch sử đã lưu
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Tự động ẩn sau 5 giây
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 500);
+            }, 5000);
+        }
+
         // tạo bảng tóm tắt chuyến đi
         function generateTripSummary() {
             const summaryContainer = document.getElementById('tripSummary');
             
-            // Tính chi phí 
+            // Tính chi phí du lịch 
             totalCost = itinerary.days.reduce((sum, day) => sum + (Number(day.estimated_cost) || 0), 0);
             
-            // tính số ngày 
+            // số ngày du lịch  
             const totalActivities = itinerary.days.reduce((sum, day) => {
                 const scheduleItems = day.schedule || day.activities || [];
                 return sum + scheduleItems.filter(item => item.type === 'activity' || !item.type).length;
@@ -401,13 +484,27 @@
                 }, 1000);
             });
 
-            // Save history button
+            // Save history button - chỉ hiển thị khi không phải xem từ lịch sử
             const saveBtn = document.getElementById('saveHistoryBtn');
             if (saveBtn) {
-                saveBtn.addEventListener('click', function() {
-                    addRippleEffect(this);
-                    saveToHistory();
-                });
+                // Kiểm tra xem có đang xem từ lịch sử không
+                const currentPath = window.location.pathname;
+                const isViewingFromHistory = currentPath.match(/\/schedule-from-history\/(\d+)/);
+                
+                if (isViewingFromHistory) {
+                    // Ẩn nút lưu lịch sử và thay thế bằng nút "Quay lại lịch sử"
+                    saveBtn.innerHTML = '<i class="fas fa-arrow-left"></i><span>Quay lại lịch sử</span>';
+                    saveBtn.addEventListener('click', function() {
+                        addRippleEffect(this);
+                        window.location.href = '/history';
+                    });
+                } else {
+                    // Giữ nguyên chức năng lưu lịch sử
+                    saveBtn.addEventListener('click', function() {
+                        addRippleEffect(this);
+                        saveToHistory();
+                    });
+                }
             }
 
             // Share button
@@ -493,7 +590,7 @@
             alert('Tính năng thư viện ảnh sẽ được cập nhật trong phiên bản tiếp theo!');
         }
 
-        //  Lưu lịch sử 
+        //  Lưu lịch sử với dữ liệu đầy đủ
         function saveToHistory() {
             const saveBtn = document.getElementById('saveHistoryBtn');
             const originalHTML = saveBtn.innerHTML;
@@ -501,14 +598,27 @@
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
             saveBtn.disabled = true;
 
+            // Thu thập activity names (để tương thích ngược)
             const activityNames = JSON.parse(localStorage.getItem('activityNames')) || [];
             
+            // Tạo payload với dữ liệu đầy đủ
             const data = {
+                // Dữ liệu cũ (để tương thích ngược)
                 activityNames: activityNames,
                 days: itinerary.days.length,
                 budget: totalCost.toString(),
-                destination: itinerary.destination || "Không rõ"
+                destination: itinerary.destination || "Không rõ",
+                
+                // Dữ liệu mới: toàn bộ itinerary
+                fullItinerary: itinerary
             };
+
+            console.log("💾 Đang lưu lịch sử với dữ liệu đầy đủ:", {
+                activityCount: activityNames.length,
+                daysCount: itinerary.days.length,
+                hasFullData: !!itinerary.days,
+                totalCost: totalCost
+            });
 
             fetch('/save-history', {
                 method: 'POST',
@@ -522,13 +632,14 @@
                 return response.json();
             })
             .then(result => {
+                console.log("✅ Lưu lịch sử thành công:", result);
                 saveBtn.innerHTML = '<i class="fas fa-check"></i> Đã lưu!';
                 setTimeout(() => {
                     window.location.href = '/history';
                 }, 1500);
             })
             .catch(error => {
-                console.error('Lỗi:', error);
+                console.error('❌ Lỗi khi lưu lịch sử:', error);
                 saveBtn.innerHTML = originalHTML;
                 saveBtn.disabled = false;
                 alert('Lỗi khi lưu lịch sử: ' + error.message);

@@ -6,7 +6,7 @@ from app import db
 import os
 from werkzeug.utils import secure_filename
 import time
-from app.models.experiences import Experience, ExperienceImage, ExperienceComment, ExperienceLike
+from app.models.experiences import Experience, ExperienceComment
 from sqlalchemy import func
 
 main_blueprint = Blueprint('main', __name__)

@@ -1,23 +1,18 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request
 import requests
 import os
 from datetime import datetime
 
 weather_blueprint = Blueprint('weather', __name__)
 
-@weather_blueprint.route('/weather-demo')
-def weather_demo():
-    """Trang demo weather widget"""
-    return render_template('weather_demo.html')
+# API key cho OpenWeatherMap
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY") 
+WEATHER_BASE_URL = os.getenv("WEATHER_BASE_URL")
 
-# API key cho OpenWeatherMap (bạn cần đăng ký tại openweathermap.org)
-WEATHER_API_KEY = "fcf6c2e10d18ee9bdd022de688a5b57b"  # Sử dụng demo data khi không có API key
-WEATHER_BASE_URL = "http://api.openweathermap.org/data/2.5"
 
-# Cấu hình fallback - sử dụng demo data khi API thất bại
 USE_DEMO_FALLBACK = True
 
-# Demo weather data cho testing
+# fake đata, sử dụng khi api bị lỗi hoặc là hết hạn
 DEMO_WEATHER_DATA = {
     "Hà Nội": {
         "temperature": 25,
@@ -346,7 +341,7 @@ DEMO_WEATHER_DATA = {
     }
 }
 
-def remove_vietnamese_accents(text):
+def bo_dau_tieng_viet(text):
     """Chuyển đổi tiếng Việt có dấu thành không dấu"""
     vietnamese_map = {
         'à': 'a', 'á': 'a', 'ạ': 'a', 'ả': 'a', 'ã': 'a', 'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ậ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ặ': 'a', 'ẳ': 'a', 'ẵ': 'a',
@@ -370,10 +365,10 @@ def remove_vietnamese_accents(text):
         result += vietnamese_map.get(char, char)
     return result
 
-def normalize_city_name(city_name):
+def chua_hoa_ten_thanh_pho(city_name):
     """Chuẩn hóa tên thành phố để tìm kiếm"""
     # Loại bỏ dấu
-    normalized = remove_vietnamese_accents(city_name)
+    normalized = bo_dau_tieng_viet(city_name)
     # Chuyển về lowercase và loại bỏ khoảng trắng thừa
     normalized = normalized.lower().strip()
     # Loại bỏ các từ phổ biến
@@ -478,23 +473,23 @@ CITY_MAPPING = {
     "Kien Giang": "Rach Gia"
 }
 
-def find_city_english_name(vietnamese_city):
+def tim_ten_thanh_pho_english(vietnamese_city):
     """Tìm tên tiếng Anh của thành phố từ tên tiếng Việt"""
     # Thử tìm trực tiếp trước
     if vietnamese_city in CITY_MAPPING:
         return CITY_MAPPING[vietnamese_city]
     
     # Thử tìm với tên đã chuẩn hóa
-    normalized_input = normalize_city_name(vietnamese_city)
+    normalized_input = chua_hoa_ten_thanh_pho(vietnamese_city)
     
     # Tìm kiếm trong mapping với tên đã chuẩn hóa
     for vn_name, en_name in CITY_MAPPING.items():
-        if normalize_city_name(vn_name) == normalized_input:
+        if chua_hoa_ten_thanh_pho(vn_name) == normalized_input:
             return en_name
     
     # Nếu không tìm thấy, thử tìm kiếm gần đúng
     for vn_name, en_name in CITY_MAPPING.items():
-        if normalized_input in normalize_city_name(vn_name) or normalize_city_name(vn_name) in normalized_input:
+        if normalized_input in chua_hoa_ten_thanh_pho(vn_name) or chua_hoa_ten_thanh_pho(vn_name) in normalized_input:
             return en_name
     
     # Trả về tên gốc nếu không tìm thấy
@@ -507,18 +502,18 @@ def get_demo_data_fallback(city):
     
     # Nếu không tìm thấy, thử với tên đã chuẩn hóa
     if not demo_data:
-        normalized_city = find_city_english_name(city)
+        normalized_city = tim_ten_thanh_pho_english(city)
         # Tìm trong demo data với tên tiếng Việt tương ứng
         for demo_city, demo_info in DEMO_WEATHER_DATA.items():
-            if find_city_english_name(demo_city) == normalized_city:
+            if tim_ten_thanh_pho_english(demo_city) == normalized_city:
                 demo_data = demo_info
                 break
     
     # Nếu vẫn không tìm thấy, thử tìm kiếm gần đúng
     if not demo_data:
-        normalized_input = normalize_city_name(city)
+        normalized_input = chua_hoa_ten_thanh_pho(city)
         for demo_city, demo_info in DEMO_WEATHER_DATA.items():
-            if normalized_input in normalize_city_name(demo_city) or normalize_city_name(demo_city) in normalized_input:
+            if normalized_input in chua_hoa_ten_thanh_pho(demo_city) or chua_hoa_ten_thanh_pho(demo_city) in normalized_input:
                 demo_data = demo_info
                 break
     
@@ -604,9 +599,9 @@ def get_current_weather(city):
             demo_data = DEMO_WEATHER_DATA.get(city)
             
             if not demo_data:
-                normalized_city = find_city_english_name(city)
+                normalized_city = tim_ten_thanh_pho_english(city)
                 for demo_city, demo_info in DEMO_WEATHER_DATA.items():
-                    if find_city_english_name(demo_city) == normalized_city:
+                    if tim_ten_thanh_pho_english(demo_city) == normalized_city:
                         demo_data = demo_info
                         break
             
@@ -638,7 +633,7 @@ def get_current_weather(city):
                 }), 404
         
         # Chuyển đổi tên thành phố
-        english_city = find_city_english_name(city)
+        english_city = tim_ten_thanh_pho_english(city)
         
         # Gọi API OpenWeatherMap
         url = f"{WEATHER_BASE_URL}/weather"
@@ -773,7 +768,7 @@ def get_weather_forecast(city):
                 }
             })
         # Chuyển đổi tên thành phố
-        english_city = find_city_english_name(city)
+        english_city = tim_ten_thanh_pho_english(city)
         
         # Gọi API OpenWeatherMap
         url = f"{WEATHER_BASE_URL}/forecast"
@@ -870,7 +865,7 @@ def get_multiple_weather():
         
         for city in cities:
             try:
-                english_city = find_city_english_name(city)
+                english_city = tim_ten_thanh_pho_english(city)
                 
                 url = f"{WEATHER_BASE_URL}/weather"
                 params = {

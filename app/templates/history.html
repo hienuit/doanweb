@@ -69,6 +69,29 @@
       font-style: italic;
       color: #555;
     }
+
+    .view-detail-btn {
+      background: linear-gradient(45deg, #4caf50, #66bb6a);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(76, 175, 80, 0.3);
+    }
+
+    .view-detail-btn:hover {
+      background: linear-gradient(45deg, #388e3c, #4caf50);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+    }
+
+    .view-detail-btn:active {
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -152,6 +175,9 @@
             <p><strong>📌 Địa điểm đã chọn:</strong></p>
             <ul>${activityList}</ul>
             <p><strong>🕒 Ngày lưu:</strong> ${item.created_at}</p>
+            <button class="view-detail-btn" onclick="viewHistoryDetail(${item.id})">
+              <i class="fas fa-eye"></i> Xem chi tiết lịch trình
+            </button>
           `;
         
           container.appendChild(div);
@@ -183,11 +209,20 @@
       });
 
 
+      function viewHistoryDetail(historyId) {
+        // Lưu historyId vào localStorage để backend có thể sử dụng
+        localStorage.setItem('selectedHistoryId', historyId);
+        
+        // Chuyển hướng đến trang xem lịch trình từ lịch sử
+        window.location.href = `/schedule-from-history/${historyId}`;
+      }
+
       document.getElementById("create-personalized-history").addEventListener("click", function () {
         if (historyJsonArray.length === 0) {
           alert("Không có lịch sử nào để gửi!");
           return;
         }
+      });
 
       //   fetch('/create-personalized-history', {
       //     method: 'POST',

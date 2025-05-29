@@ -353,31 +353,22 @@ document.getElementById("submitDetails").addEventListener("click", function() {
 });
 
 
-function displayItinerary(itinerary) {
-    const Feature = document.getElementById("Feature");
-    Feature.innerHTML = "";
-    
-    let itineraryHTML = "<h2>Itinerary for Your Trip</h2>";
 
-    
-    itinerary.days.forEach(day => {
-        itineraryHTML += `<div class="day-schedule"><h3>Day ${day.day}</h3>`;
-        itineraryHTML += `<ul class="activities-list">`;
 
-        day.activities.forEach(activity => {
-            itineraryHTML += `<li>
-                                <strong>${activity.name}</strong>: ${activity.description}
-                                <br><strong>Cost:</strong> ${activity.cost}
-                              </li>`;
-        });
-
-        itineraryHTML += `</ul>`;
-        itineraryHTML += `<p><strong>Estimated Cost for Day ${day.day}:</strong> ${day.estimated_cost}</p></div>`;
-    });
-
-    itineraryHTML += `<h3>Total Estimated Cost: ${itinerary.total_estimated_cost}</h3>`;
-    Feature.innerHTML = itineraryHTML;
-}
+const backToTopButton = document.getElementById('backToTop');
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('visible');
+        } 
+        else {
+                backToTopButton.classList.remove('visible');
+        }
+});
+        
+backToTopButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 
 

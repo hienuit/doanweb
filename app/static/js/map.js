@@ -111,8 +111,8 @@ const mapStyles = {
   ]
 };
 
-// Hàm tạo mới biểu tượng khách sạn tùy chỉnh
-function createHotelMarker(index) {
+// Tạo đánh dấu cho khách sạn
+function tao_danh_dau_ksan(index) {
   const div = document.createElement('div');
   div.className = 'hotel-icon';
   div.textContent = 'H';
@@ -126,16 +126,9 @@ function createHotelMarker(index) {
   };
 }
 
-// Legacy function - kept for compatibility but not used in day-based navigation
-function parseCoordinates() {
-  // This function is no longer used in the new day-based system
-  // All coordinate parsing is now handled by parseItineraryData()
-  console.log("Legacy parseCoordinates called - redirecting to new system");
-}
-
 // Initialize map and components
 function initMap() {
-  // Initialize map with default coordinates (Hanoi)
+  // mặc định tọa độ ban đầu là hà nội nếu hệ thống tìm điểm đến bị lỗi
   map = new google.maps.Map(document.getElementById("map"), {
     center: {lat: 21.0278, lng: 105.8388},
     zoom: 14,
@@ -148,47 +141,45 @@ function initMap() {
   
   directionsService = new google.maps.DirectionsService();
   
-  // Parse itinerary data
+  // phân tích dữ liệu lưu trong localstorage và tìm kiếm bằng place api
   if (!parseItineraryData()) {
     return;
   }
   
-  // Initialize day navigation
-  updateDayNavigation();
-  loadDayRoute();
+
   
-  // Event listeners for day navigation
-  document.getElementById("prevDayBtn").addEventListener("click", goToPreviousDay);
-  document.getElementById("nextDayBtn").addEventListener("click", goToNextDay);
+  // Điều hướng ngày
+  document.getElementById("prevDayBtn").addEventListener("click", toi_ngay_hom_truoc);
+  document.getElementById("nextDayBtn").addEventListener("click", toi_ngay_hom_sau);
   
-  // Speed slider
+  // thanh tốc độ 
   document.getElementById("speedSlider").addEventListener("input", e => {
     speed = parseInt(e.target.value);
     document.getElementById("speedLabel").textContent = speed;
   });
   
-  // Hotel search button
+  // tìm khách sạn gần đó
   document.getElementById("findHotelsBtn").addEventListener("click", function() {
     const currentPosition = carMarker ? carMarker.getPosition() : 
                            (dayCoords[currentDay] && dayCoords[currentDay].length > 0 ? 
                             dayCoords[currentDay][0] : map.getCenter());
-    findNearbyHotels(currentPosition);
+    tim_ksan_gan_nhat(currentPosition);
   });
   
-  // Map style controls
+  // kiểu bản đồ
   const styleButtons = document.querySelectorAll('.style-button');
   styleButtons.forEach(button => {
     button.addEventListener('click', function() {
       const style = this.getAttribute('data-style');
       
-      if (style === 'satellite') {
+      if (style === 'satellite') { // kiểu vệ tinh
         map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-      } else if (style === 'terrain') {
+      } else if (style === 'terrain') { // kiểu địa hình
         map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
-      } else if (style === 'night') {
+      } else if (style === 'night') { // kiểu đêm
         map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
         map.setOptions({styles: mapStyles.night});
-      } else {
+      } else { // kiểu bản đồ mặc định
         map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
         map.setOptions({styles: null});
       }
@@ -197,38 +188,8 @@ function initMap() {
       this.classList.add('active');
     });
   });
-  
-  // Tips functionality
-  const tipsButton = document.getElementById('tips-button');
-  const tipsContainer = document.getElementById('tips-container');
-  const tipsCloseBtn = document.getElementById('tips-close');
-  
-  const tipsViewed = localStorage.getItem('tipsViewed') === 'true';
-  if (tipsViewed) {
-    const notificationDot = tipsButton.querySelector('.notification-dot');
-    notificationDot.classList.remove('blink');
-    notificationDot.style.display = 'none';
-  }
-  
-  tipsButton.addEventListener('click', function() {
-    tipsContainer.style.display = 'block';
-    localStorage.setItem('tipsViewed', 'true');
-    const notificationDot = this.querySelector('.notification-dot');
-    notificationDot.classList.remove('blink');
-    notificationDot.style.display = 'none';
-  });
-  
-  tipsCloseBtn.addEventListener('click', function() {
-    tipsContainer.style.display = 'none';
-  });
-  
-  window.addEventListener('click', function(event) {
-    if (!tipsContainer.contains(event.target) && event.target !== tipsButton) {
-      tipsContainer.style.display = 'none';
-    }
-  });
-  
-  // Trip control buttons
+
+  // nút bắt đầu và kết thúc hành trình
   document.getElementById("start-trip-btn").addEventListener("click", function() {
     this.classList.remove("visible");
     this.classList.add("hidden");
@@ -245,6 +206,7 @@ function initMap() {
     }
   });
   
+  // Đặt lại hành trình, chạy lại từ đầu
   document.getElementById("reset-trip-btn").addEventListener("click", function() {
     resetAnimation();
     showModal("Hành trình ngày này đã được đặt lại");
@@ -252,7 +214,7 @@ function initMap() {
   
   document.getElementById("auto-play-btn").addEventListener("click", function() {
     if (autoPlayMode) {
-      stopAutoPlay();
+      tu_dong_chay();
       showModal("Đã dừng chế độ tự động");
     } else {
       startAutoPlay();
@@ -260,27 +222,11 @@ function initMap() {
     }
   });
   
-  // Show tips automatically for first-time users
-  if (!tipsViewed) {
-    setTimeout(() => {
-      tipsContainer.style.display = 'block';
-    }, 2000);
-  }
 }
 
-// Legacy function - no longer used in day-based system
-function initMapWithCoords() {
-  console.log("Legacy initMapWithCoords called - not used in new system");
-}
-
-// Legacy function - replaced by calcDayRoute
-function calcRoute() {
-  console.log("Legacy calcRoute called - use calcDayRoute instead");
-}
-
-// Calculate distance between two points (km) - utility function
+// tính khoảng cách giữa hai điểm 
 function calculateDistance(coord1, coord2) {
-  const R = 6371; // Earth radius (km)
+  const R = 6371; 
   const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
   const dLng = (coord2.lng - coord1.lng) * Math.PI / 180;
   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -317,7 +263,7 @@ function formatDuration(seconds) {
   }
 }
 
-// Start animation for current day
+// bắt đầu chuyển động cho ngày hiện tại
 function startAnimation() {
   if (!routeCoords || routeCoords.length === 0) {
     showModal("Không có lộ trình để hiển thị cho ngày này.");
@@ -335,16 +281,16 @@ function startAnimation() {
   animateMarker();
 }
 
-// Animate marker along route
+// chuyển động đánh dấu dọc theo đường đi
 function animateMarker() {
   if (stepIndex >= routeCoords.length) {
     showModal(`Đã hoàn thành ngày ${currentDay}!`); 
     animationInProgress = false;
     
-    // Auto advance to next day if in auto-play mode
+    // tự động chuyển sang ngày tiếp theo nếu trong chế độ tự động chạy
     if (autoPlayMode && currentDay < totalDays) {
       autoPlayTimeout = setTimeout(() => {
-        goToNextDay();
+        toi_ngay_hom_sau();
         setTimeout(() => {
           if (autoPlayMode) {
             startAnimation();
@@ -352,7 +298,7 @@ function animateMarker() {
         }, 2000);
       }, 3000);
     } else {
-      // Reset buttons
+      // đặt lại các nút
       document.getElementById("start-trip-btn").classList.remove("hidden");
       document.getElementById("start-trip-btn").classList.add("visible");
       document.getElementById("reset-trip-btn").classList.remove("visible");
@@ -371,12 +317,12 @@ function animateMarker() {
   carMarker.setPosition(routeCoords[stepIndex]);
   map.panTo(routeCoords[stepIndex]);
   
-  // Update day progress
+  // cập nhật tiến độ ngày
   const dayProgress = Math.floor((stepIndex / routeCoords.length) * 100);
   document.getElementById('day-progress').textContent = dayProgress + '%';
   updateTotalProgress();
   
-  // Check if reached any activity points
+  // kiểm tra xem đã đạt được bất kỳ điểm hoạt động nào
   const coords = dayCoords[currentDay];
   const activityNames = dayActivityNames[currentDay];
   
@@ -409,7 +355,7 @@ function showGifSmall() {
 }
 
 // Tìm khách sạn gần đó
-function findNearbyHotels(location) {
+function tim_ksan_gan_nhat(location) {
   // Xóa các marker khách sạn cũ
   clearHotelMarkers();
   
@@ -433,7 +379,7 @@ function findNearbyHotels(location) {
             const marker = new google.maps.Marker({
               map: map,
               position: place.geometry.location,
-              icon: createHotelMarker(index),
+              icon: tao_danh_dau_ksan(index),
               title: place.name,
               animation: google.maps.Animation.DROP
             });
@@ -510,7 +456,184 @@ function showDefaultButtons() {
   document.getElementById("reset-trip-btn").style.display = "none"; // Mặc định ẩn nút reset
 }
 
-// Parse itinerary data from localStorage
+// tìm địa danh trên bản đồ bằng tên, thay vì tọa độ
+function tim_dia_diem_bang_ten(placeName, region = '', callback) {
+  const service = new google.maps.places.PlacesService(document.createElement('div'));
+  
+  // Create search query with region preference
+  const query = region ? `${placeName} ${region}` : placeName;
+  
+  const request = {
+    query: query,
+    fields: ['name', 'geometry', 'place_id', 'formatted_address', 'types'],
+  };
+  
+  service.textSearch(request, (results, status) => {
+    if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+      const place = results[0]; // Take the first result
+      const location = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng()
+      };
+      
+      console.log(`✅ Found place "${placeName}": ${place.formatted_address}`, location);
+      callback(true, location, place);
+    } else {
+      console.warn(`❌ Could not find place "${placeName}"`);
+      callback(false, null, null);
+    }
+  });
+}
+
+// hiển thị kết quả tìm kiếm địa điểm theo cách chi tiết hơn
+function showLocationResolutionResults(resolvedActivities, totalActivities) {
+  const successRate = Math.round((resolvedActivities / totalActivities) * 100);
+  
+  let message = `🎯 Kết quả tìm kiếm địa điểm:\n\n`;
+  message += `✅ Đã tìm thấy: ${resolvedActivities}/${totalActivities} địa điểm (${successRate}%)\n`;
+  
+  if (resolvedActivities === totalActivities) {
+    message += `🎉 Tất cả địa điểm đã được xác định thành công!`;
+  } else {
+    const failed = totalActivities - resolvedActivities;
+    message += `⚠️ ${failed} địa điểm không thể tìm thấy vị trí chính xác`;
+  }
+  
+  showModal(message);
+}
+
+function resolveActivityLocations(callback) {
+  
+  let totalActivities = 0;
+  let resolvedActivities = 0;
+  let processedActivities = 0;
+  
+  // Tổng số hoạt động 
+  itineraryData.days.forEach(day => {
+    const scheduleItems = day.schedule || day.activities || [];
+    scheduleItems.forEach(item => {
+      if ((item.type === "activity" || !item.type) && (item.description || item.name)) {
+        totalActivities++;
+      }
+    });
+  });
+  
+  if (totalActivities === 0) {
+    console.log("No activities to resolve");
+    callback();
+    return;
+  }
+  
+  // Hiển thị tiến độ ban đầu
+  showModal(`🔍 Đang tìm kiếm ${totalActivities} địa điểm...`);
+  
+  // tiến độ từng ngày một
+  itineraryData.days.forEach((day, dayIndex) => {
+    const dayNum = day.day || (dayIndex + 1);
+    dayCoords[dayNum] = [];
+    dayActivityNames[dayNum] = [];
+    
+    const scheduleItems = day.schedule || day.activities || [];
+    
+    scheduleItems.forEach((item, itemIndex) => {
+      if ((item.type === "activity" || !item.type) && (item.description || item.name)) {
+        // trích xuất tên hoạt động
+        let activityName = '';
+        if (item.description) {
+          activityName = item.description.split(":")[0].trim();
+        } else if (item.name) {
+          activityName = item.name.trim();
+        }
+        
+        // Nếu tọa độ đúng thì dùng tọa độ, ko thì dùng theo tên
+        let useExistingCoords = false;
+        if (item.location) {
+          const coordParts = item.location.split(',');
+          if (coordParts.length === 2) {
+            const lat = parseFloat(coordParts[0].trim());
+            const lng = parseFloat(coordParts[1].trim());
+            
+            if (!isNaN(lat) && !isNaN(lng) && 
+                lat >= -90 && lat <= 90 && 
+                lng >= -180 && lng <= 180) {
+              dayCoords[dayNum].push({ lat, lng });
+              dayActivityNames[dayNum].push(activityName);
+              processedActivities++;
+              resolvedActivities++;
+              useExistingCoords = true;
+              
+              console.log(`✅ Using existing coordinates for "${activityName}": ${lat}, ${lng}`);
+              
+              if (processedActivities === totalActivities) {
+                console.log(`🎉 Resolved ${resolvedActivities}/${totalActivities} activity locations`);
+                
+                // Update localStorage with enhanced data
+                localStorage.setItem('itinerary', JSON.stringify(itineraryData));
+                
+                // Show detailed results
+                showLocationResolutionResults(resolvedActivities, totalActivities);
+                
+                // Call callback after a short delay to show the results
+                setTimeout(() => {
+                  callback();
+                }, 2000);
+              }
+            }
+          }
+        }
+        
+        // If no valid existing coordinates, search using Places API
+        if (!useExistingCoords) {
+          const region = itineraryData.destination || '';
+          
+          // Add delay between API calls to avoid rate limiting
+          setTimeout(() => {
+            tim_dia_diem_bang_ten(activityName, region, (found, location, place) => {
+              processedActivities++;
+              
+              if (found && location) {
+                dayCoords[dayNum].push(location);
+                dayActivityNames[dayNum].push(activityName);
+                resolvedActivities++;
+                
+                // Update the item with the found location for future use
+                item.location = `${location.lat},${location.lng}`;
+                item.place_id = place.place_id;
+                item.formatted_address = place.formatted_address;
+              } else {
+                console.warn(`⚠️ Could not resolve location for "${activityName}" on day ${dayNum}`);
+                // Still add the activity name but without coordinates
+                dayActivityNames[dayNum].push(activityName);
+              }
+              
+              // Update progress
+              const progress = Math.round((processedActivities / totalActivities) * 100);
+              showModal(`🔍 Đang tìm kiếm... ${progress}% (${processedActivities}/${totalActivities})`);
+              
+              // Check if all activities are processed
+              if (processedActivities === totalActivities) {
+                console.log(`🎉 Resolved ${resolvedActivities}/${totalActivities} activity locations`);
+                
+                // Update localStorage with the enhanced data
+                localStorage.setItem('itinerary', JSON.stringify(itineraryData));
+                
+                // Show detailed results
+                showLocationResolutionResults(resolvedActivities, totalActivities);
+                
+                // Call callback after a short delay to show the results
+                setTimeout(() => {
+                  callback();
+                }, 2000);
+              }
+            });
+          }, itemIndex * 200); // 200ms delay between each API call
+        }
+      }
+    });
+  });
+}
+
+// phân tích dữ liệu lưu trong localstorage
 function parseItineraryData() {
   console.log("Parsing itinerary data...");
   
@@ -531,41 +654,14 @@ function parseItineraryData() {
     
     totalDays = itineraryData.days.length;
     
-    // Parse coordinates and activities for each day
-    itineraryData.days.forEach((day, dayIndex) => {
-      const dayNum = day.day || (dayIndex + 1);
-      dayCoords[dayNum] = [];
-      dayActivityNames[dayNum] = [];
-      
-      const scheduleItems = day.schedule || day.activities || [];
-      
-      scheduleItems.forEach(item => {
-        // Only process activities with locations
-        if ((item.type === "activity" || !item.type) && item.location) {
-          const coordParts = item.location.split(',');
-          if (coordParts.length === 2) {
-            const lat = parseFloat(coordParts[0].trim());
-            const lng = parseFloat(coordParts[1].trim());
-            
-            if (!isNaN(lat) && !isNaN(lng) && 
-                lat >= -90 && lat <= 90 && 
-                lng >= -180 && lng <= 180) {
-              dayCoords[dayNum].push({ lat, lng });
-              
-              // Extract activity name
-              let activityName = '';
-              if (item.description) {
-                activityName = item.description.split(":")[0];
-              } else if (item.name) {
-                activityName = item.name;
-              }
-              dayActivityNames[dayNum].push(activityName);
-            }
-          }
-        }
-      });
-      
-      console.log(`Day ${dayNum}: ${dayCoords[dayNum].length} activities`);
+    showModal("🔍 Đang tìm kiếm vị trí các địa điểm...");
+    
+    // tìm kiếm tất cả các vị trí địa điểm sử dụng Places API
+    resolveActivityLocations(() => {
+      console.log("All locations resolved, updating UI...");
+      updateDayNavigation();
+      loadDayRoute();
+      showModal("✅ Đã tìm thấy vị trí các địa điểm!");
     });
     
     return true;
@@ -576,17 +672,17 @@ function parseItineraryData() {
   }
 }
 
-// Update day navigation UI
+// giao diện điều hướng
 function updateDayNavigation() {
   document.getElementById('currentDayLabel').textContent = `Ngày ${currentDay}`;
   document.getElementById('dayCounter').textContent = `${currentDay} / ${totalDays}`;
   document.getElementById('current-day-info').textContent = `Ngày ${currentDay}`;
   
-  // Update navigation buttons
+  // nút điều hướng ngày hôm trước và hôm sau
   document.getElementById('prevDayBtn').disabled = (currentDay <= 1);
   document.getElementById('nextDayBtn').disabled = (currentDay >= totalDays);
   
-  // Update day summary
+  // tóm tắt thông tin của ngày hiện tại 
   const currentDayData = itineraryData.days.find(d => d.day === currentDay) || itineraryData.days[currentDay - 1];
   if (currentDayData) {
     const activitiesCount = dayCoords[currentDay] ? dayCoords[currentDay].length : 0;
@@ -597,7 +693,7 @@ function updateDayNavigation() {
   }
 }
 
-// Load and display route for current day
+// Hiển thị đường đi cho ngày hiện tại
 function loadDayRoute() {
   console.log(`Loading route for day ${currentDay}`);
   
@@ -612,12 +708,12 @@ function loadDayRoute() {
     return;
   }
   
-  // Clear existing markers and routes
+  // Xóa các marker và đường đi hiện có khi chuyển qua ngày khác
   if (directionsRenderer) {
     directionsRenderer.setMap(null);
   }
   
-  // Create new directions renderer
+  // tạo đường đi mới 
   directionsRenderer = new google.maps.DirectionsRenderer({ 
     suppressMarkers: true,
     polylineOptions: {
@@ -627,7 +723,7 @@ function loadDayRoute() {
   });
   directionsRenderer.setMap(map);
   
-  // Add markers for current day
+  // tạo đánh dấu cho ngày hiện tại
   const sharedInfoWindow = new google.maps.InfoWindow();
   
   coords.forEach((coord, i) => {
@@ -647,14 +743,14 @@ function loadDayRoute() {
     });
   });
   
-  // Update stops count
+  // tính số điểm dừng
   document.getElementById('day-stops').textContent = coords.length;
   
-  // Calculate route
+  // tính toán đường đi
   calcDayRoute(coords);
 }
 
-// Check if coordinates are over water/sea
+// kiểm tra xem các tọa độ có trên nước/biển không
 function checkIfOverWater(coords, callback) {
   const geocoder = new google.maps.Geocoder();
   let waterPoints = [];
@@ -668,7 +764,7 @@ function checkIfOverWater(coords, callback) {
         const types = results[0].types;
         const addressComponents = results[0].address_components;
         
-        // Check if point is over water
+        // kiểm tra xem điểm có trên nước không
         const isOverWater = types.includes('natural_feature') || 
                            types.includes('establishment') ||
                            addressComponents.some(component => 
@@ -696,7 +792,7 @@ function checkIfOverWater(coords, callback) {
   });
 }
 
-// Optimize route for mixed land/water destinations
+// điều chỉnh đường đi cho địa điểm trên nước 
 function optimizeRouteForWaterPoints(coords, waterPoints) {
   if (waterPoints.length === 0) {
     return coords; // No water points, return original
@@ -704,7 +800,7 @@ function optimizeRouteForWaterPoints(coords, waterPoints) {
   
   console.log("Water points detected:", waterPoints);
   
-  // Group consecutive land points
+  // tạo đoạn đường đi cho địa điểm trên nước 
   const segments = [];
   let currentSegment = [];
   
@@ -712,19 +808,19 @@ function optimizeRouteForWaterPoints(coords, waterPoints) {
     const isWaterPoint = waterPoints.some(wp => wp.index === index);
     
     if (isWaterPoint) {
-      // End current land segment if exists
+      // kết thúc đoạn đường đất hiện tại nếu tồn tại
       if (currentSegment.length > 0) {
         segments.push({ type: 'land', coords: [...currentSegment] });
         currentSegment = [];
       }
-      // Add water point as separate segment
+      // thêm điểm trên nước làm đoạn đường riêng 
       segments.push({ type: 'water', coords: [coord] });
     } else {
       currentSegment.push(coord);
     }
   });
   
-  // Add final land segment if exists
+  // thêm đoạn đường đất cuối cùng nếu tồn tại
   if (currentSegment.length > 0) {
     segments.push({ type: 'land', coords: currentSegment });
   }
@@ -732,7 +828,7 @@ function optimizeRouteForWaterPoints(coords, waterPoints) {
   return segments;
 }
 
-// Get detailed water point information
+// lấy thông tin chi tiết về điểm trên nước 
 function getWaterPointDetails(waterPoints) {
   const waterTypes = waterPoints.map(wp => {
     const name = wp.name.toLowerCase();
@@ -747,19 +843,19 @@ function getWaterPointDetails(waterPoints) {
   return uniqueTypes.join(', ');
 }
 
-// Calculate route for current day
+// tính toán đường đi cho ngày hiện tại 
 function calcDayRoute(coords) {
   if (coords.length < 2) {
-    console.error("Not enough coordinates to calculate route");
+    console.error("Không đủ điểm để tạo lộ trình");
     return;
   }
   
   console.log("Calculating route with coordinates:", coords);
   
-  // First, check if any points are over water
+  // đầu tiên, kiểm tra xem có điểm nào trên nước không 
   checkIfOverWater(coords, (waterPoints) => {
     if (waterPoints.length > 0) {
-      console.log(`Found ${waterPoints.length} water points, using optimized routing`);
+      console.log(`Tìm thấy ${waterPoints.length} điểm trên nước, sử dụng tối ưu hóa đường đi`);
       calculateMixedRoute(coords, waterPoints);
     } else {
       calculateStandardRoute(coords);
@@ -767,19 +863,18 @@ function calcDayRoute(coords) {
   });
 }
 
-// Calculate mixed route (land + water segments)
 function calculateMixedRoute(coords, waterPoints) {
   console.log("Calculating mixed route with all points connected");
   
-  // Instead of complex segmentation, create a simple approach that connects all points
+  // tạo một phương pháp đơn giản để kết nối tất cả các điểm 
   let totalRouteCoords = [];
   let processedSegments = 0;
   const totalSegments = coords.length - 1;
   
-  // Process each pair of consecutive points
+  // xử lý từng cặp điểm liên tiếp
   function processSegmentPair(index) {
     if (index >= coords.length - 1) {
-      // All segments processed
+      // tất cả các đoạn đã được xử lý
       routeCoords = totalRouteCoords;
       dayRoutes[currentDay] = [...routeCoords];
       
@@ -789,7 +884,7 @@ function calculateMixedRoute(coords, waterPoints) {
         totalDistance += calculateDistance(coords[i], coords[i + 1]) * 1000;
       }
       
-      // Update UI
+      // cập nhật giao diện
       document.getElementById('day-distance').textContent = 
         `🌊 ${(totalDistance / 1000).toFixed(1)} km (hỗn hợp)`;
       
@@ -797,12 +892,11 @@ function calculateMixedRoute(coords, waterPoints) {
       document.getElementById('day-duration').textContent = 
         `~${formatDuration(totalDuration)} (ước tính)`;
       
-      // Center map
+      // lấy chính giữa bản đồ 
       const bounds = new google.maps.LatLngBounds();
       coords.forEach(coord => bounds.extend(coord));
       map.fitBounds(bounds);
       
-      // Enhanced message
       const waterCount = waterPoints.length;
       const waterDetails = getWaterPointDetails(waterPoints);
       const message = `🌊 Đã tạo tuyến đường kết nối ${coords.length} điểm cho ngày ${currentDay}. 
@@ -919,7 +1013,7 @@ function drawComprehensiveRouteVisualization(coords, waterPoints) {
   }
 }
 
-// Add straight line segment between two points
+// thêm đường kết nối giữa hai điẻm 
 function addStraightLineSegment(start, end, targetArray) {
   const steps = 10;
   for (let j = 0; j <= steps; j++) {
@@ -929,14 +1023,13 @@ function addStraightLineSegment(start, end, targetArray) {
   }
 }
 
-// Calculate standard route (original logic)
+// tính toán đường đi
 function calculateStandardRoute(coords) {
   console.log("Calculating standard route for all points");
   
-  // First try the complete route with all waypoints
   const waypoints = coords.slice(1, coords.length - 1).map(loc => ({ location: loc, stopover: true }));
   
-  // Try different travel modes in order of preference
+  // thử các phương thức di chuyển theo thứ tự ưu tiên
   const travelModes = [
     google.maps.TravelMode.DRIVING,
     google.maps.TravelMode.TRANSIT,
@@ -947,8 +1040,8 @@ function calculateStandardRoute(coords) {
   
   function tryCalculateRoute(modeIndex = 0) {
     if (modeIndex >= travelModes.length) {
-      // If all travel modes fail, create point-to-point connections
-      console.log("All travel modes failed, creating point-to-point connections");
+      // nếu tất cả các phương thức di chuyển thất bại, tạo kết nối điểm-điểm
+      console.log("Tất cả các phương thức di chuyển thất bại, tạo kết nối điểm-điểm");
       createPointToPointRoute(coords);
       return;
     }
@@ -1132,7 +1225,7 @@ function drawAllPointConnections(coords) {
 }
 
 // Navigate to previous day
-function goToPreviousDay() {
+function toi_ngay_hom_truoc() {
   if (currentDay > 1) {
     currentDay--;
     updateDayNavigation();
@@ -1142,7 +1235,7 @@ function goToPreviousDay() {
 }
 
 // Navigate to next day
-function goToNextDay() {
+function toi_ngay_hom_sau() {
   if (currentDay < totalDays) {
     currentDay++;
     updateDayNavigation();
@@ -1170,7 +1263,7 @@ function resetAnimation() {
   document.getElementById("reset-trip-btn").classList.add("hidden");
 }
 
-// Update total progress across all days
+// cập nhật tổng tiến độ trên tất cả các ngày
 function updateTotalProgress() {
   let completedDays = currentDay - 1;
   let currentDayProgress = 0;
@@ -1204,8 +1297,8 @@ function startAutoPlay() {
   document.getElementById("auto-play-btn").classList.add("visible");
 }
 
-// Stop auto-play mode
-function stopAutoPlay() {
+// dừng chế độ tự động chạy
+function tu_dong_chay() {
   autoPlayMode = false;
   if (autoPlayTimeout) {
     clearTimeout(autoPlayTimeout);
