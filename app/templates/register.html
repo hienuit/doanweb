@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Classy Login Form</title>
+  <title>Đăng ký</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
@@ -285,6 +285,15 @@
 
     const googleLoginUrl = "{{ url_for('auth.login_google') }}" + "{% if safe_next %}?next={{ safe_next|urlencode }}{% endif %}";
     const facebookLoginUrl = "{{ url_for('loginfb.facebook_login') }}" + "{% if safe_next %}?next={{ safe_next|urlencode }}{% endif %}";
+
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const flashes = document.querySelectorAll('.alert');
+        flashes.forEach(function(alert) {
+          alert.style.display = 'none';
+        });
+      }, 3000);
+    });
   </script>
 </body>
 </html>

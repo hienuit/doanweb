@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Lịch sử chuyến đi</title>
+  <title>Lịch sử chuyến đi của bạn</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
@@ -160,6 +160,7 @@
 
           // Add to the array
           historyJsonArray.push(historyJson);
+          console.log(historyJsonArray);
 
           const activityList = Array.isArray(item.activity_names)
             ? item.activity_names.map(name => `<li>${name}</li>`).join('')
@@ -217,14 +218,15 @@
         window.location.href = `/schedule-from-history/${historyId}`;
       }
 
-      document.getElementById("create-personalized-history").addEventListener("click", function () {
-        if (historyJsonArray.length === 0) {
-          alert("Không có lịch sử nào để gửi!");
-          return;
-        }
-      });
+      // document.getElementById("create-personalized-history").addEventListener("click", function () {
+      //   if (historyJsonArray.length === 0) {
+      //     alert("Không có lịch sử nào để gửi!");
+      //     return;
+      //   }
+      // });
 
-      //   fetch('/create-personalized-history', {
+        
+      // fetch('/create-personalized-history', {
       //     method: 'POST',
       //     headers: {
       //       'Content-Type': 'application/json'
@@ -256,7 +258,45 @@
       //       console.error("Lỗi khi gửi lịch sử cá nhân hóa:", error);
       //       alert("Đã xảy ra lỗi khi gửi lịch sử cá nhân hóa: " + error.message);
       //     });
-      // });
+          
+
+
+          // document.getElementById("create-personalized-history").addEventListener("click", function () {
+          //     if (historyJsonArray.length === 0) {
+          //       alert("Không có lịch sử nào để gửi!");
+          //       return;
+          //     }
+
+          //     fetch('/create-personalized-history', {
+          //       method: 'POST',
+          //       headers: {
+          //         'Content-Type': 'application/json'
+          //       },
+          //       body: JSON.stringify(historyJsonArray)
+          //     })
+          //     .then(response => {
+          //       if (!response.ok) {
+          //         return response.json().then(data => {
+          //           console.error("Lỗi từ server:", data.error || response.statusText);
+          //           throw new Error(data.error || "Không thể gửi dữ liệu");
+          //         });
+          //       }
+          //       return response.json(); // Trả về JSON response nếu thành công
+          //     })
+          //     .then(data => {
+          //       if (data.success && data.data) {
+          //         localStorage.setItem('personalizedHistory', JSON.stringify(data.data));
+          //         window.location.href = '/personalized-history';
+          //       } else {
+          //         throw new Error("Phản hồi không hợp lệ từ server.");
+          //       }
+          //     })
+          //     .catch(error => {
+          //       console.error("Lỗi khi gửi lịch sử cá nhân hóa:", error);
+          //       alert("Đã xảy ra lỗi khi gửi lịch sử cá nhân hóa: " + error.message);
+          //     });
+          //   });
+
 
 
   </script>

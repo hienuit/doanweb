@@ -23,7 +23,7 @@
             document.getElementById('scheduleContainer').style.display = 'block';
         }
 
-        // khởi tạo hệ thống hạt
+        // khởi tạo hệ thống, tíh toán giao diện hiển thị 
         function initParticleSystem() {
             const canvas = document.getElementById('particleCanvas');
             const ctx = canvas.getContext('2d');
@@ -34,7 +34,7 @@
             const particles = [];
             const particleCount = 50;
             
-            // Create particles
+            // tạo tọa độ đẻ xuâts hiện
             for (let i = 0; i < particleCount; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
@@ -47,6 +47,7 @@
                 });
             }
             
+            // hiệu ứng xuất hiện
             function animateParticles() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
@@ -82,16 +83,16 @@
         // tải dữ liệu lịch trình
         function loadItinerary() {
             try {
-                // Kiểm tra xem có đang xem từ lịch sử hay không
+                // kieẻm tra xem là đang coi trực tiếp hay hiển thị lại từ lịch sử
                 const currentPath = window.location.pathname;
                 const historyMatch = currentPath.match(/\/schedule-from-history\/(\d+)/);
                 
                 if (historyMatch) {
-                    // Đang xem từ lịch sử, load từ API
+                    // Đang xem từ lịch sử, load từ API để coi lại
                     const historyId = historyMatch[1];
                     loadItineraryFromHistory(historyId);
                 } else {
-                    // Load từ localStorage như bình thường
+                    // coi từ localstorage
                     loadItineraryFromLocalStorage();
                 }
                 

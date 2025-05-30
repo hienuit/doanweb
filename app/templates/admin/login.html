@@ -40,5 +40,15 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const flashes = document.querySelectorAll('.alert');
+                flashes.forEach(function(alert) {
+                    alert.style.display = 'none';
+                });
+            }, 3000);
+        });
+    </script>
 </body>
 </html> 

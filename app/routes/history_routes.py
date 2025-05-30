@@ -50,9 +50,9 @@ def get_history():
 
     if not user_id:
         return jsonify({"message": "Chưa đăng nhập"}), 401
-    print("hello")
+    
     histories = History.query.filter_by(user_id=user_id).order_by(History.created_at.desc()).all()
-    print("hello")
+    
     result = []
     for history in histories:
         try:
@@ -69,9 +69,10 @@ def get_history():
             "created_at": history.created_at.strftime('%d-%m-%Y'),
         })
 
-    print("hello")
+    # print("result", result)
 
     return jsonify({"histories": result}), 200
+
 
 @histories_blueprint.route('/delete-history', methods=['DELETE'])
 def delete_history():

@@ -115,10 +115,8 @@ def register():
 
         user = Users.query.filter_by(email=email).first()
         if user:
-            session['user_name'] = user.uname
-            session['full_name'] = user.fname
             flash("Tài khoản đã tồn tại!", "error")
-            return redirect(url_for("main.index"))
+            return redirect(url_for("auth.register_page"))
 
         if not fname or not email or not password:
             flash("Thiếu thông tin bắt buộc", "error")
@@ -222,9 +220,6 @@ def verify_otp_ajax():
 
 @auth_blueprint.route("/logout")
 def logout():
-    # session.pop("user_id", None)
-    # session.pop("user_name", None)
-    # session.pop("full_name", None)
     session.clear()
     flash("Bạn đã đăng xuất!", "success")
     return redirect(url_for("main.index"))

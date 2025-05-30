@@ -2,26 +2,25 @@
 let suggestionTimeout;
 let currentSuggestionIndex = -1;
 
-// Initialize auto-suggestion for page3 search input
+// gợi ý tự động cho phần nhập địa điểm
 function initializeAutoSuggestion() {
     const destinationInput = document.getElementById("destinationInput");
     
     if (destinationInput) {
-        // Create suggestions dropdown
+        // tạp dropdown cho phần gợi ý, xổ suống
         const suggestionsContainer = document.createElement('div');
         suggestionsContainer.id = 'suggestions-container';
         suggestionsContainer.className = 'suggestions-dropdown';
         destinationInput.parentNode.appendChild(suggestionsContainer);
         
-        // Input event for auto-suggestion
+        // khi nhấp vào gợi ý thì chuyển qua mới luôn
         destinationInput.addEventListener("input", function() {
             const query = this.value.trim();
             
-            // Clear previous timeout
             clearTimeout(suggestionTimeout);
             
             if (query.length >= 2) {
-                // Debounce the API call
+                // đợi API trả lời xong
                 suggestionTimeout = setTimeout(() => {
                     fetchSuggestions(query);
                 }, 300);
@@ -30,7 +29,7 @@ function initializeAutoSuggestion() {
             }
         });
         
-        // Handle keyboard navigation
+        // xử lí điều hướng
         destinationInput.addEventListener("keydown", function(event) {
             const suggestions = document.querySelectorAll('.suggestion-item');
             
@@ -54,7 +53,7 @@ function initializeAutoSuggestion() {
             }
         });
         
-        // Hide suggestions when clicking outside
+        // ẩn gợi ý khi nhấp vào chỗ khác
         document.addEventListener("click", function(event) {
             if (!destinationInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
                 hideSuggestions();
@@ -63,6 +62,7 @@ function initializeAutoSuggestion() {
     }
 }
 
+// hàm lấy gợi ý từ routes
 function fetchSuggestions(query) {
     fetch(`/suggest-provinces?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
@@ -75,6 +75,7 @@ function fetchSuggestions(query) {
         });
 }
 
+// Hiển thị gợi ý 
 function displaySuggestions(suggestions) {
     const container = document.getElementById('suggestions-container');
     container.innerHTML = '';
