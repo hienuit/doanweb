@@ -4,7 +4,7 @@ from config import Config
 from app.models.users import Users  # Import models sau khi khởi tạo app
 from app.models.destinations import seed_destinations
 from flask_migrate import Migrate
-from .routes import all_blueprints
+from app.routes import all_blueprints
 from flask_login import LoginManager
 
 

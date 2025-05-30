@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template,request, session, redirect, url_for, flash,jsonify
+from flask import Blueprint, render_template,request, session, redirect, url_for, flash,jsonify, Response
 from app.models.destinations import search_describe 
 from app.models.users import Users, UserActivity
 from app.models.feedback import Feedback
@@ -665,3 +665,36 @@ def get_experience_stats():
     except Exception as e:
         print(f"Error getting experience stats: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@main_blueprint.route('/robots.txt')
+def robots_txt():
+    """Serve robots.txt file for SEO"""
+    robots_content = """User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://dulichbyai.id.vn/sitemap.xml
+
+# Disallow admin and API pages
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/facebook
+Disallow: /auth/google
+Disallow: /.git/
+Disallow: /uploads/
+
+# Allow important pages
+Allow: /
+Allow: /experiences
+Allow: /page2
+Allow: /page3
+Allow: /page4
+Allow: /schedule
+Allow: /map
+Allow: /login
+Allow: /register
+"""
+    
+    response = Response(robots_content, mimetype='text/plain')
+    response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    return response

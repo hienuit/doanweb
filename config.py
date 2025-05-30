@@ -9,8 +9,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv("SECRET_KEY")
-    
-    # URL Scheme Configuration for local development
     PREFERRED_URL_SCHEME = 'http'  # Sử dụng http cho development local
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 465

@@ -7,6 +7,7 @@ from .history_routes import histories_blueprint
 # from .federated_routes import federated_blueprint
 from .experience_routes import experience_blueprint
 from .weather_routes import weather_blueprint
+from .sitemap_routes import sitemap_blueprint
 from app.admin import admin as admin_blueprint
 
 
@@ -21,5 +22,6 @@ all_blueprints = [
     # federated_blueprint,
     experience_blueprint,
     weather_blueprint,
+    sitemap_blueprint,
     admin_blueprint
 ]
