@@ -133,8 +133,8 @@
     .social-login {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
       flex-wrap: wrap;
+      width: 100%;
     }
 
     .social-btn {
@@ -145,10 +145,6 @@
       cursor: pointer;
       font-size: 14px;
       color: white;
-    }
-
-    .facebook {
-      background: #3b5998;
     }
 
     .google {
@@ -216,7 +212,6 @@
       <button type="submit" class="login-btn">Đăng nhập</button>
       <div class="or">or</div>
       <div class="social-login">
-        <button type="button" class="social-btn facebook" onclick = "window.location.href = facebookLoginUrl ">Facebook</button>
         <button type="button" class="social-btn google" onclick = "window.location.href = googleLoginUrl ">Google</button>
       </div>
     </form>

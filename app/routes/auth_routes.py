@@ -8,9 +8,8 @@ from app.extension import google
 from app.models.users import add_user_activity
 from app.utils import validate_password_requirements
 
-
+# Định nghĩa blueprint cho auth
 auth_blueprint = Blueprint('auth', __name__)
-
 
 @auth_blueprint.route('/login')
 def login_page():
@@ -19,7 +18,7 @@ def login_page():
 
 @auth_blueprint.route('/loginfunction', methods=['GET', 'POST'])
 def login():
-    # Nếu là GET request, redirect về trang login
+# Nếu là GET request, redirect về trang login
     if request.method == 'GET':
         print("DEBUG: GET request to /loginfunction, redirecting to login page")
         return redirect(url_for('auth.login_page'))
@@ -28,15 +27,11 @@ def login():
     password = request.form.get('password')
     next_page = request.form.get('next_page')
     
-    # Log để debug
-    print(f"DEBUG: Login attempt for email: {email}")
-    print(f"DEBUG: Session keys before login: {list(session.keys())}")
-    print(f"DEBUG: next_page: {next_page}")
-    
     user = Users.query.filter_by(email=email).first()
-    if user:
-        uname = user.uname
-        fname = user.fname
+    if not user:
+        flash("Tài khoản không tồn tại", "error")
+        return redirect(url_for('auth.login_page'))
+    
     if user and check_password_hash(user.password, password):
         # Clear tất cả session liên quan đến auth khi đăng nhập thành công
         session.pop('reset_email', None)
@@ -47,12 +42,11 @@ def login():
         session['user_id'] = user.id
         session['user_name'] = user.uname
         session['full_name'] = user.fname
+        
         session['user_avatar'] = user.avatar_url if user.avatar_url else None
         add_user_activity(user.id, "Đăng nhập", "Đăng nhập thành công")
         flash(f"Xin chào {user.fname}! Đăng nhập thành công!", "success")
 
-        print(f"DEBUG: Login successful for {user.fname}, next_page: {next_page}")
-        print(f"DEBUG: Session keys after login: {list(session.keys())}")
         
         # Kiểm tra và loại bỏ next_page nếu nó liên quan đến auth hoặc chứa loginfunction
         dangerous_paths = ['forgot-password', 'reset-password-otp', 'set-new-password', 'verify_otp', 'verify-otp', 'register', 'loginfunction', 'login']
@@ -61,31 +55,19 @@ def login():
             next_page = None
         
         # Kiểm tra next_page có hợp lệ không
-        if next_page and next_page.strip() and not next_page.startswith('http'):
+        if next_page and next_page.strip():
             if next_page.startswith('/'):
-                # Đường dẫn tuyệt đối
-                if '/page2' in next_page:
-                    print("DEBUG: Redirecting to page2")
-                    return redirect('/page2')
-                elif '/page3' in next_page:
-                    print("DEBUG: Redirecting to page3")
-                    return redirect('/page3')
-                elif '/page4' in next_page:
-                    print("DEBUG: Redirecting to page4")
-                    return redirect('/page4')
-                else:
-                    print(f"DEBUG: Redirecting to next_page: {next_page}")
-                    return redirect(next_page)
+                # Đường dẫn tuyệt đối với các tham số đầy đủ
+                print(f"DEBUG: Login redirecting to full URL: {next_page}")
+                return redirect(next_page)
             else:
                 # URL đầy đủ
                 if next_page.startswith(request.host_url):
-                    print(f"DEBUG: Redirecting to full URL: {next_page}")
+                    print(f"DEBUG: Login redirecting to full host URL: {next_page}")
                     return redirect(next_page)
         
-        print("DEBUG: Redirecting to main.index")
         return redirect(url_for('main.index'))
     else:
-        print(f"DEBUG: Login failed for email: {email}")
         flash("Tài khoản hoặc mật khẩu không đúng", "error")
         return render_template('login.html')
 
@@ -119,7 +101,7 @@ def register():
             return redirect(url_for("auth.register_page"))
 
         if not fname or not email or not password:
-            flash("Thiếu thông tin bắt buộc", "error")
+            flash("Vui lòng điền đầy đủ thông tin", "error")
             return redirect(url_for('auth.register_page'))
         if password != confirm_pass:
             flash("Mật khẩu không khớp", "error")
@@ -173,37 +155,24 @@ def verify_otp():
                 )
                 db.session.add(new_user)
                 db.session.commit()
-                session['user_id'] = new_user.id
-                session['user_name'] = new_user.uname
-                session['full_name'] = new_user.fname
-                session['user_avatar'] = new_user.avatar_url if new_user.avatar_url else None
+                
+                # Thay vì tạo session ngay, chỉ lưu thông tin user activity
+                add_user_activity(new_user.id, "Đăng ký", "Đăng ký tài khoản thành công")
+                
+                # Xóa tất cả session tạm thời
                 session.pop('temp_user', None)  
                 session.pop('otp', None)  
+                session.pop('next_page', None)
 
                 if 'user_id' in session:
                     print("User ID:", session['user_id'])
                 else:
                     print("No user_id in session")
                     
-                flash("Xác thực thành công!", "success")
+                flash("Đăng ký thành công! Vui lòng đăng nhập để sử dụng dịch vụ.", "success")
                 
-                next_page = session.pop('next_page', None)
-                
-                # Kiểm tra và loại bỏ next_page nếu nó liên quan đến auth (reset password, register, verify_otp)
-                if next_page and any(path in next_page for path in ['forgot-password', 'reset-password-otp', 'set-new-password', 'verify_otp', 'verify-otp', 'register']):
-                    print(f"DEBUG: Ignoring next_page in verify_otp because it's related to auth: {next_page}")
-                    next_page = None
-                
-                if next_page and '/page2' in next_page:
-                    return redirect('/page2')
-                elif next_page and '/page3' in next_page:
-                    return redirect('/page3')
-                elif next_page and '/page4' in next_page:
-                    return redirect('/page4')
-                elif next_page:
-                    return redirect(next_page)
-                else:
-                    return redirect(url_for('main.index'))
+                # Không tạo session login, để user tự đăng nhập
+                return redirect(url_for('auth.login_page'))
         else:
             flash("Mã OTP không đúng!", "error")
             return redirect(url_for('auth.verify_otp'))
@@ -243,6 +212,7 @@ def send_otp_email(user_email, otp):
 
 @auth_blueprint.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    #debug
     print(f"DEBUG: forgot_password called, method: {request.method}")
     print(f"DEBUG: Session keys: {list(session.keys())}")
     
@@ -321,7 +291,7 @@ def set_new_password():
             print(f"DEBUG: Session keys after cleanup: {list(session.keys())}")
             
             flash("Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.", "success")
-            return redirect(url_for('auth.login_page'))
+            return redirect(url_for('auth.login_page' ))
         else:
             flash("Không tìm thấy tài khoản!", "error")
             return redirect(url_for('auth.forgot_password'))
@@ -368,20 +338,35 @@ def authorize_google():
     session['user_avatar'] = user.avatar_url if user.avatar_url else None
 
     next_page = session.pop('next_page', None)
-    if next_page and '/page2' in next_page:
-        return redirect('/page2')
-    elif next_page and '/page3' in next_page:
-        return redirect('/page3')
-    elif next_page and '/page4' in next_page:
-        return redirect('/page4')
-    elif next_page:
-        return redirect(next_page)
-    else:
-        return redirect(url_for('main.index'))
+    
+    # Nếu next_page có đầy đủ các tham số, sử dụng nguyên URL đó
+    if next_page and next_page.strip() and not next_page.startswith('http'):
+        if next_page.startswith('/'):
+            # Đây là URL tuyệt đối với các tham số đầy đủ
+            print(f"DEBUG: Google auth redirecting to full URL: {next_page}")
+            return redirect(next_page)
+        else:
+            # URL tương đối
+            if next_page.startswith(request.host_url):
+                print(f"DEBUG: Google auth redirecting to full host URL: {next_page}")
+                return redirect(next_page)
+    
+    # Fallback cho trường hợp chỉ có base path mà không có tham số
+    if next_page:
+        if '/page2' in next_page:
+            return redirect('/page2')
+        elif '/page3' in next_page:
+            return redirect('/page3')
+        elif '/page4' in next_page:
+            return redirect('/page4')
+        else:
+            return redirect(next_page)
+    
+    return redirect(url_for('main.index'))
 
 
     
-#changepass
+#đổi pass 
 @auth_blueprint.route('/change_password', methods=['POST'])
 def change_password():
     if 'user_name' not in session:
@@ -420,7 +405,7 @@ def change_password():
     
 
 
-    #updateprofile
+    #cập nhật thông tin người dùng
 @auth_blueprint.route('/update_profile', methods=['POST'])
 def update_profile():
     if 'user_name' not in session:
@@ -451,7 +436,24 @@ def update_profile():
     
     # Xử lý các trường mới
     user.gender = data.get('gender', user.gender)
-    user.birth_date = data.get('birth_date', user.birth_date)
+    
+    # Xử lý birth_date với validation
+    new_birth_date = data.get('birth_date')
+    if new_birth_date and new_birth_date.strip():
+        # Validate format YYYY-MM-DD
+        try:
+            from datetime import datetime
+            datetime.strptime(new_birth_date, '%Y-%m-%d')
+            user.birth_date = new_birth_date
+            print("Valid birth_date set:", user.birth_date)
+        except ValueError:
+            print(f"Invalid birth_date format: {new_birth_date}")
+            # Giữ nguyên giá trị cũ nếu format không đúng
+    elif new_birth_date == "":
+        # Nếu gửi chuỗi rỗng, xóa birth_date
+        user.birth_date = None
+        print("Birth_date cleared")
+    
     print("Birth date before commit:", user.birth_date)
 
     # Nếu là user Google chưa có username, tạo một cái mặc định
@@ -595,7 +597,7 @@ def check_user_data():
         except ImportError:
             data_check['history_count'] = 'N/A (model not found)'
         
-        # Kiểm tra các experience images liên quan
+        # Kiểm tra các ảnh liên quan
         user_experiences = Experience.query.filter_by(user_id=user_id).all()
         total_images = 0
         for exp in user_experiences:
@@ -608,107 +610,5 @@ def check_user_data():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-@auth_blueprint.route('/delete_account_safe', methods=['POST'])
-def delete_account_safe():
-    """Alternative approach sử dụng raw SQL để xóa tài khoản an toàn"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Vui lòng đăng nhập'}), 401
-    
-    try:
-        user_id = session['user_id']
-        print(f"Starting safe deletion process for user_id: {user_id}")
-        
-        # Sử dụng raw SQL để xóa theo thứ tự nghiêm ngặt
-        # Tắt foreign key checks tạm thời
-        db.session.execute("SET foreign_key_checks = 0")
-        
-        # 1. Xóa experience images
-        db.session.execute("""
-            DELETE FROM experience_images 
-            WHERE experience_id IN (
-                SELECT id FROM experiences WHERE user_id = :user_id
-            )
-        """, {"user_id": user_id})
-        
-        # 2. Xóa experience comments của experiences của user này
-        db.session.execute("""
-            DELETE FROM experience_comments 
-            WHERE experience_id IN (
-                SELECT id FROM experiences WHERE user_id = :user_id
-            )
-        """, {"user_id": user_id})
-        
-        # 3. Xóa experience likes của experiences của user này
-        db.session.execute("""
-            DELETE FROM experience_likes 
-            WHERE experience_id IN (
-                SELECT id FROM experiences WHERE user_id = :user_id
-            )
-        """, {"user_id": user_id})
-        
-        # 4. Xóa comments của user trên experiences của người khác
-        db.session.execute("""
-            DELETE FROM experience_comments WHERE user_id = :user_id
-        """, {"user_id": user_id})
-        
-        # 5. Xóa likes của user trên experiences của người khác
-        db.session.execute("""
-            DELETE FROM experience_likes WHERE user_id = :user_id
-        """, {"user_id": user_id})
-        
-        # 6. Xóa experiences của user
-        db.session.execute("""
-            DELETE FROM experiences WHERE user_id = :user_id
-        """, {"user_id": user_id})
-        
-        # 7. Xóa user activities
-        db.session.execute("""
-            DELETE FROM user_activity WHERE user_id = :user_id
-        """, {"user_id": user_id})
-        
-        # 8. Xóa feedbacks
-        db.session.execute("""
-            DELETE FROM feedback WHERE user_id = :user_id
-        """, {"user_id": user_id})
-        
-        # 9. Xóa history nếu có
-        try:
-            db.session.execute("""
-                DELETE FROM history WHERE user_id = :user_id
-            """, {"user_id": user_id})
-        except Exception as e:
-            print(f"History deletion failed (table might not exist): {e}")
-        
-        # 10. Cuối cùng xóa user
-        db.session.execute("""
-            DELETE FROM user2 WHERE id = :user_id
-        """, {"user_id": user_id})
-        
-        # Bật lại foreign key checks
-        db.session.execute("SET foreign_key_checks = 1")
-        
-        # Commit tất cả
-        db.session.commit()
-        
-        print(f"User {user_id} deleted successfully using safe method")
-        
-        # Xóa session
-        session.clear()
-        
-        return jsonify({'success': True, 'message': 'Tài khoản đã được xóa thành công'})
-        
-    except Exception as e:
-        db.session.rollback()
-        # Bật lại foreign key checks trong trường hợp lỗi
-        try:
-            db.session.execute("SET foreign_key_checks = 1")
-            db.session.commit()
-        except:
-            pass
-            
-        print(f"Error in safe deletion: {str(e)}")
-        print(f"Exception type: {type(e).__name__}")
-        
-        error_message = str(e)
-        return jsonify({'success': False, 'message': f'Lỗi khi xóa tài khoản: {error_message}'}), 500
+
     

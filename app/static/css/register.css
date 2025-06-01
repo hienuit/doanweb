@@ -96,13 +96,9 @@
       font-size: 14px;
     }
 
-    .social-login {
-      display: flex;
-      justify-content: space-between;
-    }
 
     .social-btn {
-      width: 48%;
+      width: 100%;
       padding: 10px;
       border: none;
       border-radius: 5px;
@@ -113,7 +109,7 @@
 
     .or {
         display: flex;
-        justify-content: center; /* canh giữa ngang */
+        justify-content: center; 
         align-items: center; 
         background-color: #B61840;
         border-radius: 50%;
@@ -124,9 +120,6 @@
         box-sizing: border-box;
     }
 
-    .facebook {
-      background: #3b5998;
-    }
 
     .google {
       background: red;

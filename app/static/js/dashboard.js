@@ -1,7 +1,5 @@
 document.addEventListener('alpine:init', () => {
     // Log dữ liệu gốc từ server để debug
-    console.log("User data received from server:", userFromServer);
-    
     
     Alpine.data('dashboard', () => ({
         historyLimit: 4,
@@ -61,12 +59,37 @@ document.addEventListener('alpine:init', () => {
             // Đảm bảo history được khởi tạo
             if (!this.history) this.history = [];
             
-            // Xử lý ngày sinh từ chuỗi birth_date (nếu có)
-            console.log("Birth date from server:", this.user.birth_date);
             
-            this.user.birthYear = String(this.user.birthYear || '');
-            this.user.birthMonth = String(this.user.birthMonth || '');
-            this.user.birthDay = String(this.user.birthDay || '');
+            if (this.user.birth_date && this.user.birth_date.trim()) {
+                const birthDateParts = this.user.birth_date.split('-');
+                console.log("Birth date parts:", birthDateParts);
+                if (birthDateParts.length === 3) {
+                    this.user.birthYear = String(birthDateParts[0]);
+                    this.user.birthMonth = String(parseInt(birthDateParts[1])); // Bỏ số 0 đầu
+                    this.user.birthDay = String(parseInt(birthDateParts[2])); // Bỏ số 0 đầu
+                } else {
+                    // Fallback nếu format không đúng
+                    this.user.birthYear = String(this.user.birthYear || '');
+                    this.user.birthMonth = String(this.user.birthMonth || '');
+                    this.user.birthDay = String(this.user.birthDay || '');
+                }
+            } else {
+                // Nếu không có birth_date, sử dụng giá trị riêng biệt từ server nếu có
+                this.user.birthYear = String(this.user.birthYear || '');
+                this.user.birthMonth = String(this.user.birthMonth || '');
+                this.user.birthDay = String(this.user.birthDay || '');
+            }
+            
+
+            // Force DOM update để đảm bảo Alpine.js bind đúng giá trị
+            this.$nextTick(() => {
+                // Force refresh dropdowns nếu giá trị không khớp
+                if (this.user.birthDay || this.user.birthMonth || this.user.birthYear) {
+                    setTimeout(() => {
+                        this.refreshBirthDateDropdowns();
+                    }, 0);
+                }
+            });
 
             // Load danh sách góp ý khi khởi tạo
             this.loadFeedbackList();
@@ -395,11 +418,30 @@ document.addEventListener('alpine:init', () => {
         saveChanges() {
             // Lưu giá trị ngày sinh thành chuỗi birth_date trước khi gửi
             if (this.user.birthDay && this.user.birthMonth && this.user.birthYear) {
-                // Đảm bảo tháng và ngày có 2 chữ số
-                const month = this.user.birthMonth.toString().padStart(2, '0');
-                const day = this.user.birthDay.toString().padStart(2, '0');
-                this.user.birth_date = `${this.user.birthYear}-${month}-${day}`;
-                console.log("Formatted birth_date for server:", this.user.birth_date);
+                // Kiểm tra tính hợp lệ của ngày sinh
+                const day = parseInt(this.user.birthDay);
+                const month = parseInt(this.user.birthMonth);
+                const year = parseInt(this.user.birthYear);
+                
+                if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= new Date().getFullYear()) {
+                    // Đảm bảo tháng và ngày có 2 chữ số
+                    const monthStr = month.toString().padStart(2, '0');
+                    const dayStr = day.toString().padStart(2, '0');
+                    this.user.birth_date = `${year}-${monthStr}-${dayStr}`;
+                    console.log("Formatted birth_date for server:", this.user.birth_date);
+                } else {
+                    console.warn("Invalid birth date values:", {day, month, year});
+                    // Không set birth_date nếu giá trị không hợp lệ
+                    this.user.birth_date = null;
+                }
+            } else if (!this.user.birthDay && !this.user.birthMonth && !this.user.birthYear) {
+                // Nếu tất cả đều trống, gửi chuỗi rỗng để xóa birth_date
+                this.user.birth_date = "";
+                console.log("Clearing birth_date");
+            } else {
+                // Nếu chỉ một số trường được điền, không cập nhật birth_date
+                console.warn("Incomplete birth date information, not updating birth_date");
+                delete this.user.birth_date; // Không gửi birth_date trong request
             }
             
             this.isEditMode = false;
@@ -415,8 +457,12 @@ document.addEventListener('alpine:init', () => {
                 if (data.success) {
                     this.showNotification('Đã lưu thông tin thành công!');
                 } else {
-                    this.showNotification('Có lỗi xảy ra: ' + data.message);
+                    this.showNotification('Có lỗi xảy ra: ' + data.message, 'error');
                 }
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                this.showNotification('Có lỗi xảy ra khi cập nhật thông tin', 'error');
             });
         },
         showNotification(message, type = 'success') {
@@ -487,7 +533,6 @@ document.addEventListener('alpine:init', () => {
             
             try {
                 // Đầu tiên kiểm tra dữ liệu liên quan
-                console.log('Checking user data before deletion...');
                 const checkResponse = await fetch('/check_user_data');
                 const checkData = await checkResponse.json();
                 
@@ -614,6 +659,96 @@ document.addEventListener('alpine:init', () => {
                 console.error('Error:', error);
                 this.showNotification(error.message, 'error');
             }
+        },
+        // Thêm method để force refresh birth date dropdowns
+        refreshBirthDateDropdowns() {
+            console.log("Forcing birth date dropdown refresh...");
+            
+            this.$nextTick(() => {
+                const daySelect = document.querySelector('select[x-model="user.birthDay"]');
+                const monthSelect = document.querySelector('select[x-model="user.birthMonth"]');
+                const yearSelect = document.querySelector('select[x-model="user.birthYear"]');
+                
+                if (daySelect && this.user.birthDay) {
+                    daySelect.value = this.user.birthDay;
+                    console.log("Set day select to:", this.user.birthDay);
+                }
+                if (monthSelect && this.user.birthMonth) {
+                    monthSelect.value = this.user.birthMonth;
+                    console.log("Set month select to:", this.user.birthMonth);
+                }
+                if (yearSelect && this.user.birthYear) {
+                    yearSelect.value = this.user.birthYear;
+                    console.log("Set year select to:", this.user.birthYear);
+                }
+                
+                // Trigger change events để đảm bảo Alpine.js nhận biết
+                [daySelect, monthSelect, yearSelect].forEach(select => {
+                    if (select) {
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+        },
+        // Thêm method để handle khi chuyển đến tab profile
+        activateProfileTab() {
+            this.activeTab = 'profile';
+            setTimeout(() => {
+                if (this.refreshBirthDateDropdowns) {
+                    this.refreshBirthDateDropdowns();
+                }
+            }, 100);
+        },
+        // Debug function để kiểm tra toàn bộ quá trình
+        debugBirthDate() {
+            console.log("=== COMPREHENSIVE BIRTH DATE DEBUG ===");
+            console.log("1. User object:", this.user);
+            console.log("2. Birth date components:", {
+                birthDay: this.user.birthDay,
+                birthMonth: this.user.birthMonth,
+                birthYear: this.user.birthYear,
+                birth_date: this.user.birth_date
+            });
+            
+            // Kiểm tra DOM elements
+            const daySelect = document.querySelector('select[x-model="user.birthDay"]');
+            const monthSelect = document.querySelector('select[x-model="user.birthMonth"]');
+            const yearSelect = document.querySelector('select[x-model="user.birthYear"]');
+            
+            console.log("3. DOM Elements found:", {
+                daySelect: !!daySelect,
+                monthSelect: !!monthSelect,
+                yearSelect: !!yearSelect
+            });
+            
+            if (daySelect) {
+                console.log("4. Day select details:", {
+                    value: daySelect.value,
+                    selectedIndex: daySelect.selectedIndex,
+                    options: Array.from(daySelect.options).map(opt => opt.value),
+                    bindingValue: this.user.birthDay
+                });
+            }
+            
+            if (monthSelect) {
+                console.log("5. Month select details:", {
+                    value: monthSelect.value,
+                    selectedIndex: monthSelect.selectedIndex,
+                    options: Array.from(monthSelect.options).map(opt => opt.value),
+                    bindingValue: this.user.birthMonth
+                });
+            }
+            
+            if (yearSelect) {
+                console.log("6. Year select details:", {
+                    value: yearSelect.value,
+                    selectedIndex: yearSelect.selectedIndex,
+                    optionsCount: yearSelect.options.length,
+                    bindingValue: this.user.birthYear
+                });
+            }
+            
+            console.log("=== END COMPREHENSIVE DEBUG ===");
         }
     }));
 });

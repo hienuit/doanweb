@@ -1,4 +1,4 @@
-// Auto-suggestion functionality for destination search
+// gợi ý tự động 
 let suggestionTimeout;
 let currentSuggestionIndex = -1;
 
@@ -7,21 +7,21 @@ document.addEventListener("DOMContentLoaded", function() {
     const searchButton = document.getElementById("searchButton");
     
     if (destinationInput) {
-        // Create suggestions dropdown
+        // tạo dropdown gợi ý
         const suggestionsContainer = document.createElement('div');
         suggestionsContainer.id = 'suggestions-container';
         suggestionsContainer.className = 'suggestions-dropdown';
         destinationInput.parentNode.appendChild(suggestionsContainer);
         
-        // Input event for auto-suggestion
+        // sự kiện input cho gợi ý tự động
         destinationInput.addEventListener("input", function() {
             const query = this.value.trim();
             
-            // Clear previous timeout
+            // xóa timeout trước đó
             clearTimeout(suggestionTimeout);
             
             if (query.length >= 2) {
-                // Debounce the API call
+                // tối ưu hóa gọi API
                 suggestionTimeout = setTimeout(() => {
                     fetchSuggestions(query);
                 }, 300);
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
         
-        // Handle keyboard navigation
+        // xử lý điều hướng bàn phím
         destinationInput.addEventListener("keydown", function(event) {
             const suggestions = document.querySelectorAll('.suggestion-item');
             
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
         
-        // Hide suggestions when clicking outside
+        // ẩn gợi ý khi click ngoài
         document.addEventListener("click", function(event) {
             if (!destinationInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
                 hideSuggestions();
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Search button click event
+    // sự kiện cho nút tìm kiếm
     if (searchButton) {
         searchButton.addEventListener("click", performSearch);
     }
@@ -79,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
     
+    // hiển thị danh sách đề xuất
     function displaySuggestions(suggestions) {
         const container = document.getElementById('suggestions-container');
         container.innerHTML = '';
@@ -152,10 +153,6 @@ const backToTopButton = document.getElementById("backToTop");
             window.scrollTo({ top: 0, behavior: "smooth" });
         });
 
-        // Additional JavaScript functionality can be added here
-        // For example, animation on scroll, filter functionality, etc.
-        
-        // Example of smooth scrolling for all anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 if (this.getAttribute('href') !== "#") {
@@ -168,93 +165,6 @@ const backToTopButton = document.getElementById("backToTop");
             });
         });
 
-
-// Login form submission
-// $('#loginForm').submit(function (e) {
-//     e.preventDefault();
-//     var user = $('#user').val();
-//     var password = $('#passwordLogin').val();
-    
-//     $.post('/login', { user: user, password: password }, function(response) {
-//         if (response == '1') {
-//             $('#noequalkey').show(); // Show error message
-//         } else {
-//             // Redirect or perform other actions on successful login
-//             window.location.href = '/welcome/' + email;
-//         }
-//     });
-// });
-
-
-// const noEqualKeyt = document.getElementById("noequalkeyt");
-// const registered = document.getElementById("registered");
-// const registerSuccess = document.getElementById("registersuccess");
-
-// document.getElementById("registerForm").addEventListener('submit', function (e) {
-//     e.preventDefault();
-
-//     // Lấy giá trị từ các input trong form
-//     const fullName = document.getElementById("fullName").value;
-//     const username = document.getElementById("username").value;
-//     const password = document.getElementById("passwordRegister").value;
-//     const confirmPassword = document.getElementById("confirmPassword").value;
-
-//     console.log(fullName);
-//     console.log(username);
-//     console.log(password);
-//     console.log(confirmPassword);
-
-//     // Tạo payload gửi đi
-//     const payload = {
-//         fullName: fullName,
-//         username: username,
-//         passwordRegister: password,
-//         confirmPassword: confirmPassword
-//     };
-
-//     // Gửi request POST sử dụng Fetch API
-//     fetch('/register', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify(payload)
-//     })
-//     .then(response => response.text())
-//     .then(response => {
-//         // Kiểm tra các phản hồi và hiển thị thông báo tương ứng
-//         if (response === '1') {
-            
-//             if (noEqualKeyt) {
-//                 registered.style.display = 'none';
-//                 registerSuccess.style.display = 'none';
-//                 noEqualKeyt.style.display = 'block';
-                
-//             }
-//         } else if (response === '2') {
-           
-//             if (registered) {
-//                 noEqualKeyt.style.display = 'none';
-//                 registerSuccess.style.display = 'none';
-//                 registered.style.display = 'block';
-//             }
-//         } else if (response === '3') {
-            
-//             if (registerSuccess) {
-//                 noEqualKeyt.style.display = 'none';
-//                 registered.style.display = 'none';
-//                 registerSuccess.style.display = 'block';
-               
-//             }
-//         }
-//     })
-//     .catch(error => {
-//         console.error('Error:', error);
-//     });
-// });
-
-
-// Add this to your app.js file or create a new script
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM Loaded - Toggle Init");
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -296,3 +206,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tự động ẩn flash messages sau 5 giây
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    // Thêm class fade-out để có hiệu ứng mượt mà
+                    message.classList.add('fade-out');
+                    
+                    // Xóa element sau khi animation hoàn thành
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.parentNode.removeChild(message);
+                        }
+                    }, 500); // 500ms cho animation fade-out
+                }, 5000); // 5000ms = 5 giây
+            });
+            
+            // tắt thông báo
+            const closeButtons = document.querySelectorAll('.flash-message .btn-close');
+            closeButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const message = button.closest('.flash-message');
+                    message.classList.add('fade-out');
+                    
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.parentNode.removeChild(message);
+                        }
+                    }, 500);
+                });
+            });
+        });

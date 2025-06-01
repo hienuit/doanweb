@@ -22,61 +22,92 @@
 
         
     <div class="container-fluid p-0">
-        <div class="container_vien">
-            <div class="container_img">
-                <div class="container1">
-                    <h1>Đôi nét về tỉnh</h1>
+        <div class="khung_tong_the">
+            <div class="noi_dung_chinh">
+                <div class="phan_gioi_thieu">
+                    <div class="tieu_de_chinh">
+                        <h1><i class="fas fa-map-marker-alt"></i> Đôi nét về tỉnh</h1>
+                    </div>
         
-            <!-- phần hiển thị tên địa điểm đã chọn ở đây -->
-                     <div id="destinationDetails" class="destination-info" >
-                        Loading destination details...
-                        <button id="toggle-btn" style="display: none;" onclick="toggleDescription()">Xem thêm</button>
+                    <!-- phần hiển thị tên địa điểm đã chọn ở đây -->
+                    <div id="destinationDetails" class="thong_tin_diem_den">
+                        <div class="loading_text">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Đang tải thông tin điểm đến...
+                        </div>
+                        <button id="toggle-btn" class="nut_xem_them" style="display: none;" onclick="toggleDescription()">
+                            <i class="fas fa-chevron-down"></i> Xem thêm
+                        </button>
                     </div> 
         
-            <!-- phần hiển thị các đặc điểm hoặc mô tả ở đây -->
-                    <div id="Feature" class="feature-info"></div>
+                    <!-- phần hiển thị các đặc điểm hoặc mô tả ở đây -->
+                    <div id="Feature" class="dac_diem_noi_bat">
+                        <div class="tieu_de_dac_diem">
+                            <i class="fas fa-star"></i> Điểm nổi bật
+                        </div>
+                    </div>
         
-                    <div class="input-group1">
-                        <select id="budget" aria-label="Select your budget">
-                            <option value="" disabled selected>Chọn tài chính của bạn</option>
-                            <option value="under2m">Dưới 2 triệu</option>
-                            <option value="under5m">Dưới 5 triệu</option>
-                            <option value="under10m">Dưới 10 triệu</option>
-                            <option value="above10m">Trên 10 triệu</option>
-                        </select>
-                        <input type="number" id="days" placeholder="Enter number of days" min="1" inputmode="numeric" aria-label="Number of days"/>
-                        <button id="submitDetails">Submit</button>
+                    <div class="khung_nhap_lieu">
+                        <div class="nhom_chon_luc">
+                            <div class="o_chon_tai_chinh">
+                                <i class="fas fa-wallet"></i>
+                                <select id="budget" aria-label="Select your budget">
+                                    <option value="" disabled selected>Chọn tài chính của bạn</option>
+                                    <option value="under2m">Dưới 2 triệu</option>
+                                    <option value="under5m">Dưới 5 triệu</option>
+                                    <option value="under10m">Dưới 10 triệu</option>
+                                    <option value="above10m">Trên 10 triệu</option>
+                                </select>
+                            </div>
+                            <div class="o_nhap_ngay">
+                                <i class="fas fa-calendar-alt"></i>
+                                <input type="number" id="days" placeholder="Số ngày du lịch" min="1" inputmode="numeric" aria-label="Number of days"/>
+                            </div>
+                            <button id="submitDetails" class="nut_gui_thong_tin">
+                                <i class="fas fa-paper-plane"></i> Tạo lịch trình
+                            </button>
+                        </div>
                     </div>
 
-                    <a href="/" class="back-button">Back to Home</a>
+                    <a href="/" class="nut_quay_lai">
+                        <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+                    </a>
                 </div> 
             
-             <div class="anh">
-                <div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                    <div class="carousel-inner">
-                        {% for img in images %}
-                            <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                <img src="{{ img }}" class="d-block w-100" alt="ảnh {{ loop.index }}">
-                            </div>
-                        {% endfor %}
+                <div class="khung_anh_dep">
+                    <div id="carouselExample" class="carousel slide bo_truot_anh" data-bs-ride="carousel" data-bs-interval="3000">
+                        <div class="carousel-inner">
+                            {% for img in images %}
+                                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                    <img src="{{ img }}" class="d-block w-100" alt="ảnh {{ loop.index }}">
+                                    <div class="lop_phu_anh"></div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    
+                        <!-- Nút điều hướng -->
+                        <button class="carousel-control-prev nut_truoc" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next nut_sau" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+                        
+                        <!-- Indicators -->
+                        <div class="carousel-indicators chi_so_anh">
+                            {% for img in images %}
+                                <button type="button" data-bs-target="#carouselExample" data-bs-slide-to="{{ loop.index0 }}" 
+                                        {% if loop.first %}class="active"{% endif %} aria-label="Slide {{ loop.index }}"></button>
+                            {% endfor %}
+                        </div>
                     </div>
-                
-                    <!-- Nút điều hướng -->
-                     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    </button>
                 </div>
             </div>
         </div>
-        </div>
     </div>
 
-
     <!-- Video overlay section -->
-     <div id="videoOverlay">
+    <div id="videoOverlay">
         <video id="adVideo" autoplay muted>
             <source src="../static/video/dulich.mp4" type="video/mp4">
             Trình duyệt của bạn không hỗ trợ video.

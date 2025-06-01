@@ -32,7 +32,7 @@
                         <a class="nav-link" href="/experiences">Trải Nghiệm</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#about">Về Chúng Tôi</a>
+                        <a class="nav-link" href="/aboutus">Về Chúng Tôi</a>
                     </li>
                 </ul>
                 <div class="auth-buttons">
@@ -73,6 +73,21 @@
         </div>
     </nav>
 
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show flash-message" role="alert">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <div class="search-box-container">
         <div class="container">
             <div class="row justify-content-center">
@@ -98,7 +113,7 @@
         </div>
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="https://scr.vn/wp-content/uploads/2020/07/Tam-C%E1%BB%91c-Ninh-B%C3%ACnh-m%C3%B9a-l%C3%BAa-ch%C3%ADn.jpg" alt="Tam Cốc Ninh Bình">
+                <img src="../static/images/anhnen2.jpg" alt="Tam Cốc Ninh Bình">
                 <div class="carousel-overlay">
                     <h1>THE WORLD FULL OF JOY</h1>
                     <p>Explore your joy anytime, anywhere, from spontaneous trips to adventures around the world.</p>
@@ -113,7 +128,7 @@
                 </div>
             </div>
             <div class="carousel-item">
-                <img src="https://hoangphucphoto.com/wp-content/uploads/2022/12/anh-dl-thumb.jpg" alt="Khám phá Việt Nam">
+                <img src="../static/images/anhnen1.jpg" alt="Khám phá Việt Nam">
                 <div class="carousel-overlay">
                     <h1>KHÁM PHÁ VIỆT NAM</h1>
                     <p>Từ núi cao đến biển rộng, từ đô thị nhộn nhịp đến làng quê bình yên - tất cả đang chờ bạn.</p>
@@ -164,7 +179,7 @@
                 Thời Tiết Hôm Nay
             </h2>
             <div class="weather-grid">
-                <!-- Weather widgets will be loaded here by JavaScript -->
+                <!-- Phần để hiển thị thời tiết từ db và api -->
             </div>
         </div>
     </section>
@@ -355,7 +370,7 @@
                         <li><a href="/">Trang Chủ</a></li>
                         <li><a href="/page2">Điểm Đến</a></li>
                         <li><a href="/experiences">Trải Nghiệm</a></li>
-                        <li><a href="#about">Về Chúng Tôi</a></li>
+                        <li><a href="/aboutus">Về Chúng Tôi</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
@@ -402,5 +417,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+    
 </body>
 </html>

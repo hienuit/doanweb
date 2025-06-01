@@ -129,7 +129,7 @@ class UserActivity(db.Model):
     user = db.relationship('Users', backref=db.backref('activities', lazy=True))
 
 
-    # Thêm hàm helper vào cuối file sau class UserActivity
+# Thêm hàm helper vào cuối file sau class UserActivity
 def add_user_activity(user_id, activity, details=None):
     try:
         new_activity = UserActivity(

@@ -176,3 +176,37 @@
         });
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tự động ẩn flash messages sau 5 giây
+        const flashMessages = document.querySelectorAll('.flash-message');
+        
+        flashMessages.forEach(function(message) {
+            setTimeout(function() {
+                // Thêm class fade-out để có hiệu ứng mượt mà
+                message.classList.add('fade-out');
+                
+                // Xóa element sau khi animation hoàn thành
+                setTimeout(function() {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 500); // 500ms cho animation fade-out
+            }, 5000); // 5000ms = 5 giây
+        });
+        
+        // tắt thông báo
+        const closeButtons = document.querySelectorAll('.flash-message .btn-close');
+        closeButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                const message = button.closest('.flash-message');
+                message.classList.add('fade-out');
+                
+                setTimeout(function() {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 500);
+            });
+        });
+    });
+

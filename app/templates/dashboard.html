@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>Bảng điều khiển</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script>
@@ -31,7 +31,7 @@
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <div class="flex-shrink-0 flex items-center">
-                            <a href="/" class="text-xl font-bold hover:text-amber-200 transition">MyDashboard</a>
+                            <a href="/" class="text-xl font-bold hover:text-amber-200 transition">Bảng điều khiển</a>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -135,7 +135,7 @@
                             <!-- Hiển thị thông báo cho người dùng Google -->
                             <div class="mt-6 w-full text-center text-gray-600 text-sm" x-show="isGoogleUser">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Đăng nhập bằng Google không yêu cầu mật khẩu
+                                Tài khoản đăng nhập bằng google
                             </div>
                         </div>
                         <div class="md:w-2/3 p-4">
@@ -512,14 +512,8 @@
         <footer class="mt-8">
             <div class="container mx-auto px-4">
                 <div class="flex flex-col items-center">
-                    <template x-if="true">
-                        <div class="mb-4">
-                            <span class="user-name" x-text="user.name"></span>
-                            <a href="#" class="nav-btn logout-btn">Đăng xuất</a>
-                        </div>
-                    </template>
-                    <p class="mb-2">&copy; Bản quyền thuộc về Dương và Hiển</p>
-                    <p>Khi muốn sử dụng thông tin tại trang web này xin hãy liên hệ tới <a href="mailto:23520458@gm.uit.edu.vn">23520458@gm.uit.edu.vn</a></p>
+                    <p class="mb-2">&copy; Bản quyền thuộc về nhóm 1</p>
+                    <p>Khi muốn sử dụng thông tin tại trang web này xin hãy liên hệ tới <a href="mailto:23520360@gm.uit.edu.vn">23520458@gm.uit.edu.vn</a></p>
                 </div>
             </div>
         </footer>

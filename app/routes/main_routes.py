@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 import time
 from app.models.experiences import Experience, ExperienceComment
 from sqlalchemy import func
+from app.utils import get_avatar_url
 
 main_blueprint = Blueprint('main', __name__)
 
@@ -20,23 +21,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def get_avatar_url(user_avatar_url):
-    """Helper function để xử lý avatar URL"""
-    if not user_avatar_url:
-        return None
-    
-    # Nếu đã là URL đầy đủ (bắt đầu với /static/), trả về trực tiếp
-    if user_avatar_url.startswith('/static/'):
-        return user_avatar_url
-    
-    # Nếu là đường dẫn cũ (bắt đầu với /uploads/), chuyển đổi
-    if user_avatar_url.startswith('/uploads/'):
-        filename = user_avatar_url.split('/')[-1]
-        return url_for('static', filename=f'uploads/avatars/{filename}')
-    
-    # Trường hợp khác, coi như là filename
-    return url_for('static', filename=f'uploads/avatars/{user_avatar_url}')
 
 @main_blueprint.route('/')
 def index():
@@ -56,7 +40,6 @@ def page3():
     if not data:
         return "Không tìm thấy tỉnh!", 404
 
-    print("DEBUG PAGE3:", data)  # In ra để kiểm tra có gì không
     return render_template("page3.html",
                        province=data[0]["name"],
                        describe=data[0]["describe"],
@@ -75,9 +58,9 @@ def schedule():
 def map():
     return render_template("map.html")
 
-@main_blueprint.route("/navbar")
-def navbar():
-    return render_template("navbar.html")
+@main_blueprint.route("/aboutus")
+def aboutus():
+    return render_template("aboutus.html")
 
 @main_blueprint.route("/dashboard")
 def dashboard():
@@ -109,8 +92,11 @@ def dashboard():
         try:
             parts = user.birth_date.split('-')
             if len(parts) == 3:
-                birth_year, birth_month, birth_day = parts
-        except:
+                birth_year = parts[0]
+                birth_month = str(int(parts[1]))  # Bỏ số 0 đầu
+                birth_day = str(int(parts[2]))    # Bỏ số 0 đầu
+        except Exception as e:
+            print(f"Error parsing birth_date: {e}")
             pass
     user_data = {
         'name': user.fname if user.fname else (user.email.split('@')[0] if user.email else "Người dùng mới"),
@@ -185,9 +171,6 @@ def dashboard():
     most_viewed_experience = Experience.query.filter_by(user_id=user.id)\
         .order_by(Experience.views.desc()).first()
     
-    # In ra console để debug
-    print("User data being sent to frontend:", user_data)
-    
     # Giả lập lịch sử hoạt động (hoặc lấy từ database nếu có)
     activities = UserActivity.query.filter_by(user_id=user.id)\
         .order_by(UserActivity.timestamp.desc())\
@@ -216,7 +199,7 @@ def dashboard():
                          most_viewed_experience=most_viewed_experience)
 
 
-#lichsuhoatdong
+# lịch sử hoạt động, lịch sử đăng nhập hoặc là chỉnh sủa
 @main_blueprint.route("/get_more_history", methods=['POST'])
 def get_more_history():
     if 'user_name' not in session and 'oauth_token' not in session:
@@ -236,12 +219,12 @@ def get_more_history():
     if not user:
         return jsonify({'success': False, 'message': 'Không tìm thấy thông tin người dùng'}), 404
     
-    # Query lịch sử hoạt động
+    # truy vấn lịch sử hoạt động
     activities = UserActivity.query.filter_by(user_id=user.id)\
         .order_by(UserActivity.timestamp.desc())\
         .paginate(page=page, per_page=per_page)
     
-    # Format kết quả
+    # định dạng lại thời gian hoạt động
     history = []
     for activity in activities.items:
         history.append({
@@ -364,18 +347,17 @@ def submit_feedback():
         # Thêm hoạt động vào lịch sử
         activity = UserActivity(
             user_id=user.id,
-            activity='feedback',
-            details=f'Đã gửi góp ý: {subject}'
+            activity='feedback_submit',
+            details=f'Gửi góp ý với chủ đề: {subject}'
         )
         db.session.add(activity)
         db.session.commit()
         
-        return jsonify({'success': True}), 200
-        
+        return jsonify({'success': True, 'message': 'Cảm ơn bạn đã gửi góp ý!'})
+
     except Exception as e:
         db.session.rollback()
-        print("Error submitting feedback:", str(e))
-        return jsonify({'error': 'Có lỗi xảy ra khi lưu góp ý'}), 500
+        return jsonify({'success': False, 'message': 'Có lỗi xảy ra khi gửi góp ý'}), 500
 
 @main_blueprint.route('/upload-avatar', methods=['POST'])
 def upload_avatar():
@@ -437,8 +419,7 @@ def upload_avatar():
         
     except Exception as e:
         db.session.rollback()
-        print(f"Error uploading avatar: {str(e)}")
-        return jsonify({'error': 'Có lỗi xảy ra khi lưu ảnh'}), 500
+        return jsonify({'success': False, 'message': 'Có lỗi xảy ra khi upload avatar'}), 500
 
 @main_blueprint.route('/get-user-feedbacks', methods=['GET'])
 def get_user_feedbacks():
@@ -481,7 +462,6 @@ def get_user_feedbacks():
         })
 
     except Exception as e:
-        print(f"Error getting user feedbacks: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @main_blueprint.route('/get-user-experiences', methods=['GET'])
@@ -544,8 +524,8 @@ def get_user_experiences():
         })
 
     except Exception as e:
-        print(f"Error getting user experiences: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
+
 
 @main_blueprint.route('/delete-experience', methods=['POST'])
 def delete_experience():
@@ -588,7 +568,6 @@ def delete_experience():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error deleting experience: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @main_blueprint.route('/get-experience-stats', methods=['GET'])
@@ -663,7 +642,6 @@ def get_experience_stats():
         })
 
     except Exception as e:
-        print(f"Error getting experience stats: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @main_blueprint.route('/robots.txt')

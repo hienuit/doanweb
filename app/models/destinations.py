@@ -500,10 +500,10 @@ def normalize(text):
     text = text.lower()
     text = unicodedata.normalize('NFD', text)
     text = ''.join(c for c in text if unicodedata.category(c) != 'Mn') # Loại bỏ dấu
-    text = text.replace('đ', 'd')
+    text = text.replace('đ', 'd') # thay đ bằng đ trong một số tỉnh như đồng nai, đà nẵng
     return text
 
-#Hàm chuẩn hóa tên tỉnh
+#Hàm chuẩn hóa tên tỉnh, một số tỉnh bth dân việt nam hay viết tắt thì có thể tìm ra luôn
 def standardize_province_name(name):
     normalized = normalize(name)
 

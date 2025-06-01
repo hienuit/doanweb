@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify,session
+from flask import Blueprint, request, jsonify
 from app.models.destinations import search_from_db, search_describe,extend_from_db, Destinations
 import json, re
 import google.generativeai as genai

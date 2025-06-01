@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Về Chúng Tôi - Travel Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .about-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .about-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .team-section {
+            padding: 60px 0;
+            background: #f8f9fa;
+        }
+        .team-member {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+        .member-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+            color: #333;
+        }
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .website-features {
+            padding: 60px 0;
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            color: white;
+        }
+        .feature-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .feedback-section {
+            padding: 60px 0;
+            background: #fff;
+        }
+        .feedback-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: #e78e00;
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-route logo-icon"></i>
+                Travel Assistant
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Trang Chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/page2">Điểm Đến</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/experiences">Trải Nghiệm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/aboutus">Về Chúng Tôi</a>
+                    </li>
+                </ul>
+                <div class="auth-buttons">
+                    {% if "user_name" in session or "full_name" in session %}
+                        <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2" onerror="this.src='/static/images/default-avatar.png'">
+                                {{ session['full_name'] if session.get('full_name') else session['user_name'] }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="/dashboard">
+                                        <i class="fas fa-user-circle me-2"></i>
+                                        <span>Hồ sơ</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/history">
+                                        <i class="fas fa-history me-2"></i>
+                                        <span>Lịch sử truy vấn</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="/logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>
+                                        <span>Đăng xuất</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="/login" class="btn btn-auth btn-login">Đăng nhập</a>
+                        <a href="/register" class="btn btn-auth btn-register">Đăng ký</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="about-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="about-content text-center">
+                        <h1 class="display-4 mb-4">
+                            <i class="fas fa-users me-3"></i>
+                            Về Chúng Tôi
+                        </h1>
+                        <p class="lead mb-4">
+                            Chào mừng bạn đến với Travel Assistant! Chúng mình đến từ <strong>Nhóm 1</strong> - một đội ngũ trẻ trung, đam mê công nghệ và du lịch.
+                        </p>
+                        <div class="row mt-5">
+                            <div class="col-md-6">
+                                <div class="feature-highlight">
+                                    <i class="fas fa-globe-americas fa-3x mb-3"></i>
+                                    <h4>Du Lịch Thông Minh</h4>
+                                    <p>Khám phá thế giới qua màn hình nhỏ chỉ với vài cú click chuột</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="feature-highlight">
+                                    <i class="fas fa-heart fa-3x mb-3"></i>
+                                    <h4>Trải Nghiệm Tuyệt Vời</h4>
+                                    <p>Mang đến những trải nghiệm du lịch ảo chân thực nhất</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>
+                    <i class="fas fa-user-friends me-3"></i>
+                    Đội Ngũ Phát Triển
+                </h2>
+                <p class="lead">Hai thành viên gà mờ của Nhóm 1</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-6">
+                    <div class="team-member text-center">
+                        <div class="member-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h4 class="mb-3">Lê Đăng Minh Hiển</h4>
+                        <p class="text-muted mb-3">Thành viên Nhóm 1</p>
+                        <p>Đam mê lập trình và phát triển ứng dụng web. Mỗi tội không có trình.</p>
+                        <div class="social-links">
+                            <i class="fab fa-github fa-lg me-3 text-muted"></i>
+                            <i class="fab fa-linkedin fa-lg me-3 text-muted"></i>
+                            <i class="fas fa-envelope fa-lg text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-6">
+                    <div class="team-member text-center">
+                        <div class="member-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h4 class="mb-3">Vũ Nguyễn Thái Dương</h4>
+                        <p class="text-muted mb-3">Thành viên Nhóm 1</p>
+                        <p>Yêu thích thiết kế UI/UX và frontend development.Mỗi tội không có khiếu thẩm mỹ.</p>
+                        <div class="social-links">
+                            <i class="fab fa-github fa-lg me-3 text-muted"></i>
+                            <i class="fab fa-linkedin fa-lg me-3 text-muted"></i>
+                            <i class="fas fa-envelope fa-lg text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Website Features -->
+    <section class="website-features">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h2 class="display-5 mb-4">
+                            <i class="fas fa-magic me-3"></i>
+                            Website Của Chúng Mình
+                        </h2>
+                        <p class="lead">
+                            Với website của nhóm mình, bạn có thể <strong>du lịch đến bất cứ đâu</strong> qua màn hình nhỏ chỉ thông qua <strong>vài nút click chuột</strong>.
+                        </p>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="feature-box">
+                                <div class="feature-icon">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </div>
+                                <h4>Dễ Sử Dụng</h4>
+                                <p>Chỉ cần vài cú click để khám phá những điểm đến tuyệt vời</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-box">
+                                <div class="feature-icon">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                </div>
+                                <h4>Khám Phá Vô Hạn</h4>
+                                <p>Du lịch ảo đến mọi nơi trên thế giới từ nhà của bạn</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-box">
+                                <div class="feature-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <h4>Responsive</h4>
+                                <p>Trải nghiệm mượt mà trên mọi thiết bị</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feedback Section -->
+    <section class="feedback-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="feedback-box">
+                        <h2 class="mb-4">
+                            <i class="fas fa-comments me-3"></i>
+                            Ý Kiến Của Bạn Rất Quan Trọng!
+                        </h2>
+                        <p class="lead mb-4">
+                            Mong các bạn trải nghiệm và cho tụi mình xin ý kiến nhé! 
+                            Mọi góp ý của bạn sẽ giúp chúng mình cải thiện và phát triển website tốt hơn.
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a href="/experiences" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-star me-2"></i>
+                                    Trải Nghiệm Ngay
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="mailto:contact@travelassistant.com" class="btn btn-outline-primary btn-lg w-100">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    Gửi Phản Hồi
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+    <!-- Scripts -->
+    <script>
+        const backToTopButton = document.getElementById("backToTop");
+        
+        window.addEventListener("scroll", () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add("visible");
+            } else {
+                backToTopButton.classList.remove("visible");
+            }
+        });
+
+        backToTopButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

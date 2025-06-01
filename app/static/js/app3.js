@@ -145,18 +145,27 @@ document.addEventListener("DOMContentLoaded", function () {
         const videoOverlay = document.getElementById("videoOverlay");
 
         if (!province) {
-            destinationDetails.textContent = "No destination selected.";
+            destinationDetails.innerHTML = `
+                <div class="loading_text">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Không có điểm đến được chọn
+                </div>
+            `;
             videoOverlay.style.display = "none";
             return;
         }
-
-
 
         fetch(`/describe?province=${encodeURIComponent(province)}`)
             .then(response => response.json())
             .then(data => {
                 Feature.innerHTML = "";
-                destinationDetails.textContent = `Tỉnh: ${data.name}`;
+                
+                destinationDetails.innerHTML = `
+                    <div class="loading_text">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Tỉnh: ${data.name}
+                    </div>
+                `;
 
                 if (data.places && Array.isArray(data.places)) {
                     const locations = [];
@@ -180,17 +189,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     let fullText = data.describe;
 
                     Feature.innerHTML = `
-                        <p style="color:white; font-weight:bold; display: inline;">
-                            <strong>Mô tả:</strong> 
-                            <span id="short-text">${shortText}</span>...
-                            <button id="toggle-popup" style="color: yellow; background: none; border: none; cursor: pointer; padding: 0; font-weight: bold;"><u>Xem thêm</u></button>
-                        </p>
+                        <div class="mo_ta_ngan">
+                            <p style="color:black; font-weight:bold; display: inline;">
+                                <span id="short-text">${shortText}</span>...
+                                <button id="toggle-popup" class="nut_xem_them_mo_ta" style="color: red; background: none; border: none; cursor: pointer; padding: 5px 10px; font-weight: bold; border-radius: 5px; margin-left: 10px;"><i class="fas fa-plus-circle"></i> Xem thêm</button>
+                            </p>
+                        </div>
 
                         <!-- Hộp popup (sẽ bị ghi đè bởi modal mới) -->
-                        <div id="popup-container" class="popup-hidden">
-                            <div class="popup-content">
-                                <span id="close-popup">&times;</span>
-                                <h3>Mô tả chi tiết</h3>
+                        <div id="popup-container" class="hop_popup popup-hidden">
+                            <div class="noi_dung_popup">
+                                <span id="close-popup" class="nut_dong_popup">&times;</span>
+                                <h3><i class="fas fa-info-circle"></i> Mô tả chi tiết</h3>
                                 <p>${fullText}</p>
                             </div>
                         </div>
@@ -233,38 +243,43 @@ document.addEventListener("DOMContentLoaded", function () {
                         });
                     }
                 } else {
-                    Feature.innerHTML = "<p class='text-white'>No description found for this destination.</p>";
+                    Feature.innerHTML = "<p class='text-white'><i class='fas fa-exclamation-circle'></i> Không tìm thấy mô tả cho điểm đến này.</p>";
                 }
             })
             .catch(error => {
                 console.error("Error fetching description:", error);
-                Feature.innerHTML = "<p class='text-white'>Error fetching data. Please try again.</p>";
+                Feature.innerHTML = "<p class='text-white'><i class='fas fa-times-circle'></i> Lỗi khi tải dữ liệu. Vui lòng thử lại.</p>";
             });
 
         videoOverlay.style.display = "none";
     });
 
-
 document.addEventListener("DOMContentLoaded", function () {
-    let background = document.querySelector(".container_vien");
+    let background = document.querySelector(".khung_tong_the");
     let carousel = document.getElementById("carouselExample");
 
     function updateBackground() {
         let activeSlide = document.querySelector(".carousel-item.active img");
-        if (activeSlide) {
+        if (activeSlide && background) {
             background.style.backgroundImage = `url(${activeSlide.src})`;
+            background.style.backgroundSize = 'cover';
+            background.style.backgroundPosition = 'center';
+            background.style.backgroundAttachment = 'fixed';
         }
     }
 
-    carousel.addEventListener("slid.bs.carousel", updateBackground);
-    updateBackground();
+    if (carousel) {
+        carousel.addEventListener("slid.bs.carousel", updateBackground);
+        updateBackground();
+    }
 });
-
-
 
 document.getElementById("submitDetails").addEventListener("click", function() {
     // Blur input focus to hide mobile keyboard
-    document.getElementById("days").blur();
+    const daysInput = document.getElementById("days");
+    if (daysInput) {
+        daysInput.blur();
+    }
     
     const videoOverlay = document.getElementById("videoOverlay");
     const skipBtn = document.getElementById("skipBtn");
@@ -281,7 +296,9 @@ document.getElementById("submitDetails").addEventListener("click", function() {
 
     if (!destination || !days || !budget) {
         alert("Vui lòng điền đầy đủ thông tin!");
-        videoOverlay.style.display = "none";
+        if (videoOverlay) {
+            videoOverlay.style.display = "none";
+        }
         return;
     }
 
@@ -297,28 +314,46 @@ document.getElementById("submitDetails").addEventListener("click", function() {
         budget: budget
     };
     
-    videoOverlay.style.display = "flex";
-    skipcountdown.style.display = "block";
+    if (videoOverlay) {
+        videoOverlay.style.display = "flex";
+    }
+    
+    if (skipcountdown) {
+        skipcountdown.style.display = "block";
+    }
+    
     let countdown = 5;
-    skipcountdown.textContent = 'Bỏ qua sau 5s';
+    if (skipcountdown) {
+        skipcountdown.textContent = 'Bỏ qua sau 5s';
+    }
 
     const timer = setInterval(() => {
         countdown--;
         if (countdown > 0) {
-            skipcountdown.innerHTML = `Bỏ qua sau ${countdown}s`;
+            if (skipcountdown) {
+                skipcountdown.innerHTML = `Bỏ qua sau ${countdown}s`;
+            }
         } else {
             clearInterval(timer);
-            skipcountdown.style.display = "none"; // Ẩn bộ đếm
-            skipBtn.style.display = "flex"; // Hiện nút bỏ qua
+            if (skipcountdown) {
+                skipcountdown.style.display = "none"; // Ẩn bộ đếm
+            }
+            if (skipBtn) {
+                skipBtn.style.display = "flex"; // Hiện nút bỏ qua
+            }
         }
     }, 1000); 
 
-    skipBtn.onclick = function() {
-        videoOverlay.style.display = "none"; // Ẩn video khi bấm bỏ qua
-        if (!isApiRequestComplete) {
-            loadingContainer.style.display = "flex";
-        }
-    };
+    if (skipBtn) {
+        skipBtn.onclick = function() {
+            if (videoOverlay) {
+                videoOverlay.style.display = "none"; // Ẩn video khi bấm bỏ qua
+            }
+            if (!isApiRequestComplete && loadingContainer) {
+                loadingContainer.style.display = "flex";
+            }
+        };
+    }
 
     const apiURL = `${window.location.origin}/create-itinerary`;
     fetch(apiURL, {
@@ -331,45 +366,53 @@ document.getElementById("submitDetails").addEventListener("click", function() {
     .then(response => response.json())
     .then(data => {
         isApiRequestComplete = true;
-        loadingContainer.style.display = "none";
+        if (loadingContainer) {
+            loadingContainer.style.display = "none";
+        }
         
         if (data.success) {
             localStorage.setItem('itinerary', JSON.stringify(data.itinerary));
-            videoOverlay.style.display = "none";
+            if (videoOverlay) {
+                videoOverlay.style.display = "none";
+            }
             window.location.href = `/schedule?destination=${encodeURIComponent(destination)}`;
         } else {
             alert("Có lỗi xảy ra: " + data.error);
-            videoOverlay.style.display = "none";
+            if (videoOverlay) {
+                videoOverlay.style.display = "none";
+            }
         }
     })
     .catch(error => {
         isApiRequestComplete = true;
-        loadingContainer.style.display = "none";
+        if (loadingContainer) {
+            loadingContainer.style.display = "none";
+        }
         
         console.error("Error:", error);
-
         alert("Đã xảy ra lỗi khi gửi yêu cầu.");
-        videoOverlay.style.display = "none";
+        if (videoOverlay) {
+            videoOverlay.style.display = "none";
+        }
     });
 });
 
-
-
-
 const backToTopButton = document.getElementById('backToTop');
+if (backToTopButton) {
     window.addEventListener('scroll', function() {
         if (window.pageYOffset > 300) {
-                backToTopButton.classList.add('visible');
+            backToTopButton.classList.add('visible');
         } 
         else {
-                backToTopButton.classList.remove('visible');
+            backToTopButton.classList.remove('visible');
         }
-});
-        
-backToTopButton.addEventListener('click', function(e) {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+    });
+            
+    backToTopButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
 
 
 
