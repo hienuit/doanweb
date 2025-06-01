@@ -187,10 +187,30 @@ def verify_otp_ajax():
     else:
         return jsonify({'success': False, 'message': 'Mã OTP không đúng!'})
 
-@auth_blueprint.route("/logout")
+@auth_blueprint.route("/logout", methods=['GET', 'POST'])
 def logout():
     session.clear()
     flash("Bạn đã đăng xuất!", "success")
+    next_page = request.args.get('next_page') or request.form.get('next_page')
+    
+    # Nếu không có next_page được truyền, lấy từ referrer (trang trước đó)
+    if not next_page and request.referrer:
+        next_page = request.referrer
+    if next_page:
+        if next_page.strip():
+            
+            # Loại bỏ các trang không nên redirect về (như login, register, etc.)
+            dangerous_paths = ['/login', '/register', '/logout', '/verify_otp', '/forgot-password', '/reset-password-otp', '/set-new-password']
+            
+            # Kiểm tra nếu next_page chứa các đường dẫn nguy hiểm
+            if any(path in next_page for path in dangerous_paths):
+                print(f"DEBUG: next_page contains dangerous path, ignoring: {next_page}")
+                next_page = None
+            else:
+                if next_page.startswith('/') or next_page.startswith('http') or next_page.startswith('https'):
+                    return redirect(next_page)
+                else:
+                    return redirect('/' + next_page)
     return redirect(url_for("main.index"))
 
 def generate_otp(length=6):

@@ -353,70 +353,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-route logo-icon"></i>
-                Travel Assistant
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Trang Chủ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/page2">Điểm Đến</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/experiences">Trải Nghiệm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/promotions">Ưu Đãi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">Về Chúng Tôi</a>
-                    </li>
-                </ul>
-                <div class="auth-buttons">
-                    {% if "user_name" in session or "full_name" in session %}
-                        <div class="dropdown">
-                            <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2" onerror="this.src='/static/images/default-avatar.png'">
-                                {{ session['full_name'] if session.get('full_name') else session['user_name'] }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="/dashboard">
-                                        <i class="fas fa-user-circle me-2"></i>
-                                        <span>Hồ sơ</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="/history">
-                                        <i class="fas fa-history me-2"></i>
-                                        <span>Lịch sử truy vấn</span>
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" href="/logout">
-                                        <i class="fas fa-sign-out-alt me-2"></i>
-                                        <span>Đăng xuất</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    {% else %}
-                        <a href="/login" class="btn btn-auth btn-login">Đăng nhập</a>
-                        <a href="/register" class="btn btn-auth btn-register">Đăng ký</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
+    {%include 'navbar.html'%}
 
     <!-- Experience Header -->
     <section class="experience-header">

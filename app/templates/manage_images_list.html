@@ -1,0 +1,44 @@
+{% if images_with_destinations %}
+    <div class="image-count">
+        <i class="fas fa-images"></i> 
+        Tổng cộng: {{ images_with_destinations|length }} ảnh
+    </div>
+    
+    {% for image, destination in images_with_destinations %}
+        <div class="image-card d-flex align-items-center">
+            <img src="{{ url_for('static', filename=image.image_url) }}" 
+                 alt="Ảnh {{ destination.name }}">
+            
+            <div class="image-info">
+                <div class="province-name">
+                    <i class="fas fa-map-marker-alt"></i> {{ destination.name }}
+                </div>
+                <div class="image-filename">
+                    <i class="fas fa-file-image"></i> 
+                    {{ image.image_url.split('/')[-1] }}
+                </div>
+                <small class="text-muted">
+                    <i class="fas fa-link"></i> 
+                    Đường dẫn: {{ image.image_url }}
+                </small>
+            </div>
+            
+            <div class="ms-auto">
+                <button type="button" 
+                        class="delete-btn" 
+                        data-image-id="{{ image.id }}"
+                        title="Xóa ảnh này">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="no-images">
+        <i class="fas fa-images fa-3x mb-3 text-muted"></i>
+        <p>Không có ảnh nào được gán cho tỉnh thành.</p>
+        <a href="{{ url_for('media.choose_images') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm ảnh đầu tiên
+        </a>
+    </div>
+{% endif %} 

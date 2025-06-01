@@ -115,71 +115,96 @@
             background-color: #e78e00;
             transform: translateY(-3px);
         }
+
+        /* CSS cho Flash Messages */
+
+        .flash-container {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            width: 250px;
+        }
+        
+        .flash-message {
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 8px;
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        .flash-message.fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .flash-container {
+                top: 60px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-route logo-icon"></i>
-                Travel Assistant
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Trang Chủ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/page2">Điểm Đến</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/experiences">Trải Nghiệm</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/aboutus">Về Chúng Tôi</a>
-                    </li>
-                </ul>
-                <div class="auth-buttons">
-                    {% if "user_name" in session or "full_name" in session %}
-                        <div class="dropdown">
-                            <button class="btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ session['user_avatar'] if session.get('user_avatar') else url_for('static', filename='images/default-avatar.png') }}" width="30" height="30" class="rounded-circle me-2" onerror="this.src='/static/images/default-avatar.png'">
-                                {{ session['full_name'] if session.get('full_name') else session['user_name'] }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="/dashboard">
-                                        <i class="fas fa-user-circle me-2"></i>
-                                        <span>Hồ sơ</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="/history">
-                                        <i class="fas fa-history me-2"></i>
-                                        <span>Lịch sử truy vấn</span>
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" href="/logout">
-                                        <i class="fas fa-sign-out-alt me-2"></i>
-                                        <span>Đăng xuất</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    {% else %}
-                        <a href="/login" class="btn btn-auth btn-login">Đăng nhập</a>
-                        <a href="/register" class="btn btn-auth btn-register">Đăng ký</a>
-                    {% endif %}
-                </div>
+    {% include 'navbar.html' %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show flash-message" role="alert">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
             </div>
-        </div>
-    </nav>
+        {% endif %}
+    {% endwith %}
 
     <!-- Hero Section -->
     <section class="about-section">
@@ -360,6 +385,40 @@
         backToTopButton.addEventListener("click", (e) => {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+        ocument.addEventListener('DOMContentLoaded', function() {
+            // Tự động ẩn flash messages sau 5 giây
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    // Thêm class fade-out để có hiệu ứng mượt mà
+                    message.classList.add('fade-out');
+                    
+                    // Xóa element sau khi animation hoàn thành
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.parentNode.removeChild(message);
+                        }
+                    }, 500); // 500ms cho animation fade-out
+                }, 5000); // 5000ms = 5 giây
+            });
+            
+            // tắt thông báo
+            const closeButtons = document.querySelectorAll('.flash-message .btn-close');
+            closeButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const message = button.closest('.flash-message');
+                    message.classList.add('fade-out');
+                    
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.parentNode.removeChild(message);
+                        }
+                    }, 500);
+                });
+            });
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -52,7 +52,10 @@
 {% block content %}
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Quản lý ảnh tỉnh thành</h1>
+        <h1 class="h3 mb-0 text-gray-800">Thêm ảnh tỉnh thành</h1>
+        <a href="{{ url_for('media.manage_images') }}" class="btn btn-secondary">
+            <i class="fas fa-cog"></i> Quản lý ảnh đã gán
+        </a>
     </div>
 
     <div class="form-section">
@@ -72,6 +75,12 @@
             <div class="mb-3">
                 <label class="form-label">Chọn ảnh từ thư viện:</label>
                 {% if image_files %}
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Có {{ image_files|length }} ảnh chưa được gán cho tỉnh thành nào.
+                        </small>
+                    </div>
                     <div class="gallery">
                         {% for filename in image_files %}
                             <div class="image-item">
@@ -85,16 +94,46 @@
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
                         Không có ảnh nào chưa được gán cho tỉnh thành. Tất cả ảnh trong thư viện đã được sử dụng.
+                        <br><br>
+                        <a href="{{ url_for('media.manage_images') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-cog"></i> Xem ảnh đã gán
+                        </a>
                     </div>
                 {% endif %}
             </div>
 
             {% if image_files %}
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Thêm ảnh vào tỉnh thành
-                </button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Thêm ảnh vào tỉnh thành
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleSelectAll()">
+                        <i class="fas fa-check-square"></i> Chọn tất cả
+                    </button>
+                </div>
             {% endif %}
         </form>
     </div>
 </div>
+
+<script>
+let allSelected = false;
+
+function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('input[name="selected_images"]');
+    const button = event.target;
+    
+    allSelected = !allSelected;
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = allSelected;
+    });
+    
+    if (allSelected) {
+        button.innerHTML = '<i class="fas fa-square"></i> Bỏ chọn tất cả';
+    } else {
+        button.innerHTML = '<i class="fas fa-check-square"></i> Chọn tất cả';
+    }
+}
+</script>
 {% endblock %}
