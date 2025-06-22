@@ -164,39 +164,122 @@ Truy cập ứng dụng tại: `http://localhost:5000`
 
 ## 🔧 Cấu hình nâng cao
 
-### Cấu hình OAuth
+### 🔑 Hướng dẫn lấy API Keys chi tiết
 
-#### Google OAuth:
-1. Truy cập [Google Cloud Console](https://console.cloud.google.com/)
-2. Tạo project mới hoặc chọn project existing
-3. Bật Google+ API
-4. Tạo OAuth 2.0 credentials
-5. Thêm `http://localhost:5000/authorize/google` vào Authorized redirect URIs
+#### 1. Google AI API Key (Bắt buộc)
 
-#### Facebook OAuth:
-1. Truy cập [Facebook Developers](https://developers.facebook.com/)
-2. Tạo app mới
-3. Thêm Facebook Login product
-4. Cấu hình Valid OAuth Redirect URIs: `http://localhost:5000/auth/facebook/callback`
+**Bước 1**: Truy cập [Google AI Studio](https://aistudio.google.com/)
+**Bước 2**: Đăng nhập bằng tài khoản Google
+**Bước 3**: Click "Get API Key" ở góc phải trên
+**Bước 4**: Click "Create API Key in new project" hoặc chọn project có sẵn
+**Bước 5**: Copy API key và paste vào file `.env`:
+```env
+GOOGLE_AI_API_KEY=AIzaSyABC123DEF456GHI789JKL012MNO345PQR
+```
 
-### Cấu hình Email
+#### 2. Google OAuth Credentials (Tùy chọn)
 
-Để sử dụng tính năng gửi email (khôi phục mật khẩu, OTP):
-1. Bật 2-Factor Authentication cho Gmail
-2. Tạo App Password
-3. Sử dụng App Password trong `MAIL_PASSWORD`
+**Bước 1**: Truy cập [Google Cloud Console](https://console.cloud.google.com/)
+**Bước 2**: Tạo project mới:
+   - Click "Select a project" → "New Project"
+   - Nhập tên project → Create
 
-### Cấu hình Weather API
+**Bước 3**: Bật APIs cần thiết:
+   - Vào "APIs & Services" → "Library"
+   - Tìm và bật "Google+ API" và "People API"
 
-1. Đăng ký tại [OpenWeatherMap](https://openweathermap.org/api)
-2. Lấy API key miễn phí
-3. Thêm vào file `.env`
+**Bước 4**: Tạo OAuth 2.0 Credentials:
+   - Vào "APIs & Services" → "Credentials"
+   - Click "Create Credentials" → "OAuth 2.0 Client IDs"
+   - Chọn "Web application"
+   - Thêm Authorized redirect URIs: `http://localhost:5000/authorize/google`
+   - Click "Create"
 
-### Cấu hình Google AI
+**Bước 5**: Copy Client ID và Client Secret:
+```env
+CLIENT_ID=123456789-abcdefghijklmnop.apps.googleusercontent.com
+CLIENT_SECRET=GOCSPX-abcdefghijklmnopqrstuvwxyz
+```
 
-1. Truy cập [Google AI Studio](https://aistudio.google.com/)
-2. Tạo API key
-3. Thêm vào file `.env`
+#### 3. Facebook OAuth Credentials (Tùy chọn)
+
+**Bước 1**: Truy cập [Facebook Developers](https://developers.facebook.com/)
+**Bước 2**: Click "My Apps" → "Create App"
+**Bước 3**: Chọn "Consumer" → "Next"
+**Bước 4**: Nhập App Display Name → "Create App"
+**Bước 5**: Thêm Facebook Login:
+   - Click "Add Product" → Tìm "Facebook Login" → "Set Up"
+   - Chọn "Web" platform
+   - Nhập Site URL: `http://localhost:5000`
+
+**Bước 6**: Cấu hình OAuth Redirect URLs:
+   - Vào "Facebook Login" → "Settings"
+   - Thêm Valid OAuth Redirect URIs: `http://localhost:5000/auth/facebook/callback`
+
+**Bước 7**: Lấy App ID và App Secret:
+   - Vào "Settings" → "Basic"
+   - Copy App ID và App Secret
+```env
+FACEBOOK_CLIENT_ID=1234567890123456
+FACEBOOK_CLIENT_SECRET=abcdef1234567890abcdef1234567890
+```
+
+#### 4. Gmail App Password (Cho tính năng Email)
+
+**Bước 1**: Đăng nhập Gmail và vào [Google Account Settings](https://myaccount.google.com/)
+**Bước 2**: Vào "Security" → Bật "2-Step Verification" nếu chưa có
+**Bước 3**: Sau khi bật 2FA, vào "App Passwords":
+   - Search "App passwords" trong account settings
+   - Chọn "Mail" và "Other (custom name)"
+   - Nhập tên như "Flask Travel App"
+   - Click "Generate"
+
+**Bước 4**: Copy 16-digit password:
+```env
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=abcd efgh ijkl mnop
+```
+
+#### 5. OpenWeatherMap API Key (Tùy chọn)
+
+**Bước 1**: Truy cập [OpenWeatherMap](https://openweathermap.org/api)
+**Bước 2**: Click "Sign Up" để tạo tài khoản miễn phí
+**Bước 3**: Xác nhận email đăng ký
+**Bước 4**: Đăng nhập và vào "My API Keys"
+**Bước 5**: Copy Default API key hoặc tạo mới:
+```env
+WEATHER_API_KEY=abcdef1234567890abcdef1234567890
+WEATHER_BASE_URL=http://api.openweathermap.org/data/2.5
+```
+
+> ⚠️ **Lưu ý quan trọng**: 
+> - **KHÔNG** commit file `.env` lên Git
+> - Thêm `.env` vào file `.gitignore`
+> - Các API key này chỉ dùng cho development
+> - Sử dụng environment variables cho production
+
+### 🔐 Bảo mật API Keys
+
+```bash
+# Thêm vào .gitignore
+echo ".env" >> .gitignore
+echo "*.env" >> .gitignore
+```
+
+### 🧪 Test API Keys
+
+Sau khi cấu hình, bạn có thể test các API:
+
+```bash
+# Test Google AI
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"contents":[{"parts":[{"text":"Hello"}]}]}' \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=YOUR_API_KEY"
+
+# Test Weather API
+curl "http://api.openweathermap.org/data/2.5/weather?q=Hanoi&appid=YOUR_WEATHER_API_KEY"
+```
 
 ## 📁 Cấu trúc thư mục
 
